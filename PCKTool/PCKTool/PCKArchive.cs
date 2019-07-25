@@ -28,6 +28,7 @@ namespace PCKTool
             reader.JumpTo(packAddress);
 
             // Pack
+            reader.FixPadding(0x8);
             sig = ReadPCKSig(reader);
             if (sig != "Pack")
                 throw new InvalidSignatureException("Pack", sig);
@@ -80,9 +81,9 @@ namespace PCKTool
                 writer.FillInOffset(files[i].Name, (uint)writer.BaseStream.Position - 0x18);
                 writer.WriteNullTerminatedString(files[i].Name);
             }
-            writer.FixPadding(0x8);
             // Pack
             writer.FillInOffset("PackAddress");
+            writer.FixPadding(0x8);
             long header = writer.BaseStream.Position;
             WritePCKSig(writer, "Pack");
             writer.AddOffset("HeaderSize");

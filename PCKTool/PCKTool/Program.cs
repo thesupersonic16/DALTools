@@ -17,6 +17,7 @@ namespace PCKTool
                 Console.WriteLine("Error: Not Enough Arguments!");
                 Console.WriteLine("  PCKTool {filePath/Directory}");
                 Console.ReadKey(true);
+                return;
             }
             var attr = File.GetAttributes(args[0]);
             if ((attr & FileAttributes.Directory) == FileAttributes.Directory)

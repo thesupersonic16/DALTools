@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCKTool", "PCKTool\PCKTool.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HedgeLib", "..\HedgeLib\HedgeLib\HedgeLib.csproj", "{EEB16FCA-FF9F-40B5-9D43-F2460AA930C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TEXTool", "TEXTool\TEXTool.csproj", "{53F094B0-9C5D-4973-896F-0BFBAF6ACDEB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{EEB16FCA-FF9F-40B5-9D43-F2460AA930C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EEB16FCA-FF9F-40B5-9D43-F2460AA930C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EEB16FCA-FF9F-40B5-9D43-F2460AA930C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53F094B0-9C5D-4973-896F-0BFBAF6ACDEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53F094B0-9C5D-4973-896F-0BFBAF6ACDEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53F094B0-9C5D-4973-896F-0BFBAF6ACDEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53F094B0-9C5D-4973-896F-0BFBAF6ACDEB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
