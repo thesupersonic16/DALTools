@@ -72,7 +72,8 @@ namespace PCKTool
             var writer = new ExtendedBinaryWriter(fileStream);
 
             WritePCKSig(writer, "Filename");
-            writer.AddOffset("PackAddress");
+            writer.AddOffset("HeaderSize");
+            UnfixDirectories(null);
             var files = GetFiles(Data);
             for (int i = 0; i < files.Count; ++i)
                 writer.AddOffset(files[i].Name);
@@ -82,7 +83,7 @@ namespace PCKTool
                 writer.WriteNullTerminatedString(files[i].Name);
             }
             // Pack
-            writer.FillInOffset("PackAddress");
+            writer.FillInOffset("HeaderSize");
             writer.FixPadding(0x8);
             long header = writer.BaseStream.Position;
             WritePCKSig(writer, "Pack");
@@ -133,6 +134,32 @@ namespace PCKTool
                 }
             }
         }
+
+        public void UnfixDirectories(ArchiveDirectory directory)
+        {
+            List<ArchiveData> files = Data;
+            if (directory != null)
+                files = directory.Data;
+            for (int i = 0; i < files.Count; ++i)
+            {
+                var data = files[i];
+                if (data is ArchiveDirectory dir)
+                    UnfixDirectories(dir);
+                if (data is ArchiveFile file)
+                {
+                    if (directory != null)
+                    {
+                        file.Name = directory.Name + "/" + file.Name;
+                        directory.Data.RemoveAt(i--);
+                        if (directory.Parent != null)
+                            directory.Parent.Data.Add(file);
+                        else
+                            Data.Add(file);
+                    }
+                }
+            }
+        }
+
 
 
 

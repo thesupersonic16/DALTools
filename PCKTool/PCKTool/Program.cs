@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HedgeLib.Archives;
 
 namespace PCKTool
 {
@@ -22,8 +23,8 @@ namespace PCKTool
             var attr = File.GetAttributes(args[0]);
             if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
             {
-                arc.AddDirectory(args[0]);
-                arc.Save(args[0] + ".pck");
+                arc.Data.AddRange(GetFilesFromDir(args[0], true));
+                arc.Save(args[0] + ".pck", true);
             }
             else
             {
@@ -32,6 +33,33 @@ namespace PCKTool
             }
         }
 
+
+        // Workaround for a bug in HedgeLib that does not set dir names
+        public static List<ArchiveData> GetFilesFromDir(string dir,
+            bool includeSubDirectories = false)
+        {
+            // Add each file in the current sub-directory
+            var data = new List<ArchiveData>();
+            foreach (string filePath in Directory.GetFiles(dir))
+            {
+                data.Add(new ArchiveFile(filePath));
+            }
+
+            // Repeat for each sub directory
+            if (includeSubDirectories)
+            {
+                foreach (string subDir in Directory.GetDirectories(dir))
+                {
+                    data.Add(new ArchiveDirectory()
+                    {
+                        Data = GetFilesFromDir(subDir, includeSubDirectories),
+                        Name = Path.GetFileName(subDir)
+                    });
+                }
+            }
+
+            return data;
+        }
 
     }
 }
