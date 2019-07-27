@@ -80,7 +80,7 @@ namespace TEXTool
                                     SaveFrame(tex, int.Parse(args[i + 1]), path);
                                 break;
                             case 'b':
-                                BuildTEX(tex, args[i + 1], args[i + 2]);
+                                BuildTEX(ref tex, args[i + 1], args[i + 2]);
                                 if (string.IsNullOrEmpty(path))
                                     path = Path.ChangeExtension(args[args.Length - 1], ".tex");
                                 if (CheckForOverWrite(path))
@@ -147,7 +147,7 @@ namespace TEXTool
                 Console.WriteLine("WARNING: No Image was found! Please Extract it using the -s or -p switch.");
         }
 
-        public static void BuildTEX(TEXFile tex, string sheetpath, string frameXML)
+        public static void BuildTEX(ref TEXFile tex, string sheetpath, string frameXML)
         {
             var serializer = new XmlSerializer(typeof(TEXFile));
             using (var stream = File.OpenRead(frameXML))
