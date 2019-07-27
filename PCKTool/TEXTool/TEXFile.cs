@@ -18,6 +18,15 @@ namespace TEXTool
     [Serializable]
     public class TEXFile : FileBase
     {
+
+        public enum Compression
+        {
+            None  = 0x00000000,
+            DXT1  = 0x00000001,
+            DXT5  = 0x00000002,
+            Store = 0x00004000
+        }
+
         [Serializable]
         public class Frame
         {
@@ -37,11 +46,11 @@ namespace TEXTool
         public override void Load(Stream fileStream)
         {
             var reader = new ExtendedBinaryReader(fileStream);
-            string sig = ReadPCKSig(reader);
-            if (sig != "Texture")
-                throw new InvalidSignatureException("Texture", sig);
+            bool hasHeader = ReadPCKSig(reader) == "Texture";
             int textureSectionSize = reader.ReadInt32();
-            int compression = reader.ReadInt32();
+            if (!hasHeader)
+                reader.JumpTo(0);
+            Compression compression = (Compression)reader.ReadInt32();
             int version = reader.ReadInt32();
             if (version != 0x8100000 && version != 0x1100000 && version != 0x2100000)
             {
@@ -53,29 +62,33 @@ namespace TEXTool
             SheetHeight = reader.ReadInt16();
             SheetData = reader.ReadBytes(dataLength);
 
-            // DXT Decompression
+            // Decompression
             ImageBinary image;
             switch (compression)
             {
-                case 1: // DXT1
+                case Compression.DXT1:
                     image = new ImageBinary(SheetWidth, SheetHeight, PixelDataFormat.FormatDXT1Rgba,
                         Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, SheetData);
                     SheetData = image.GetOutputPixelData(0);
                     break;
-                case 2: // DXT5
+                case Compression.DXT5:
                     image = new ImageBinary(SheetWidth, SheetHeight, PixelDataFormat.FormatDXT5,
                         Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, SheetData);
                     SheetData = image.GetOutputPixelData(0);
                     break;
+                case Compression.Store:
+                    break;
                 default:
+                    Console.WriteLine("Unknown Compression {0:X4}", compression);
+                    Console.ReadKey(true);
                     break;
             }
 
 
             // Parts
-            sig = ReadPCKSig(reader);
+            string sig = ReadPCKSig(reader);
             if (sig != "Parts")
-                throw new InvalidSignatureException("Parts", sig);
+                return;
             int partsSectionSize = reader.ReadInt32();
             int partCount = reader.ReadInt32();
             for (int i = 0; i < partCount; ++i)
@@ -192,15 +205,19 @@ namespace TEXTool
                 SheetData[i + 3] = buffer[3];
             }
 
-            Marshal.Copy(SheetPixels, 0, bitmap.Scan0, SheetWidth * SheetHeight * 4);
-            Image.UnlockBits(bitmap);
-            Image.Save(path);
         }
 
         public string ReadPCKSig(ExtendedBinaryReader reader)
         {
-            string s = Encoding.ASCII.GetString(reader.ReadBytes(0x14));
-            return s.Substring(0, s.IndexOf(" ", StringComparison.Ordinal));
+            try
+            {
+                string s = Encoding.ASCII.GetString(reader.ReadBytes(0x14));
+                return s.Substring(0, s.IndexOf(" ", StringComparison.Ordinal));
+            }
+            catch
+            {
+                return "";
+            }
         }
 
         public void WritePCKSig(ExtendedBinaryWriter writer, string sig)
