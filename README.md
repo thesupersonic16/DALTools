@@ -1,7 +1,7 @@
-# PCKTool
-A tool to unpack and repack .pck archives from the PC version of DATE A LIVE: Rio Reincarnation
+# DALTools
+A collection of tools to help assist unpack and repack files for the PC version of DATE A LIVE: Rio Reincarnation
 
-Thanks to Sajid for helping figure out some missing stuff.
+Thanks to Sajid with his huge help with for figuring out all the missing fields.
 
 ## PCKTool
 PCKTool only takes in one argument which is the .pck file path for extracting or a directory to pack all the files back into a .pck
