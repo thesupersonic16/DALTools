@@ -7,7 +7,7 @@ Thanks to Sajid for helping figure out some missing stuff.
 PCKTool only takes in one argument which is the .pck file path for extracting or a directory to pack all the files back into a .pck
 
 ## TEXTool
-TEXTool is a tool used to extract and rebuild Texture files. (Not all .tex files are are supported currently)
+TEXTool is a tool used to extract and rebuild Texture files.
 You can get a list of options and examples by running TEXTool.exe without any arguments
 ```
   TEXTool [Switches] [-o {path}] {tex file}

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using HedgeLib.Exceptions;
 using HedgeLib.IO;
+using HedgeLib.Misc;
 using Scarlet.Drawing;
 using Scarlet.IO;
 
@@ -19,12 +20,14 @@ namespace TEXTool
     public class TEXFile : FileBase
     {
 
-        public enum Compression
+        public enum Format
         {
-            None  = 0x00000000,
-            DXT1  = 0x00000001,
-            DXT5  = 0x00000002,
-            Store = 0x00004000
+            None       = 0x0000,
+            DXT1       = 0x0001,
+            DXT5       = 0x0002,
+            Luminance8 = 0x0080,
+            Large      = 0x2000,
+            Small      = 0x4000
         }
 
         [Serializable]
@@ -38,8 +41,8 @@ namespace TEXTool
             public float BottomScale { get; set; }
         }
 
-        public short SheetWidth = 0;
-        public short SheetHeight = 0;
+        public int SheetWidth;
+        public int SheetHeight;
         public List<Frame> Frames = new List<Frame>();
         [XmlIgnore] public byte[] SheetData = null;
 
@@ -50,36 +53,50 @@ namespace TEXTool
             int textureSectionSize = reader.ReadInt32();
             if (!hasHeader)
                 reader.JumpTo(0);
-            Compression compression = (Compression)reader.ReadInt32();
-            int version = reader.ReadInt32();
-            if (version != 0x8100000 && version != 0x1100000 && version != 0x2100000)
+            Format format = (Format)reader.ReadInt16();
+            int unknown = reader.ReadInt16();
+            int dataLength;
+            switch (format)
             {
-                Console.WriteLine("Error: File Not Supported Yet! Expected: {0:X4} or {1:X4} or {2:X4} Got {3:X4}", 0x8100000, 0x1100000, 0x2100000, version);
-                Console.ReadKey(true);
+                case Format.Large:
+                    dataLength = reader.ReadInt32();
+                    SheetWidth = reader.ReadInt32();
+                    SheetHeight = reader.ReadInt32();
+                    break;
+                default:
+                    int version = reader.ReadInt32();
+                    dataLength = reader.ReadInt32();
+                    SheetWidth = reader.ReadInt16();
+                    SheetHeight = reader.ReadInt16();
+                    break;
             }
-            int dataLength = reader.ReadInt32();
-            SheetWidth = reader.ReadInt16();
-            SheetHeight = reader.ReadInt16();
             SheetData = reader.ReadBytes(dataLength);
-
-            // Decompression
+            if (BitConverter.ToInt32(SheetData, 0) == 0x37375A4C)
+                SheetData = SheetData.Lz77Decompress();
+            // Format
             ImageBinary image;
-            switch (compression)
+            switch (format)
             {
-                case Compression.DXT1:
+                case Format.DXT1:
                     image = new ImageBinary(SheetWidth, SheetHeight, PixelDataFormat.FormatDXT1Rgba,
                         Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, SheetData);
                     SheetData = image.GetOutputPixelData(0);
                     break;
-                case Compression.DXT5:
+                case Format.Large:
+                case Format.DXT5:
                     image = new ImageBinary(SheetWidth, SheetHeight, PixelDataFormat.FormatDXT5,
                         Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, SheetData);
                     SheetData = image.GetOutputPixelData(0);
                     break;
-                case Compression.Store:
+                case Format.Luminance8:
+                    image = new ImageBinary(SheetWidth, SheetHeight, PixelDataFormat.FormatLuminance8,
+                        Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, SheetData);
+                    SheetData = image.GetOutputPixelData(0);
+                    break;
+                case Format.Small: // Native
                     break;
                 default:
-                    Console.WriteLine("Unknown Compression {0:X4}", compression);
+                    Console.WriteLine("Unknown Format {0:X4}", (uint)format);
                     Console.ReadKey(true);
                     break;
             }
@@ -204,7 +221,6 @@ namespace TEXTool
                 SheetData[i + 2] = buffer[0];
                 SheetData[i + 3] = buffer[3];
             }
-
         }
 
         public string ReadPCKSig(ExtendedBinaryReader reader)
