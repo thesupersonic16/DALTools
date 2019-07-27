@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using HedgeLib.Exceptions;
 using HedgeLib.IO;
 using Scarlet.Drawing;
@@ -14,23 +15,24 @@ using Scarlet.IO;
 
 namespace TEXTool
 {
+    [Serializable]
     public class TEXFile : FileBase
     {
-
+        [Serializable]
         public class Frame
         {
-            public float frameWidth;
-            public float frameHeight;
-            public float LeftScale;
-            public float TopScale;
-            public float RightScale;
-            public float BottomScale;
+            public float FrameWidth { get; set; }
+            public float FrameHeight { get; set; }
+            public float LeftScale { get; set; }
+            public float TopScale { get; set; }
+            public float RightScale { get; set; }
+            public float BottomScale { get; set; }
         }
 
-        public List<Frame> Frames = new List<Frame>();
         public short SheetWidth = 0;
         public short SheetHeight = 0;
-        public byte[] SheetPixels = null;
+        public List<Frame> Frames = new List<Frame>();
+        [XmlIgnore] public byte[] SheetData = null;
 
         public override void Load(Stream fileStream)
         {
@@ -49,7 +51,7 @@ namespace TEXTool
             int dataLength = reader.ReadInt32();
             SheetWidth = reader.ReadInt16();
             SheetHeight = reader.ReadInt16();
-            SheetPixels = reader.ReadBytes(dataLength);
+            SheetData = reader.ReadBytes(dataLength);
 
             // DXT Decompression
             ImageBinary image;
@@ -57,13 +59,13 @@ namespace TEXTool
             {
                 case 1: // DXT1
                     image = new ImageBinary(SheetWidth, SheetHeight, PixelDataFormat.FormatDXT1Rgba,
-                        Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, SheetPixels);
-                    SheetPixels = image.GetOutputPixelData(0);
+                        Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, SheetData);
+                    SheetData = image.GetOutputPixelData(0);
                     break;
                 case 2: // DXT5
                     image = new ImageBinary(SheetWidth, SheetHeight, PixelDataFormat.FormatDXT5,
-                        Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, SheetPixels);
-                    SheetPixels = image.GetOutputPixelData(0);
+                        Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, SheetData);
+                    SheetData = image.GetOutputPixelData(0);
                     break;
                 default:
                     break;
@@ -87,8 +89,8 @@ namespace TEXTool
                 float frameHeightScale = reader.ReadSingle();
                 Frames.Add(new Frame
                 {
-                    frameWidth = frameWidth,
-                    frameHeight = frameHeight,
+                    FrameWidth = frameWidth,
+                    FrameHeight = frameHeight,
                     LeftScale = frameXScale,
                     TopScale = frameYScale,
                     RightScale = frameWidthScale,
@@ -113,12 +115,12 @@ namespace TEXTool
             WritePCKSig(writer, "Texture");
             writer.AddOffset("HeaderSize");
             writer.Write(0x4000);
-            writer.Write(0x8100000); // Version? Most are 10 08 while some others are 10 02
-            writer.AddOffset("Unknown");
+            writer.Write(0x8100000);
+            writer.AddOffset("DataLength");
             writer.Write(SheetWidth);
             writer.Write(SheetHeight);
-            writer.Write(SheetPixels);
-            writer.FillInOffset("Unknown", (uint)writer.BaseStream.Position - 0x28);
+            writer.Write(SheetData);
+            writer.FillInOffset("DataLength", (uint)writer.BaseStream.Position - 0x28);
             
             // Parts
             writer.FillInOffset("HeaderSize");
@@ -130,8 +132,8 @@ namespace TEXTool
             foreach (var frame in Frames)
             {
                 writer.WriteNulls(8);
-                writer.Write(frame.frameWidth);
-                writer.Write(frame.frameHeight);
+                writer.Write(frame.FrameWidth);
+                writer.Write(frame.FrameHeight);
                 writer.Write(frame.LeftScale);
                 writer.Write(frame.TopScale);
                 writer.Write(frame.RightScale);
@@ -156,18 +158,38 @@ namespace TEXTool
 
             // Copy Data into Bitmap
             var bitmap = Image.LockBits(new Rectangle(0, 0, SheetWidth, SheetHeight), ImageLockMode.ReadWrite, Image.PixelFormat);
-            int bitmapDataSize = bitmap.Stride * bitmap.Height;
+            FlipColors();
+            Marshal.Copy(SheetData, 0, bitmap.Scan0, SheetWidth * SheetHeight * 4);
+            Image.UnlockBits(bitmap);
+            Image.Save(path);
+        }
+
+        public void LoadImage(string path)
+        {
+            var image = new Bitmap(path);
+            SheetWidth = (short) image.Width;
+            SheetHeight = (short) image.Height;
+            SheetData = new byte[SheetWidth * SheetHeight * 4];
+            var bitmap = image.LockBits(new Rectangle(0, 0, SheetWidth, SheetHeight), ImageLockMode.ReadWrite,
+                image.PixelFormat);
+            Marshal.Copy(bitmap.Scan0, SheetData, 0, SheetWidth * SheetHeight * 4);
+            image.UnlockBits(bitmap);
+            FlipColors();
+        }
+
+        public void FlipColors()
+        {
             byte[] buffer = new byte[4];
-            for (int i = 0; i < SheetPixels.Length; i += 4)
+            for (int i = 0; i < SheetData.Length; i += 4)
             {
-                buffer[0] = SheetPixels[i + 0];
-                buffer[1] = SheetPixels[i + 1];
-                buffer[2] = SheetPixels[i + 2];
-                buffer[3] = SheetPixels[i + 3];
-                SheetPixels[i + 0] = buffer[2];
-                SheetPixels[i + 1] = buffer[1];
-                SheetPixels[i + 2] = buffer[0];
-                SheetPixels[i + 3] = buffer[3];
+                buffer[0] = SheetData[i + 0];
+                buffer[1] = SheetData[i + 1];
+                buffer[2] = SheetData[i + 2];
+                buffer[3] = SheetData[i + 3];
+                SheetData[i + 0] = buffer[2];
+                SheetData[i + 1] = buffer[1];
+                SheetData[i + 2] = buffer[0];
+                SheetData[i + 3] = buffer[3];
             }
 
             Marshal.Copy(SheetPixels, 0, bitmap.Scan0, SheetWidth * SheetHeight * 4);
