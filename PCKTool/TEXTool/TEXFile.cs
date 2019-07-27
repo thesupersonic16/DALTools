@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using HedgeLib.Exceptions;
 using HedgeLib.IO;
+using Scarlet.Drawing;
+using Scarlet.IO;
 
 namespace TEXTool
 {
@@ -19,10 +21,10 @@ namespace TEXTool
         {
             public float frameWidth;
             public float frameHeight;
-            public float frameXScale;
-            public float frameYScale;
-            public float frameWidthScale;
-            public float frameHeightScale;
+            public float LeftScale;
+            public float TopScale;
+            public float RightScale;
+            public float BottomScale;
         }
 
         public List<Frame> Frames = new List<Frame>();
@@ -33,22 +35,40 @@ namespace TEXTool
         public override void Load(Stream fileStream)
         {
             var reader = new ExtendedBinaryReader(fileStream);
-
             string sig = ReadPCKSig(reader);
             if (sig != "Texture")
                 throw new InvalidSignatureException("Texture", sig);
             int textureSectionSize = reader.ReadInt32();
-            int unknown1 = reader.ReadInt32();
-            int unknown2 = reader.ReadInt32(); // Version?
-            if (unknown2 != 0x8100000)
+            int compression = reader.ReadInt32();
+            int version = reader.ReadInt32();
+            if (version != 0x8100000 && version != 0x1100000 && version != 0x2100000)
             {
-                Console.WriteLine("Error: File Not Supported Yet! Expected: {0:X4} Got {1:X4}", 0x8100000, unknown2);
+                Console.WriteLine("Error: File Not Supported Yet! Expected: {0:X4} or {1:X4} or {2:X4} Got {3:X4}", 0x8100000, 0x1100000, 0x2100000, version);
                 Console.ReadKey(true);
             }
-            int unknown3 = reader.ReadInt32();
+            int dataLength = reader.ReadInt32();
             SheetWidth = reader.ReadInt16();
             SheetHeight = reader.ReadInt16();
-            SheetPixels = reader.ReadBytes(SheetWidth * SheetHeight * 4);
+            SheetPixels = reader.ReadBytes(dataLength);
+
+            // DXT Decompression
+            ImageBinary image;
+            switch (compression)
+            {
+                case 1: // DXT1
+                    image = new ImageBinary(SheetWidth, SheetHeight, PixelDataFormat.FormatDXT1Rgba,
+                        Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, SheetPixels);
+                    SheetPixels = image.GetOutputPixelData(0);
+                    break;
+                case 2: // DXT5
+                    image = new ImageBinary(SheetWidth, SheetHeight, PixelDataFormat.FormatDXT5,
+                        Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, SheetPixels);
+                    SheetPixels = image.GetOutputPixelData(0);
+                    break;
+                default:
+                    break;
+            }
+
 
             // Parts
             sig = ReadPCKSig(reader);
@@ -69,10 +89,10 @@ namespace TEXTool
                 {
                     frameWidth = frameWidth,
                     frameHeight = frameHeight,
-                    frameXScale = frameXScale,
-                    frameYScale = frameYScale,
-                    frameWidthScale = frameWidthScale,
-                    frameHeightScale = frameHeightScale
+                    LeftScale = frameXScale,
+                    TopScale = frameYScale,
+                    RightScale = frameWidthScale,
+                    BottomScale = frameHeightScale
                 });
             }
 
@@ -112,10 +132,10 @@ namespace TEXTool
                 writer.WriteNulls(8);
                 writer.Write(frame.frameWidth);
                 writer.Write(frame.frameHeight);
-                writer.Write(frame.frameXScale);
-                writer.Write(frame.frameYScale);
-                writer.Write(frame.frameWidthScale);
-                writer.Write(frame.frameHeightScale);
+                writer.Write(frame.LeftScale);
+                writer.Write(frame.TopScale);
+                writer.Write(frame.RightScale);
+                writer.Write(frame.BottomScale);
             }
             writer.FillInOffset("HeaderSize", (uint)(writer.BaseStream.Position - header));
             writer.FixPadding(0x8);
@@ -150,7 +170,7 @@ namespace TEXTool
                 SheetPixels[i + 3] = buffer[3];
             }
 
-            Marshal.Copy(SheetPixels, 0, bitmap.Scan0, SheetPixels.Length);
+            Marshal.Copy(SheetPixels, 0, bitmap.Scan0, SheetWidth * SheetHeight * 4);
             Image.UnlockBits(bitmap);
             Image.Save(path);
         }

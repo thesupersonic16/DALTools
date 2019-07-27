@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HedgeLib", "..\HedgeLib\Hed
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TEXTool", "TEXTool\TEXTool.csproj", "{53F094B0-9C5D-4973-896F-0BFBAF6ACDEB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scarlet", "..\Scarlet\Scarlet\Scarlet.csproj", "{B1CC2B0E-4226-4AC5-9940-900A8847201A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Depends", "Depends", "{2757DF71-AEA4-45EB-8C3F-0B5CCED238A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,9 +31,17 @@ Global
 		{53F094B0-9C5D-4973-896F-0BFBAF6ACDEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53F094B0-9C5D-4973-896F-0BFBAF6ACDEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53F094B0-9C5D-4973-896F-0BFBAF6ACDEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1CC2B0E-4226-4AC5-9940-900A8847201A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1CC2B0E-4226-4AC5-9940-900A8847201A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1CC2B0E-4226-4AC5-9940-900A8847201A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1CC2B0E-4226-4AC5-9940-900A8847201A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EEB16FCA-FF9F-40B5-9D43-F2460AA930C8} = {2757DF71-AEA4-45EB-8C3F-0B5CCED238A9}
+		{B1CC2B0E-4226-4AC5-9940-900A8847201A} = {2757DF71-AEA4-45EB-8C3F-0B5CCED238A9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F8E17A24-AA71-4443-AA0A-484F3504BE71}

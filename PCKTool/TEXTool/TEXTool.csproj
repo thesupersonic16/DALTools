@@ -71,6 +71,10 @@
       <Project>{eeb16fca-ff9f-40b5-9d43-f2460aa930c8}</Project>
       <Name>HedgeLib</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Scarlet\Scarlet\Scarlet.csproj">
+      <Project>{B1CC2B0E-4226-4AC5-9940-900A8847201A}</Project>
+      <Name>Scarlet</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6">
