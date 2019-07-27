@@ -149,9 +149,9 @@ namespace TEXTool
 
         public static void BuildTEX(TEXFile tex, string sheetpath, string frameXML)
         {
-            var serializer = new XmlSerializer(typeof(List<TEXFile.Frame>));
+            var serializer = new XmlSerializer(typeof(TEXFile));
             using (var stream = File.OpenRead(frameXML))
-                tex.Frames = serializer.Deserialize(stream) as List<TEXFile.Frame>;
+                tex = serializer.Deserialize(stream) as TEXFile;
             tex.LoadImage(sheetpath);
         }
 
