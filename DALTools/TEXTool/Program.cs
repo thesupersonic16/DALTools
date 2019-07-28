@@ -111,7 +111,7 @@ namespace TEXTool
                 {
                     tex.Load(args[0]);
                     tex.SaveImage(Path.ChangeExtension(args[0], ".png"));
-                    SaveAllFrameInformation(tex, Path.ChangeExtension(args[0], ".png"));
+                    SaveAllFrameInformation(tex, Path.ChangeExtension(args[0], ".xml"));
                 }
             }
         }
