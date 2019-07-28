@@ -144,11 +144,13 @@ namespace TEXTool
             
             WritePCKSig(writer, "Texture");
             writer.AddOffset("HeaderSize");
-            writer.Write(0x4000);
+            writer.Write((short)0x4000);
+            writer.Write((short)0);
             writer.Write(0x8100000);
             writer.AddOffset("DataLength");
-            writer.Write(SheetWidth);
-            writer.Write(SheetHeight);
+            writer.Write((short)SheetWidth);
+            writer.Write((short)SheetHeight);
+
             writer.Write(SheetData);
             writer.FillInOffset("DataLength", (uint)writer.BaseStream.Position - 0x28);
             
