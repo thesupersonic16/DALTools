@@ -28,7 +28,7 @@ namespace TEXTool
                 Console.WriteLine("    -i                             Exports frame information");
                 Console.WriteLine("    -f {id}                        Exports a single frame");
                 Console.WriteLine("    -b {sheet.png} {frame.xml}     Build TEX using sheet and FrameXML");
-                Console.WriteLine("    -m {path}                      Build TEX using sheet and FrameXML (Search by name)");
+                Console.WriteLine("    -m {path}                      Build TEX using sheet and FrameXML (Search by name) (Recommended over -b)");
                 Console.WriteLine("  Examples: ");
                 Console.WriteLine("    TEXTool -p title.tex           Extracts all frames");
                 Console.WriteLine("    TEXTool -s title.tex           Extracts sheet from TEX");
@@ -99,8 +99,20 @@ namespace TEXTool
             }
             else
             {
-                tex.Load(args[0]);
-                tex.SaveImage(Path.ChangeExtension(args[0], ".png"));
+                if (Path.GetExtension(args[0]) == ".png" || Path.GetExtension(args[0]) == ".xml" || Directory.Exists(args[0]))
+                {
+                    Console.WriteLine("Building Files detected, Building...");
+                    BuildTEX(ref tex, args[0]);
+                    string path = Path.ChangeExtension(args[0], ".tex");
+                    if (CheckForOverWrite(path))
+                        tex.Save(path, true);
+                }
+                else
+                {
+                    tex.Load(args[0]);
+                    tex.SaveImage(Path.ChangeExtension(args[0], ".png"));
+                    SaveAllFrameInformation(tex, Path.ChangeExtension(args[0], ".png"));
+                }
             }
         }
 

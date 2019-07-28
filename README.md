@@ -8,6 +8,8 @@ PCKTool only takes in one argument which is the .pck file path for extracting or
 
 ## TEXTool
 TEXTool is a tool used to extract and rebuild Texture files.
+TEXTool does support extracting and rebuilding of .tex files using drag and drop and through CLI.
+using Drag and Drop, you can extract a .tex by dragging the .tex into the exe and rebuild it by dragging its .xml, .png or frames folder into the exe.
 You can get a list of options and examples by running TEXTool.exe without any arguments
 ```
   TEXTool [Switches] [-o {path}] {tex file}
@@ -17,7 +19,7 @@ You can get a list of options and examples by running TEXTool.exe without any ar
     -i                             Exports frame information
     -f {id}                        Exports a single frame
     -b {sheet.png} {frame.xml}     Build TEX using sheet and FrameXML
-    -m {path}                      Build TEX using sheet and FrameXML (Search by name)
+    -m {path}                      Build TEX using sheet and FrameXML (Search by name) (Recommended over -b)
   Examples:
     TEXTool -p title.tex           Extracts all frames
     TEXTool -s title.tex           Extracts sheet from TEX
