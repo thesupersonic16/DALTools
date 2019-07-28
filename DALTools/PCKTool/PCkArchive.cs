@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using HedgeLib.Archives;
 using HedgeLib.Exceptions;
 using HedgeLib.IO;
+using zlib;
 
 namespace PCKTool
 {
@@ -15,13 +16,49 @@ namespace PCKTool
 
         public List<FileEntry> FileEntries = new List<FileEntry>();
 
+        public static byte[] DecompressData(Stream inputStream, bool closeStream = true)
+        {
+            byte[] buffer = null;
+            using (MemoryStream outMemoryStream = new MemoryStream())
+            using (ZOutputStream outZStream = new ZOutputStream(outMemoryStream))
+            {
+                CopyStream(inputStream, outZStream);
+                outZStream.finish();
+                buffer = outMemoryStream.ToArray();
+                if (closeStream)
+                    inputStream.Close();
+            }
+            return buffer;
+        }
+
+        public static void CopyStream(Stream input, Stream output)
+        {
+            byte[] buffer = new byte[2000];
+            int len;
+            while ((len = input.Read(buffer, 0, 2000)) > 0)
+            {
+                output.Write(buffer, 0, len);
+            }
+            output.Flush();
+        }
+
         public override void Load(Stream fileStream)
         {
             var reader = new ExtendedBinaryReader(fileStream);
-
+            // Decompress Zlib stream
+            if (reader.PeekChar() == 'Z')
+            {
+                reader.JumpAhead(12);
+                reader = new ExtendedBinaryReader(new MemoryStream(DecompressData(reader.BaseStream)));
+            }
             string sig = ReadPCKSig(reader);
-            if (sig != "Filename")
+            bool oldPCK = false;
+            if (sig == "FilenameH")
+                oldPCK = true;
+            else if (sig != "Filename")
                 throw new InvalidSignatureException("Filename", sig);
+            if (oldPCK)
+                reader.JumpTo(0x08);
             int packAddress = reader.ReadInt32();
             int fileNameAddress = (int)reader.BaseStream.Position;
 
@@ -29,7 +66,7 @@ namespace PCKTool
 
             // Pack
             reader.FixPadding(0x8);
-            sig = ReadPCKSig(reader);
+            sig = ReadPCKSig(reader, oldPCK ? 0x08 : 0x14);
             if (sig != "Pack")
                 throw new InvalidSignatureException("Pack", sig);
 
@@ -47,7 +84,7 @@ namespace PCKTool
 
             for (int i = 0; i < fileCount; ++i)
             {
-                int position = reader.ReadInt32() + 0x18;
+                int position = reader.ReadInt32() + (oldPCK ? 0xC : 0x18);
                 long oldPosition = reader.BaseStream.Position;
                 reader.JumpTo(position);
                 FileEntries[i].FileName = reader.ReadNullTerminatedString();
@@ -107,10 +144,15 @@ namespace PCKTool
             }
         }
 
-        public string ReadPCKSig(ExtendedBinaryReader reader)
+        public string ReadPCKSig(ExtendedBinaryReader reader, int size = 0x14)
         {
-            string s = Encoding.ASCII.GetString(reader.ReadBytes(0x14));
-            return s.Substring(0, s.IndexOf(" ", StringComparison.Ordinal));
+            string s = Encoding.ASCII.GetString(reader.ReadBytes(size));
+            int trim = 0;
+            if (s.Contains(' '))
+                trim = s.IndexOf(" ", StringComparison.Ordinal);
+            if (s.Contains('\0'))
+                trim = s.IndexOf("\0", StringComparison.Ordinal);
+            return s.Substring(0, trim);
         }
 
         public void WritePCKSig(ExtendedBinaryWriter writer, string sig)
