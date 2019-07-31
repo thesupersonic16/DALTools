@@ -29,3 +29,9 @@ You can get a list of options and examples by running TEXTool.exe without any ar
     TEXTool -f 0 title             Extracts the first frame
     TEXTool -p -o frames title.tex Extracts all frames into a folder called frames
 ```
+
+## STSCTool
+STSCTool is a tool used to dissemble and reassemble scripts (.bin).
+To dissemble/reassemble supported scripts, just drag and drop the script(s) you want (.txt or .bin)
+
+STSCTool is currently really far from being complete but is usable at this point, and outputs all the instructions in as much detail as needed to be easily reassembled.
