@@ -15,17 +15,17 @@ namespace STSCTool
         {
             new Instruction("NOP", null),
             new Instruction("Exit", null),
-            null, // Continue
-            null, // Endv
+            new Instruction("continue", null),
+            new Instruction("Endv", null),
             null, // InfinitWait
             new Instruction("Wait", new []{ AT_Int32 }),
             new Instruction("Goto", new []{ AT_Pointer }),
-            null, // Return
+            new Instruction("return", null),
             null, // ReturnPush
             null, // ReturnPop
             null, // Call_iv
-            null, // SubStart
-            new Instruction("SubEnd", new []{ AT_Int16 }),
+            new Instruction("SubStart", new []{ AT_Byte, AT_Pointer }),
+            new Instruction("SubEnd", new []{ AT_Byte }),
             new Instruction("RandJump", new []{ AT_PointerArray }),
             new Instruction("Printf", new []{ AT_String }),
             new Instruction("FileJump", new []{ AT_String }),
@@ -41,7 +41,7 @@ namespace STSCTool
             null, // PrmAddWk
             null, // PrmBranch
             new Instruction("Call", new []{ AT_Pointer }),
-            new Instruction("CallReturn", null), // TODO add some kind of stack
+            new Instruction("CallReturn", null),
             null, // SubEndWait
             new InstructionIf(),
             new InstructionSwitch("switch", null),
@@ -52,64 +52,64 @@ namespace STSCTool
             null, // EventStartMes
             new Instruction("Dummy23", null),
             new Instruction("Dummy24", null),
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
+            new Instruction("Dummy25", null),
+            new Instruction("Dummy26", null),
+            new Instruction("Dummy27", null),
+            new Instruction("Dummy28", null),
+            new Instruction("Dummy29", null),
+            new Instruction("Dummy2A", null),
+            new Instruction("Dummy2B", null),
+            new Instruction("Dummy2C", null),
+            new Instruction("Dummy2D", null),
+            new Instruction("Dummy2E", null),
             null, // SetEventNumber
 
-            new Instruction("PlayMovie", new []{ AT_String, AT_Int16, AT_Byte}),
-            new Instruction("BgmWait", new []{ AT_Byte, AT_Int16}),
-            new Instruction("BgmVolume", new []{ AT_Int32, AT_Int16}),
-            new Instruction("SePlay", new []{ AT_Byte, AT_Byte, AT_Byte}),
-            new Instruction("SeStop", new []{ AT_Byte, AT_Byte}),
+            new Instruction("PlayMovie", new []{ AT_String, AT_Int16, AT_Byte }),
+            new Instruction("BgmWait", new []{ AT_Byte, AT_Int16 }),
+            new Instruction("BgmVolume", new []{ AT_Int32, AT_Int16 }),
+            new Instruction("SePlay", new []{ AT_Byte, AT_Byte, AT_Byte }),
+            new Instruction("SeStop", new []{ AT_Byte, AT_Byte }),
             null, // SeWait 
-            new Instruction("SeVolume", new []{ AT_Int16, AT_Int32, AT_Int16}),
+            new Instruction("SeVolume", new []{ AT_Int16, AT_Int32, AT_Int16 }),
             new Instruction("SeAllStop", null),
-            new Instruction("BgmDummy", new []{ AT_Int32, AT_Int16}), // Data is discarded
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
+            new Instruction("BgmDummy", new []{ AT_Int32, AT_Int16 }), // Data is discarded
+            new Instruction("Dummy29", null),
+            new Instruction("Dummy2A", null),
+            new Instruction("Dummy2B", null),
+            new Instruction("Dummy2C", null),
+            new Instruction("Dummy2D", null),
+            new Instruction("Dummy2E", null),
             new Instruction("Dummy3F", null),
 
-            null, // NowLoading
-            new Instruction("Fade", new []{ AT_Byte, AT_Int16, AT_Int16}),
-            new Instruction("PatternFade", new []{ AT_Int16, AT_Int16, AT_Int16}),
+            new Instruction("SetNowLoading", new []{ AT_Bool }),
+            new Instruction("Fade", new []{ AT_Byte, AT_Int16, AT_Int16 }),
+            new Instruction("PatternFade", new []{ AT_Int16, AT_Int16, AT_Int16 }),
             new Instruction("Quake", new []{ AT_Byte, AT_Int16}),
             new Instruction("CrossFade", new []{ AT_Int16}),
             new Instruction("PatternCrossFade", new []{ AT_Int16, AT_Int16 }),
-            null, // DispTone
+            new Instruction("DispTone", new []{ AT_Byte }),
             new Instruction("Dummy47", null),
             new Instruction("Dummy48", null),
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Dummy
+            new Instruction("Dummy49", null),
+            new Instruction("Dummy4A", null),
+            new Instruction("Dummy4B", null),
+            new Instruction("Dummy4C", null),
+            new Instruction("Dummy4D", null),
+            new Instruction("Dummy4E", null),
             new Instruction("Wait2", new []{ AT_Int32 }),
 
-            new Instruction("Mes", new []{ AT_Byte, AT_Byte, AT_Byte, AT_Byte, AT_String, AT_Int16}),
+            new Instruction("Mes", new []{ AT_Byte, AT_Byte, AT_Byte, AT_Byte, AT_String, AT_Int16 }),
             new Instruction("MesWait", null),
-            new Instruction("MesTitle", new []{ AT_Byte}),
+            new Instruction("MesTitle", new []{ AT_Byte }),
             new Instruction("SetChoice", new []{ AT_Pointer, AT_String, AT_Int16 }),
-            new Instruction("ShowChoices", new []{ AT_Bool}),
-            new Instruction("SetFontSize", new []{ AT_Byte}),
-            null, // MapPlace
-            null, // MapChara
-            null, // MapBg
-            null, // MapCoord
-            null, // MapStart
-            null, // MapInit
+            new Instruction("ShowChoices", new []{ AT_Bool }),
+            new Instruction("SetFontSize", new []{ AT_Byte }),
+            new Instruction("MapPlace", new []{ AT_Int16, AT_Int32, AT_Int32 }),
+            new Instruction("MapChara", new []{ AT_Int16, AT_Int16, AT_Byte }),
+            new Instruction("MapBg", new []{ AT_Byte }), // mapBg{}.tex
+            new Instruction("MapCoord", new []{ AT_Int16, AT_Byte, AT_Bool, AT_Int16, AT_Int16 }),
+            new Instruction("MapStart", new []{ AT_Bool }),
+            new Instruction("MapInit", null),
             new Instruction("MesWinClose", null),
             new Instruction("BgOpen", new []{ AT_Int32, AT_Int32}), // MesWinOpen?
             new Instruction("BgClose", new []{ AT_Byte}),
@@ -117,23 +117,23 @@ namespace STSCTool
 
             new Instruction("BgMove", new []{ AT_Byte, AT_Int32, AT_Int16}),
             new Instruction("BgScale", new []{ AT_Float, AT_Int16, AT_Byte, AT_Bool}),
-            new Instruction("BustOpen", new []{ AT_Byte, AT_Int32, AT_Int32}), // TODO
-            new Instruction("BustClose", new []{ AT_Byte, AT_Int16}), // TODO
-            new Instruction("BustMove", new []{ AT_Byte, AT_Int16, AT_Int16, AT_Int16, AT_Byte}), // TODO
-            new Instruction("BustMoveAdd", new []{ AT_Byte, AT_Int16, AT_Int16, AT_Int16, AT_Byte}), // TODO
-            new Instruction("BustScale", new []{ AT_Byte, AT_Float, AT_Int16, AT_Byte, AT_Byte}), // TODO
-            new Instruction("BustPriority", new []{ AT_Byte, AT_Byte}), // TODO
+            new Instruction("BustOpen", new []{ AT_Byte, AT_Int32, AT_Int32}),
+            new Instruction("BustClose", new []{ AT_Byte, AT_Int16}),
+            new Instruction("BustMove", new []{ AT_Byte, AT_Int16, AT_Int16, AT_Int16, AT_Byte}),
+            new Instruction("BustMoveAdd", new []{ AT_Byte, AT_Int16, AT_Int16, AT_Int16, AT_Byte}),
+            new Instruction("BustScale", new []{ AT_Byte, AT_Float, AT_Int16, AT_Byte, AT_Byte}),
+            new Instruction("BustPriority", new []{ AT_Byte, AT_Byte}),
             new Instruction("PlayVoice", new []{ AT_Byte, AT_Int32, AT_String }), 
             new Instruction("VoiceCharaDraw", new []{ AT_Int16 }),
-            new Instruction("DateSet", new []{ AT_Byte, AT_Byte, AT_Byte }), // TODO
+            new Instruction("DateSet", new []{ AT_Byte, AT_Byte, AT_Byte }),
             new Instruction("TellOpen", new []{ AT_Byte, AT_Int32, AT_Int16 }),
             new Instruction("TellClose", new []{ AT_Byte, AT_Int16 }),
-            new Instruction("Trophy", new []{ AT_Byte }), // TODO
+            new Instruction("Trophy", new []{ AT_Byte }),
             new Instruction("SetVibration", new []{ AT_Byte, AT_Float }), // NOTE: It's "Vibraiton" in-game, did they misspell vibration?
-            null, // BustQuake
-
+            new Instruction("BustQuake", new []{ AT_Byte, AT_Byte, AT_Int16}),
+            
             new Instruction("BustFade", new []{ AT_Byte, AT_Float, AT_Float, AT_Int16}),
-            null, // BustCrossMove
+            new Instruction("BustCrossMove", null), // TODO
             new Instruction("BustTone", new []{ AT_Byte, AT_Byte}), // TODO
             new Instruction("BustAnime", new []{ AT_Byte, AT_Byte}), // TODO
             null, // CameraMoveXY
@@ -143,25 +143,25 @@ namespace STSCTool
             new Instruction("GetBgNo", new []{ AT_Int32}), // TODO
             null, // GetFadeState
             new Instruction("SetAmbiguous", new []{ AT_Float, AT_Byte, AT_Bool }),
-            null, // AmbiguousPowerFade
-            null, // Blur+ On/Off
-            null, // BlurPowerFade
+            new Instruction("AmbiguousPowerFade", new []{ AT_Float, AT_Float, AT_Int16 }),
+            new Instruction("SetBlur", new []{ AT_Int32, AT_Bool }),
+            new Instruction("BlurPowerFade", new []{ AT_Float, AT_Float, AT_Int16}),
             new Instruction("EnableMonologue", new [] { AT_Bool }), // TODO
-            null, // Mirage+ On/Off
-
+            new Instruction("SetMirage", new [] { AT_Float, AT_Bool }), // TODO
+            
             new Instruction("MiragePowerFade", new [] { AT_Int32, AT_Float, AT_Int16 }), // TODO
             new Instruction("MessageVoiceWait", new [] { AT_Byte }), // TODO
             new Instruction("RasterScroll", new [] { AT_Int32, AT_Int32, AT_Int16 }), // TODO
             null, // RasterScrollPowerFade
             new Instruction("MesDel", null),
-            new Instruction("MemoryOn", new [] { AT_Int16 }), // TODO
+            new Instruction("MemoryOn", new [] { AT_Int16 }),
             new Instruction("SaveDateSet", new []{ AT_Byte, AT_String }),
             new Instruction("ExiPlay", new []{ AT_Int16, AT_Byte, AT_Byte, AT_Byte, AT_Byte, AT_Byte, AT_Int32, AT_Byte }), // TODO
             new Instruction("ExiStop", new []{ AT_Int16, AT_Byte }), // TODO
             new Instruction("GalleryFlg", new []{ AT_Int16, AT_Int16 }),
-            null, // DateChange
-            null, // BustSpeed
-            null, // DateRestNumber
+            new Instruction("DateChange", new []{ AT_Int32, AT_Int16 }),
+            new Instruction("BustSpeed", new []{ AT_Byte, AT_Int32 }),
+            new Instruction("DateRestNumber", new []{ AT_Byte }),
             null, // MapTutorial
             new Instruction("Ending", new []{ AT_Byte }),
             null, // Set/Del +FixAuto

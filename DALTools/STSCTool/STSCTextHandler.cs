@@ -76,6 +76,10 @@ namespace STSCTool
                     {
                         int jumpAddress = instruction.GetArgument<int>(index);
                         string labelName = $"LABEL_{jumpAddress:X4}";
+                        // Change Label name if its been used as a function
+                        if (instruction.Name == STSCInstructions.Instructions[0x1A].Name)
+                            labelName = $"SUB_{jumpAddress:X4}";
+
                         if (!labels.ContainsKey(labelName))
                         {
                             labels.Add(labelName, jumpAddress);
@@ -86,6 +90,9 @@ namespace STSCTool
                     }
                     return ConvertArgumentToString(instruction, index);
                 }).ToArray();
+                // Macros
+                if (instruction.Name == STSCInstructions.Instructions[0x52].Name)
+                    argString[0] = STSCMacros.CharacterNames[int.Parse(argString[0])] ?? argString[0];
                 lines.Add(strings.Count);
                 strings.Add($"{new string(' ', currentIndent * 4)}{instruction.Name}({string.Join(", ", argString)})");
             }
@@ -106,6 +113,13 @@ namespace STSCTool
                 var instruction = file.Instructions[i];
                 ConvertSingleInstructionToText(file, i, labels, scopeEnds, lines, strings, ref address, ref currentIndent);
                 address += instruction.GetInstructionSize();
+            }
+            // Return Scope back to the start
+            while (currentIndent != 0)
+            {
+                --currentIndent;
+                strings.Add($"{new string(' ', currentIndent * 4)}}}");
+                scopeEnds.RemoveAt(scopeEnds.Count - 1);
             }
             return strings.ToArray();
         }
@@ -219,25 +233,6 @@ namespace STSCTool
                         if (t.ArgTypes[i] == STSCInstructions.ArgumentType.AT_Pointer && t.Arguments[i].GetType() == typeof(string))
                             t.Arguments[i] = labels[t.Arguments[i] as string];
             });
-        }
-
-        public static string[] PreprocessLabels(string[] text)
-        {
-            var labels = new List<string>();
-            for (int i = 0; i < text.Length; ++i)
-            {
-                if (string.IsNullOrEmpty(text[i]))
-                    continue;
-                if (text[i][0] != '#')
-                    continue;
-                string line = text[i].Substring(1);
-                if (line.StartsWith("label"))
-                {
-                    labels.Add(line.Substring(6));
-                }
-            }
-
-            return labels.ToArray();
         }
 
         public static string ConvertArgumentToString(STSCInstructions.Instruction instruction, int index)
@@ -379,7 +374,10 @@ namespace STSCTool
 
         public static string ProcessLiterals(string s)
         {
-            if (s.StartsWith("0x") && int.TryParse(s.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int number))
+            int number = 0;
+            if ((number = Array.IndexOf(STSCMacros.CharacterNames, s)) != -1)
+                return number.ToString();
+            if (s.StartsWith("0x") && int.TryParse(s.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out number))
                 return number.ToString();
             if (s.EndsWith("f") && float.TryParse(s.Substring(0, s.Length - 1), out float floatResult))
                 return floatResult.ToString(CultureInfo.InvariantCulture);

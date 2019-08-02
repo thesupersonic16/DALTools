@@ -20,6 +20,7 @@ namespace STSCTool
                 Console.ReadKey(true);
                 return;
             }
+            STSCMacros.Fill();
             STSCFile file = new STSCFile();
             for (int i = 0; i < args.Length; ++i)
             {
