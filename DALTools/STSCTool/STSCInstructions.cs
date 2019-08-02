@@ -32,7 +32,7 @@ namespace STSCTool
 
             null, // FlgOnJump
             null, // FlgOffJump
-            new Instruction("FlagSet", new []{ AT_Int16, AT_Byte }),
+            new Instruction("FlagSet", new []{ AT_Int16, AT_Int16, AT_Byte }),
             null, // PrmTrueJump
             null, // PrmFalseJump
             new Instruction("PrmSet", new []{ AT_Int32, AT_Int32 }), 
@@ -40,18 +40,18 @@ namespace STSCTool
             new Instruction("PrmAdd", new []{ AT_Int32, AT_Int32 }), 
             null, // PrmAddWk
             null, // PrmBranch
-            null, // Call
-            null, // CallReturn
+            new Instruction("Call", new []{ AT_Pointer }),
+            new Instruction("CallReturn", null), // TODO add some kind of stack
             null, // SubEndWait
             new InstructionIf(),
-            new Instruction("switch", new []{ AT_Byte }), // switch TODO
+            new InstructionSwitch("switch", null),
             null, // PrmRand
 
-            null, // DataBaseParam
+            new Instruction("DataBaseParam", new []{ AT_Byte, AT_Int32, AT_Int32 }),
             null, // NewGameOpen
             null, // EventStartMes
-            null, // Dummy
-            null, // Dummy
+            new Instruction("Dummy23", null),
+            new Instruction("Dummy24", null),
             null, // Dummy
             null, // Dummy
             null, // Dummy
@@ -66,11 +66,11 @@ namespace STSCTool
 
             new Instruction("PlayMovie", new []{ AT_String, AT_Int16, AT_Byte}),
             new Instruction("BgmWait", new []{ AT_Byte, AT_Int16}),
-            null, // BgmVolume
+            new Instruction("BgmVolume", new []{ AT_Int32, AT_Int16}),
             new Instruction("SePlay", new []{ AT_Byte, AT_Byte, AT_Byte}),
             new Instruction("SeStop", new []{ AT_Byte, AT_Byte}),
             null, // SeWait 
-            null, // SeVolume
+            new Instruction("SeVolume", new []{ AT_Int16, AT_Int32, AT_Int16}),
             new Instruction("SeAllStop", null),
             new Instruction("BgmDummy", new []{ AT_Int32, AT_Int16}), // Data is discarded
             null, // Dummy
@@ -79,7 +79,7 @@ namespace STSCTool
             null, // Dummy
             null, // Dummy
             null, // Dummy
-            null, // Dummy
+            new Instruction("Dummy3F", null),
 
             null, // NowLoading
             new Instruction("Fade", new []{ AT_Byte, AT_Int16, AT_Int16}),
@@ -88,15 +88,15 @@ namespace STSCTool
             new Instruction("CrossFade", new []{ AT_Int16}),
             new Instruction("PatternCrossFade", new []{ AT_Int16, AT_Int16 }),
             null, // DispTone
+            new Instruction("Dummy47", null),
+            new Instruction("Dummy48", null),
             null, // Dummy
             null, // Dummy
             null, // Dummy
             null, // Dummy
             null, // Dummy
             null, // Dummy
-            null, // Dummy
-            null, // Dummy
-            null, // Wait2
+            new Instruction("Wait2", new []{ AT_Int32 }),
 
             new Instruction("Mes", new []{ AT_Byte, AT_Byte, AT_Byte, AT_Byte, AT_String, AT_Int16}),
             new Instruction("MesWait", null),
@@ -116,40 +116,40 @@ namespace STSCTool
             new Instruction("MaAnime", new []{ AT_Byte}),
 
             new Instruction("BgMove", new []{ AT_Byte, AT_Int32, AT_Int16}),
-            null, // BgScale
+            new Instruction("BgScale", new []{ AT_Float, AT_Int16, AT_Byte, AT_Bool}),
             new Instruction("BustOpen", new []{ AT_Byte, AT_Int32, AT_Int32}), // TODO
             new Instruction("BustClose", new []{ AT_Byte, AT_Int16}), // TODO
-            null, // BustMove
-            null, // BustMoveAdd
-            null, // BustScale
+            new Instruction("BustMove", new []{ AT_Byte, AT_Int16, AT_Int16, AT_Int16, AT_Byte}), // TODO
+            new Instruction("BustMoveAdd", new []{ AT_Byte, AT_Int16, AT_Int16, AT_Int16, AT_Byte}), // TODO
+            new Instruction("BustScale", new []{ AT_Byte, AT_Float, AT_Int16, AT_Byte, AT_Byte}), // TODO
             new Instruction("BustPriority", new []{ AT_Byte, AT_Byte}), // TODO
             new Instruction("PlayVoice", new []{ AT_Byte, AT_Int32, AT_String }), 
             new Instruction("VoiceCharaDraw", new []{ AT_Int16 }),
             new Instruction("DateSet", new []{ AT_Byte, AT_Byte, AT_Byte }), // TODO
-            null, // TellOpen
-            null, // TellClose
+            new Instruction("TellOpen", new []{ AT_Byte, AT_Int32, AT_Int16 }),
+            new Instruction("TellClose", new []{ AT_Byte, AT_Int16 }),
             new Instruction("Trophy", new []{ AT_Byte }), // TODO
             new Instruction("SetVibration", new []{ AT_Byte, AT_Float }), // NOTE: It's "Vibraiton" in-game, did they misspell vibration?
             null, // BustQuake
 
-            null, // BustFade
+            new Instruction("BustFade", new []{ AT_Byte, AT_Float, AT_Float, AT_Int16}),
             null, // BustCrossMove
-            null, // BustTone
+            new Instruction("BustTone", new []{ AT_Byte, AT_Byte}), // TODO
             new Instruction("BustAnime", new []{ AT_Byte, AT_Byte}), // TODO
             null, // CameraMoveXY
             null, // CameraMoveZ
             null, // CameraMoveXYZ
-            null, // ScaleMode
+            new Instruction("ScaleMode", new []{ AT_Byte}), // TODO
             new Instruction("GetBgNo", new []{ AT_Int32}), // TODO
             null, // GetFadeState
             new Instruction("SetAmbiguous", new []{ AT_Float, AT_Byte, AT_Bool }),
             null, // AmbiguousPowerFade
             null, // Blur+ On/Off
             null, // BlurPowerFade
-            null, // Monologue+ On/Off
+            new Instruction("EnableMonologue", new [] { AT_Bool }), // TODO
             null, // Mirage+ On/Off
 
-            null, // MiragePowerFade
+            new Instruction("MiragePowerFade", new [] { AT_Int32, AT_Float, AT_Int16 }), // TODO
             new Instruction("MessageVoiceWait", new [] { AT_Byte }), // TODO
             new Instruction("RasterScroll", new [] { AT_Int32, AT_Int32, AT_Int16 }), // TODO
             null, // RasterScrollPowerFade
@@ -158,21 +158,21 @@ namespace STSCTool
             new Instruction("SaveDateSet", new []{ AT_Byte, AT_String }),
             new Instruction("ExiPlay", new []{ AT_Int16, AT_Byte, AT_Byte, AT_Byte, AT_Byte, AT_Byte, AT_Int32, AT_Byte }), // TODO
             new Instruction("ExiStop", new []{ AT_Int16, AT_Byte }), // TODO
-            new Instruction("GalleryFlg", new []{ AT_Int16, AT_Byte }),
+            new Instruction("GalleryFlg", new []{ AT_Int16, AT_Int16 }),
             null, // DateChange
             null, // BustSpeed
             null, // DateRestNumber
             null, // MapTutorial
-            null, // Ending
+            new Instruction("Ending", new []{ AT_Byte }),
             null, // Set/Del +FixAuto
             null, // ExiLoopStop
-            null, // ExiEndWait
+            new Instruction("ExiEndWait", new []{ AT_Int16, AT_Byte }), // TODO
             null // Set/Del +EventKeyNg
         };
 
         public enum ArgumentType
         {
-            AT_Bool, AT_Byte, AT_Int16, AT_Int32, AT_Float, AT_String, AT_Pointer, AT_PointerArray
+            AT_Bool, AT_Byte, AT_Int16, AT_Int32, AT_Float, AT_String, AT_Pointer, AT_DataReference, AT_PointerArray
         }
 
         public class Instruction
@@ -181,6 +181,9 @@ namespace STSCTool
             public ArgumentType[] ArgTypes;
             public List<object> Arguments = new List<object>();
 
+            public Instruction()
+            {
+            }
 
             public Instruction(string name, ArgumentType[] arguments)
             {
@@ -249,6 +252,7 @@ namespace STSCTool
                             break;
                         case AT_Int32:
                         case AT_Pointer:
+                        case AT_DataReference:
                         case AT_Float:
                         case AT_String:
                             size += 4;
@@ -279,6 +283,8 @@ namespace STSCTool
                         return reader.ReadStringElsewhere();
                     case AT_Pointer:
                         return reader.ReadInt32();
+                    case AT_DataReference:
+                        return reader.ReadUInt32();
                     default:
                         return null;
                 }
@@ -310,6 +316,9 @@ namespace STSCTool
                         strings.Add((string)value);
                         break;
                     case AT_Pointer:
+                        writer.Write((int)value);
+                        break;
+                    case AT_DataReference:
                         writer.Write((int)value);
                         break;
                 }
@@ -401,6 +410,58 @@ namespace STSCTool
                 return size;
             }
         }
+        public class InstructionSwitch : Instruction
+        {
+            public InstructionSwitch(string name, ArgumentType[] arguments) : base(name, arguments)
+            {
+            }
 
+            public override Instruction Read(ExtendedBinaryReader reader)
+            {
+                var instruction = new InstructionSwitch(Name, ArgTypes);
+                uint unknown = reader.ReadUInt32();
+                ushort amount = reader.ReadUInt16();
+                bool endFlag = amount >> 15 == 1; 
+                if (endFlag)
+                    amount &= 0x7FF;
+
+                instruction.ArgTypes = new ArgumentType[amount * 2 + 3];
+                instruction.ArgTypes[0] = AT_DataReference;
+                instruction.Arguments.Add(unknown);
+                instruction.ArgTypes[1] = AT_Int16;
+                instruction.Arguments.Add(amount);
+                instruction.ArgTypes[2] = AT_Bool;
+                instruction.Arguments.Add(endFlag);
+                for (int i = 0; i < amount; ++i)
+                {
+                    // case
+                    instruction.ArgTypes[i * 2 + 3 + 0] = AT_Int32;
+                    instruction.Arguments.Add(reader.ReadInt32());
+                    // location
+                    instruction.ArgTypes[i * 2 + 3 + 1] = AT_Pointer;
+                    instruction.Arguments.Add(reader.ReadInt32());
+                }
+                return instruction;
+            }
+
+            public override void Write(ExtendedBinaryWriter writer, List<string> strings = null)
+            {
+                writer.Write(GetArgument<uint>(0));
+                writer.Write((ushort)(GetArgument<ushort>(1) | GetArgument<ushort>(2) << 15));
+                for (int i = 0; i < GetArgument<ushort>(1); ++i)
+                {
+                    // case
+                    writer.Write(GetArgument<int>(i * 2 + 3 + 0));
+                    // location
+                    writer.Write(GetArgument<int>(i * 2 + 3 + 1));
+                }
+            }
+
+            public override int GetInstructionSize()
+            {
+                // Cheap way to ignore the flag
+                return base.GetInstructionSize() - 1;
+            }
+        }
     }
 }

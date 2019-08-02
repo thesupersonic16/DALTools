@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -26,8 +27,9 @@ namespace STSCTool
             ScriptName = reader.ReadNullTerminatedString();
             reader.JumpAhead((uint)(0x20 - (ScriptName.Length + 1)));
             // TODO: Find a better way to find an end of the code segment
-            reader.JumpAhead(13);
+            reader.JumpAhead(12);
             ScriptID = reader.ReadUInt32();
+            reader.JumpAhead(1);
             uint end = reader.ReadUInt32();
             reader.JumpBehind(5);
             int position = 0;
@@ -46,6 +48,7 @@ namespace STSCTool
                     Console.ReadKey(true);
                     return;
                 }
+
                 Instructions.Add(STSCInstructions.Instructions[opcode].Read(reader));
             }
         }

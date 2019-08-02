@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Linq;
@@ -13,11 +14,89 @@ namespace STSCTool
 {
     public class STSCTextHandler
     {
+
+        public static int FindAddress(STSCFile file, int index)
+        {
+            int address = 0;
+            for (int i = 0; i < index; ++i)
+                address += file.Instructions[i].GetInstructionSize();
+            return address;
+        }
+
+        public static int FindIndex(STSCFile file, int address)
+        {
+            int tempAddress = 0x3C;
+            for (int i = 0; i < file.Instructions.Count; ++i)
+            {
+                if (tempAddress == address)
+                    return i;
+                tempAddress += file.Instructions[i].GetInstructionSize();
+            }
+            return 0;
+        }
+
+        public static void PlaceLine(STSCFile file, List<string> strings, List<int> lines, int address, string s)
+        {
+            int index = FindIndex(file, address);
+            strings.Insert(lines[index], s);
+            for (int i = index; i < lines.Count; ++i)
+                ++lines[i];
+        }
+
+        public static void ConvertSingleInstructionToText(STSCFile file, int instructionPointer,
+            Dictionary<string, int> labels, List<int> scopeEnds, List<int> lines, List<string> strings, ref int address, ref int currentIndent)
+        {
+            var instruction = file.Instructions[instructionPointer];
+            if (scopeEnds.Count != 0 && scopeEnds.Last() == address)
+            {
+                --currentIndent;
+                strings.Add($"{new string(' ', currentIndent * 4)}}}");
+                scopeEnds.RemoveAt(scopeEnds.Count - 1);
+            }
+            // TODO
+            int address2 = address;
+            if (labels.Any(t => t.Value == address2))
+                strings.Add($"#label {labels.FirstOrDefault(t => t.Value == address2).Key}");
+            if (instruction.Name == "if")
+            {
+                lines.Add(strings.Count);
+                var ifInstruction = instruction as STSCInstructions.InstructionIf;
+                string[] comps = ifInstruction.Comparisons
+                    .Select((comparison, index) => ConvertComparisonToString(comparison)).ToArray();
+                strings.Add($"{new string(' ', currentIndent * 4)}if ({string.Join(" && ", comps)})");
+                strings.Add($"{new string(' ', currentIndent * 4)}{{");
+                ++currentIndent;
+                scopeEnds.Add(ifInstruction.GetArgument<int>(0));
+            }
+            else
+            {
+                string[] argString = instruction.Arguments.Select((arg, index) =>
+                {
+                    if (instruction.ArgTypes[index] == STSCInstructions.ArgumentType.AT_Pointer)
+                    {
+                        int jumpAddress = instruction.GetArgument<int>(index);
+                        string labelName = $"LABEL_{jumpAddress:X4}";
+                        if (!labels.ContainsKey(labelName))
+                        {
+                            labels.Add(labelName, jumpAddress);
+                            if (FindIndex(file, jumpAddress) < instructionPointer)
+                                PlaceLine(file, strings, lines, jumpAddress, $"#label {labelName}");
+                        }
+                        return labelName;
+                    }
+                    return ConvertArgumentToString(instruction, index);
+                }).ToArray();
+                lines.Add(strings.Count);
+                strings.Add($"{new string(' ', currentIndent * 4)}{instruction.Name}({string.Join(", ", argString)})");
+            }
+        }
+
         public static string[] ConvertToText(STSCFile file)
         {
             var labels = new Dictionary<string, int>();
             var strings = new List<string>();
             var scopeEnds = new List<int>();
+            var lines = new List<int>();
             int currentIndent = 0;
             int address = 0x3C;
             strings.Add($"#scriptID 0x{file.ScriptID:X8}");
@@ -25,40 +104,7 @@ namespace STSCTool
             for (int i = 0; i < file.Instructions.Count; ++i)
             {
                 var instruction = file.Instructions[i];
-                if (scopeEnds.Count != 0 && scopeEnds.Last() == address)
-                {
-                    --currentIndent;
-                    strings.Add($"{new string(' ', currentIndent * 4)}}}");
-                    scopeEnds.RemoveAt(scopeEnds.Count - 1);
-                }
-                if (labels.Any(t =>  t.Value == address))
-                    strings.Add($"#label {labels.FirstOrDefault(t => t.Value == address).Key}");
-                if (instruction.Name != "if")
-                {
-                    string[] argString = instruction.Arguments.Select((arg, index) =>
-                    {
-                        if (instruction.ArgTypes[index] == STSCInstructions.ArgumentType.AT_Pointer)
-                        {
-                            int jumpAddress = instruction.GetArgument<int>(index);
-                            string labelName = $"LABEL_{jumpAddress:X4}";
-                            if (!labels.ContainsKey(labelName))
-                                labels.Add(labelName, jumpAddress);
-                            return labelName;
-                        }
-                        return ConvertArgumentToString(instruction, index);
-                    }).ToArray();
-                    strings.Add($"{new string(' ', currentIndent * 4)}{instruction.Name}({string.Join(", ", argString)})");
-                }
-                else
-                {
-                    var ifInstruction = instruction as STSCInstructions.InstructionIf;
-                    string[] comps = ifInstruction.Comparisons
-                        .Select((comparison, index) => ConvertComparisonToString(comparison)).ToArray();
-                    strings.Add($"{new string(' ', currentIndent * 4)}if ({string.Join(" && ", comps)})");
-                    strings.Add($"{new string(' ', currentIndent * 4)}{{");
-                    ++currentIndent;
-                    scopeEnds.Add(ifInstruction.GetArgument<int>(0));
-                }
+                ConvertSingleInstructionToText(file, i, labels, scopeEnds, lines, strings, ref address, ref currentIndent);
                 address += instruction.GetInstructionSize();
             }
             return strings.ToArray();
@@ -102,17 +148,7 @@ namespace STSCTool
                     return;
                 }
 
-                if (baseInstruction.Name != "if")
-                {
-                    var instruction = (STSCInstructions.Instruction) Activator.CreateInstance(baseInstruction.GetType(), baseInstruction.Name,
-                        baseInstruction.ArgTypes);
-                    if (baseInstruction.ArgTypes != null)
-                        for (int ii = 0; ii < instruction.ArgTypes.Length; ++ii)
-                            AddArgument(instruction, instruction.ArgTypes[ii], code[ii + 1]);
-                    file.Instructions.Add(instruction);
-                    address += instruction.GetInstructionSize();
-                }
-                else
+                if (baseInstruction.Name == "if")
                 {
                     var baseIf = baseInstruction as STSCInstructions.InstructionIf;
                     var instruction = new STSCInstructions.InstructionIf();
@@ -135,6 +171,44 @@ namespace STSCTool
                     }
                     file.Instructions.Add(instruction);
                     address += instruction.GetInstructionSize();
+                }
+                else if (baseInstruction.Name == "switch")
+                {
+                    var baseSwitch = baseInstruction as STSCInstructions.InstructionSwitch;
+                    var instruction = new STSCInstructions.InstructionSwitch(baseSwitch.Name, null);
+                    uint unknown = (uint)int.Parse(code[1]);
+                    ushort amount = ushort.Parse(code[2]);
+                    bool endFlag = bool.Parse(code[3]);
+                    
+                    instruction.ArgTypes = new STSCInstructions.ArgumentType[amount * 2 + 3];
+                    instruction.ArgTypes[0] = STSCInstructions.ArgumentType.AT_DataReference;
+                    instruction.Arguments.Add(unknown);
+                    instruction.ArgTypes[1] = STSCInstructions.ArgumentType.AT_Int16;
+                    instruction.Arguments.Add(amount);
+                    instruction.ArgTypes[2] = STSCInstructions.ArgumentType.AT_Bool;
+                    instruction.Arguments.Add(endFlag);
+                    for (int ii = 0; ii < amount; ++ii)
+                    {
+                        // case
+                        instruction.ArgTypes[ii * 2 + 3 + 0] = STSCInstructions.ArgumentType.AT_Int32;
+                        instruction.Arguments.Add(int.Parse(ProcessLiterals(code[ii * 2 + 4 + 0])));
+                        // location
+                        instruction.ArgTypes[ii * 2 + 3 + 1] = STSCInstructions.ArgumentType.AT_Pointer;
+                        instruction.Arguments.Add(code[ii * 2 + 4 + 1]);
+                    }
+                    file.Instructions.Add(instruction);
+                    address += instruction.GetInstructionSize();
+                }
+                else
+                {
+                    var instruction = (STSCInstructions.Instruction)Activator.CreateInstance(baseInstruction.GetType(), baseInstruction.Name,
+                        baseInstruction.ArgTypes);
+                    if (baseInstruction.ArgTypes != null)
+                        for (int ii = 0; ii < instruction.ArgTypes.Length; ++ii)
+                            AddArgument(instruction, instruction.ArgTypes[ii], code[ii + 1]);
+                    file.Instructions.Add(instruction);
+                    address += instruction.GetInstructionSize();
+
                 }
             }
 
@@ -181,10 +255,12 @@ namespace STSCTool
                         return $"0x{num:X}";
                     else
                         return num.ToString();
+                case STSCInstructions.ArgumentType.AT_DataReference:
+                    return $"0x{instruction.GetArgument<uint>(index):X8}";
                 case STSCInstructions.ArgumentType.AT_Float:
                     return $"{instruction.GetArgument<float>(index)}f";
                 case STSCInstructions.ArgumentType.AT_String:
-                    return $"\"{instruction.GetArgument<string>(index)}\"";
+                    return $"\"{instruction.GetArgument<string>(index).Replace("\"", "\\\"")}\"";
             }
             return "";
         }
@@ -206,6 +282,9 @@ namespace STSCTool
                     return;
                 case STSCInstructions.ArgumentType.AT_Pointer:
                     instruction.Arguments.Add(value);
+                    return;
+                case STSCInstructions.ArgumentType.AT_DataReference:
+                    instruction.Arguments.Add(uint.Parse(value));
                     return;
                 case STSCInstructions.ArgumentType.AT_Float:
                     instruction.Arguments.Add(float.Parse(value));
@@ -242,7 +321,8 @@ namespace STSCTool
                     escaped = true;
                 if (escaped)
                 {
-                    bufferString += codeLine[i];
+                    if (codeLine[i + 1] != '"')
+                        bufferString += codeLine[i];
                     bufferString += codeLine[++i];
                     escaped = false;
                     continue;

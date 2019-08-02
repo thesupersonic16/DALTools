@@ -177,8 +177,29 @@ namespace PCKTool
             }
         }
 
+        public void SortDirectories(ArchiveDirectory dir)
+        {
+            var data = dir != null ? dir.Data : Data;
+            for (int i = 0; i < data.Count; ++i)
+            {
+                if (data[i] is ArchiveDirectory subDir)
+                    SortDirectories(subDir);
+                data.Sort((x, y) =>
+                {
+                    if (x is ArchiveDirectory && y is ArchiveDirectory)
+                        return String.CompareOrdinal(x.Name, y.Name);
+                    if (x is ArchiveDirectory)
+                        return 0;
+                    if (y is ArchiveDirectory)
+                        return 1;
+                    return string.Compare(x.Name, y.Name);
+                });
+            }
+        }
+
         public void UnfixDirectories(ArchiveDirectory directory)
         {
+            SortDirectories(null);
             List<ArchiveData> files = Data;
             if (directory != null)
                 files = directory.Data;
