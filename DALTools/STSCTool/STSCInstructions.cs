@@ -48,7 +48,7 @@ namespace STSCTool
             null, // PrmRand
 
             new Instruction("DataBaseParam", new []{ AT_Byte, AT_Int32, AT_Int32 }),
-            null, // NewGameOpen
+            new Instruction("NewGameOpen", null),
             new Instruction("EventStartMes", new []{ AT_String }),
             new Instruction("Dummy23", null),
             new Instruction("Dummy24", null),
@@ -180,10 +180,6 @@ namespace STSCTool
             public string Name;
             public ArgumentType[] ArgTypes;
             public List<object> Arguments = new List<object>();
-
-            public Instruction()
-            {
-            }
 
             public Instruction(string name, ArgumentType[] arguments)
             {
@@ -332,6 +328,8 @@ namespace STSCTool
             {
                 if (position == 0)
                     reader.JumpTo(reader.ReadInt32());
+                if (reader.Offset > reader.BaseStream.Position)
+                    reader.Offset = (uint) reader.BaseStream.Position;
                 string s = reader.ReadNullTerminatedString();
                 if (position == 0)
                     reader.JumpTo(oldPos + 4);
@@ -342,7 +340,7 @@ namespace STSCTool
             catch
             {
                 reader.JumpTo(oldPos);
-                return null;
+                return "";
             }
         }
 
