@@ -21,9 +21,9 @@ namespace STSCTool
                 return;
             }
             STSCMacros.Fill();
-            STSCFile file = new STSCFile();
             for (int i = 0; i < args.Length; ++i)
             {
+                var file = new STSCFile();
                 if (Path.GetExtension(args[i]) == ".bin")
                 {
                     file.Load(args[i]);
