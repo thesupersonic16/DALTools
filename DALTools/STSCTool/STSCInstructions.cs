@@ -49,7 +49,7 @@ namespace STSCTool
 
             new Instruction("DataBaseParam", new []{ AT_Byte, AT_Int32, AT_Int32 }),
             null, // NewGameOpen
-            null, // EventStartMes
+            new Instruction("EventStartMes", new []{ AT_String }),
             new Instruction("Dummy23", null),
             new Instruction("Dummy24", null),
             new Instruction("Dummy25", null),
@@ -164,10 +164,10 @@ namespace STSCTool
             new Instruction("DateRestNumber", new []{ AT_Byte }),
             null, // MapTutorial
             new Instruction("Ending", new []{ AT_Byte }),
-            null, // Set/Del +FixAuto
-            null, // ExiLoopStop
+            new Instruction("Set/Del+FixAuto", new []{ AT_Byte, AT_Byte, AT_Byte }),
+            new Instruction("ExiLoopStop", new []{ AT_Int16, AT_Byte }),
             new Instruction("ExiEndWait", new []{ AT_Int16, AT_Byte }), // TODO
-            null // Set/Del +EventKeyNg
+            new Instruction("Set/Del+EventKeyNg", new []{ AT_Byte }),
         };
 
         public enum ArgumentType

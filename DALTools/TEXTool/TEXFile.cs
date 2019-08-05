@@ -13,6 +13,7 @@ using HedgeLib.IO;
 using HedgeLib.Misc;
 using Scarlet.Drawing;
 using Scarlet.IO;
+using zlib;
 
 namespace TEXTool
 {
@@ -46,9 +47,43 @@ namespace TEXTool
         public List<Frame> Frames = new List<Frame>();
         [XmlIgnore] public byte[] SheetData = null;
 
+        public static byte[] DecompressData(Stream inputStream, bool closeStream = true)
+        {
+            byte[] buffer = null;
+            using (MemoryStream outMemoryStream = new MemoryStream())
+            using (ZOutputStream outZStream = new ZOutputStream(outMemoryStream))
+            {
+                CopyStream(inputStream, outZStream);
+                outZStream.finish();
+                buffer = outMemoryStream.ToArray();
+                if (closeStream)
+                    inputStream.Close();
+            }
+            return buffer;
+        }
+
+        public static void CopyStream(Stream input, Stream output)
+        {
+            byte[] buffer = new byte[512];
+            int len;
+            while ((len = input.Read(buffer, 0, 512)) > 0)
+            {
+                output.Write(buffer, 0, len);
+            }
+            output.Flush();
+        }
+
         public override void Load(Stream fileStream)
         {
             var reader = new ExtendedBinaryReader(fileStream);
+
+            // Decompress Zlib stream
+            if (reader.PeekChar() == 'Z')
+            {
+                reader.JumpAhead(12);
+                reader = new ExtendedBinaryReader(new MemoryStream(DecompressData(reader.BaseStream)));
+            }
+
             bool hasHeader = ReadPCKSig(reader) == "Texture";
             int textureSectionSize = reader.ReadInt32();
             if (!hasHeader)

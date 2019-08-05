@@ -29,6 +29,11 @@ namespace STSCTool
             CharacterNames[0x0E] = "CHAR_MAI";
             CharacterNames[0x0F] = "CHAR_MII";
             CharacterNames[0x10] = "CHAR_RULER";
+            CharacterNames[0x15] = "CHAR_MARIA";
+            CharacterNames[0x16] = "CHAR_KAGUYA";
+            CharacterNames[0x17] = "CHAR_YUZURU";
+            CharacterNames[0x18] = "CHAR_MIKU";
+            CharacterNames[0x32] = "CHAR_YAMAI";
             CharacterNames[0x64] = "CHAR_UNKNOWN";
             CharacterNames[0x65] = "CHAR_NEWSCASTER";
             CharacterNames[0x66] = "CHAR_GIRLSTUDENTA";
