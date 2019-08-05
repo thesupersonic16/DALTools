@@ -31,7 +31,7 @@ You can get a list of options and examples by running TEXTool.exe without any ar
 ```
 
 ## STSCTool
-STSCTool is a tool used to dissemble and reassemble scripts (.bin).
-To dissemble/reassemble supported scripts, just drag and drop the script(s) you want (.txt or .bin)
+STSCTool is a tool used to disassemble and reassemble scripts (.bin). (This only works with DAL: RR Scripts)
+To disassemble/reassemble supported scripts, just drag and drop the script(s) you want (.txt or .bin)
 
 STSCTool is currently really far from being complete but is usable at this point, and outputs all the instructions in as much detail as needed to be easily reassembled.
