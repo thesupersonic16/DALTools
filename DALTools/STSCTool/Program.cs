@@ -32,7 +32,7 @@ namespace STSCTool
                 else
                 {
                     STSCTextHandler.ConvertToObject(file, File.ReadAllLines(args[i]));
-                    file.Save(Path.ChangeExtension(args[i], ".bin"));
+                    file.Save(Path.ChangeExtension(args[i], ".bin"), true);
                 }
             }
         }

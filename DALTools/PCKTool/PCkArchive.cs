@@ -11,7 +11,7 @@ using zlib;
 
 namespace PCKTool
 {
-    class PCKArchive : Archive
+    public class PCKArchive : Archive
     {
 
         public List<FileEntry> FileEntries = new List<FileEntry>();

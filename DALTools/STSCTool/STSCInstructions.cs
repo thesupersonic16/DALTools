@@ -67,7 +67,7 @@ namespace STSCTool
             new Instruction("PlayMovie", new []{ AT_String, AT_Int16, AT_Byte }),
             new Instruction("BgmWait", new []{ AT_Byte, AT_Int16 }),
             new Instruction("BgmVolume", new []{ AT_Int32, AT_Int16 }),
-            new Instruction("SePlay", new []{ AT_Byte, AT_Byte, AT_Byte }),
+            new Instruction("SePlay", new []{ AT_Byte, AT_Byte, AT_Bool }),
             new Instruction("SeStop", new []{ AT_Byte, AT_Byte }),
             null, // SeWait 
             new Instruction("SeVolume", new []{ AT_Int16, AT_Int32, AT_Int16 }),
@@ -98,7 +98,7 @@ namespace STSCTool
             new Instruction("Dummy4E", null),
             new Instruction("Wait2", new []{ AT_Int32 }),
 
-            new Instruction("Mes", new []{ AT_Byte, AT_Byte, AT_Byte, AT_Byte, AT_String, AT_Int16 }),
+            new Instruction("Mes", new []{ AT_Byte, AT_Bool, AT_Byte, AT_Bool, AT_String, AT_Int16 }),
             new Instruction("MesWait", null),
             new Instruction("MesTitle", new []{ AT_Byte }),
             new Instruction("SetChoice", new []{ AT_Pointer, AT_String, AT_Int16 }),

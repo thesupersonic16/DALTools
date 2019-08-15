@@ -7,9 +7,9 @@ Thanks to Sajid for helping with the missing fields.
 PCKTool only takes in one argument which is the .pck file path for extracting or a directory to pack all the files back into a .pck
 
 ## TEXTool
-TEXTool is a tool used to extract and rebuild Texture files.
-TEXTool does support extracting and rebuilding of .tex files using drag and drop and through CLI.
-using Drag and Drop, you can extract a .tex by dragging the .tex into the exe and rebuild it by dragging its .xml, .png or frames folder into the exe.
+TEXTool is a tool used to extract and rebuild Texture files.  
+TEXTool does support extracting and rebuilding of .tex files using drag and drop and through CLI.  
+using Drag and Drop, you can extract a .tex by dragging the .tex into the exe and rebuild it by dragging its .xml, .png or frames folder into the exe.  
 You can get a list of options and examples by running TEXTool.exe without any arguments
 ```
   TEXTool [Switches] [-o {path}] {tex file}
@@ -31,7 +31,19 @@ You can get a list of options and examples by running TEXTool.exe without any ar
 ```
 
 ## STSCTool
-STSCTool is a tool used to dissemble and reassemble scripts (.bin).
-To dissemble/reassemble supported scripts, just drag and drop the script(s) you want (.txt or .bin)
+STSCTool is a tool used to disassemble and reassemble scripts (.bin). (This only works with scripts from DATE A LIVE: Rio Reincarnation, other games will not work due to them having different instruction sets)  
+To disassemble/reassemble supported scripts, just drag and drop the script(s) you want (.txt or .bin)
+
+Scripts are disassembled into a custom text syntax designed to be easily read by the assembler and easy for the user to modify the code.  
+  
+These code files contain most of the instructions for the game to process, This includes stuff like, Story, Choices, Flagging, Music, Maps, Animation calling and etc.  
+  
+This repo has a small list of known functions in [FUNCTIONS.md][functions_url]
 
 STSCTool is currently really far from being complete but is usable at this point, and outputs all the instructions in as much detail as needed to be easily reassembled.
+
+## FontEditor - DATE A LIVE: Rio Reincarnation Font Editor
+Incomplete, Can be used for editing font codes, but changing character definitions do not work due to the game refusing to use the code for unknown reasons.
+
+
+[functions_url]: ./FUNCTIONS.md

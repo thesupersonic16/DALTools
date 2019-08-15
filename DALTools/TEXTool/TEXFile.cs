@@ -45,6 +45,7 @@ namespace TEXTool
         public int SheetWidth;
         public int SheetHeight;
         public List<Frame> Frames = new List<Frame>();
+        public bool Sigless = false;
         [XmlIgnore] public byte[] SheetData = null;
 
         public static byte[] DecompressData(Stream inputStream, bool closeStream = true)
@@ -84,9 +85,9 @@ namespace TEXTool
                 reader = new ExtendedBinaryReader(new MemoryStream(DecompressData(reader.BaseStream)));
             }
 
-            bool hasHeader = ReadPCKSig(reader) == "Texture";
+            Sigless = ReadPCKSig(reader) != "Texture";
             int textureSectionSize = reader.ReadInt32();
-            if (!hasHeader)
+            if (Sigless)
                 reader.JumpTo(0);
             Format format = (Format)reader.ReadInt16();
             int unknown = reader.ReadInt16();
@@ -176,9 +177,12 @@ namespace TEXTool
         public override void Save(Stream fileStream)
         {
             var writer = new ExtendedBinaryWriter(fileStream);
-            
-            WritePCKSig(writer, "Texture");
-            writer.AddOffset("HeaderSize");
+
+            if (!Sigless)
+            {
+                WritePCKSig(writer, "Texture");
+                writer.AddOffset("HeaderSize");
+            }
             writer.Write((short)0x4000);
             writer.Write((short)0);
             writer.Write(0x8100000);
@@ -187,7 +191,11 @@ namespace TEXTool
             writer.Write((short)SheetHeight);
 
             writer.Write(SheetData);
-            writer.FillInOffset("DataLength", (uint)writer.BaseStream.Position - 0x28);
+            writer.FillInOffset("DataLength", (uint)writer.BaseStream.Position - (Sigless ? 0x10u : 0x28u));
+
+            // Sigless files do not have Parts or Anime
+            if (Sigless)
+                return;
             
             // Parts
             writer.FillInOffset("HeaderSize");
