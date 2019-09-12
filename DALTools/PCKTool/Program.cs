@@ -12,24 +12,45 @@ namespace PCKTool
     {
         public static void Main(string[] args)
         {
-            PCKArchive arc = new PCKArchive();
             if (args.Length == 0)
             {
                 Console.WriteLine("Error: Not Enough Arguments!");
                 Console.WriteLine("  PCKTool {filePath/Directory}");
+                Console.WriteLine("  Switches: ");
+                Console.WriteLine("    -s           Build all archives using small signatures");
                 Console.ReadKey(true);
                 return;
             }
-            var attr = File.GetAttributes(args[0]);
-            if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+
+            bool useSmallSig = false;
+
+            for (int i = 0; i < args.Length; ++i)
             {
-                arc.Data.AddRange(GetFilesFromDir(args[0], true));
-                arc.Save(args[0] + ".pck", true);
-            }
-            else
-            {
-                arc.Load(args[0]);
-                arc.Extract(Path.GetFileNameWithoutExtension(args[0]));
+                if (args[i].StartsWith("-") && args[i].Length > 1)
+                {
+                    switch (args[i][1])
+                    {
+                        case 's': // Use smallSigs
+                            useSmallSig = true;
+                            break;
+                        default:
+                            break;
+                    }
+                    continue;
+                }
+                PCKArchive arc = new PCKArchive();
+                arc.UseSmallSig = useSmallSig;
+                var attr = File.GetAttributes(args[i]);
+                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    arc.Data.AddRange(GetFilesFromDir(args[i], true));
+                    arc.Save(args[i] + ".pck", true);
+                }
+                else
+                {
+                    arc.Load(args[i]);
+                    arc.Extract(Path.GetFileNameWithoutExtension(args[i]));
+                }
             }
         }
 

@@ -33,6 +33,8 @@ namespace STSCTool
             CharacterNames[0x16] = "CHAR_KAGUYA";
             CharacterNames[0x17] = "CHAR_YUZURU";
             CharacterNames[0x18] = "CHAR_MIKU";
+            CharacterNames[0x1B] = "CHAR_MARINA";
+            CharacterNames[0x1C] = "CHAR_RIO";
             CharacterNames[0x32] = "CHAR_YAMAI";
             CharacterNames[0x64] = "CHAR_UNKNOWN";
             CharacterNames[0x65] = "CHAR_NEWSCASTER";

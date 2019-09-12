@@ -16,6 +16,13 @@ namespace PCKTool
 
         public List<FileEntry> FileEntries = new List<FileEntry>();
 
+        // Options
+        /// <summary>
+        /// Toggle for using larger signatures (0x14) or smaller ones (0x08)
+        /// DAL: RR uses larger signatures
+        /// </summary>
+        public bool UseSmallSig = false;
+
         public static byte[] DecompressData(Stream inputStream, bool closeStream = true)
         {
             byte[] buffer = null;
@@ -48,15 +55,18 @@ namespace PCKTool
             // Decompress Zlib stream
             if (reader.PeekChar() == 'Z')
             {
+                // Skip Zlib Header
+                // 0x00 - "ZLIB"
+                // 0x04 - UncompressedSize
+                // 0x08 - CompressedSize
+                // 0x0C - Zlib Data
                 reader.JumpAhead(12);
                 reader = new ExtendedBinaryReader(new MemoryStream(DecompressData(reader.BaseStream)));
             }
-            string sig = ReadPCKSig(reader);
+            int sigSize = CheckPCKSig(reader, "Filename");
             bool oldPCK = false;
-            if (sig == "FilenameH")
+            if (sigSize < 0x14)
                 oldPCK = true;
-            else if (sig != "Filename")
-                throw new InvalidSignatureException("Filename", sig);
             if (oldPCK)
                 reader.JumpTo(0x08);
             int packAddress = reader.ReadInt32();
@@ -65,10 +75,8 @@ namespace PCKTool
             reader.JumpTo(packAddress);
 
             // Pack
-            reader.FixPadding(0x8);
-            sig = ReadPCKSig(reader, oldPCK ? 0x08 : 0x14);
-            if (sig != "Pack")
-                throw new InvalidSignatureException("Pack", sig);
+            reader.FixPadding(oldPCK ? 0x04u : 0x08u);
+            sigSize = CheckPCKSig(reader, "Pack");
 
             int headerSize = reader.ReadInt32();
             int fileCount = reader.ReadInt32();
@@ -108,7 +116,7 @@ namespace PCKTool
         {
             var writer = new ExtendedBinaryWriter(fileStream);
 
-            WritePCKSig(writer, "Filename");
+            WritePCKSig(writer, "Filename", UseSmallSig);
             writer.AddOffset("HeaderSize");
             UnfixDirectories(null);
             var files = GetFiles(Data);
@@ -123,7 +131,7 @@ namespace PCKTool
             writer.FillInOffset("HeaderSize");
             writer.FixPadding(0x8);
             long header = writer.BaseStream.Position;
-            WritePCKSig(writer, "Pack");
+            WritePCKSig(writer, "Pack", UseSmallSig);
             writer.AddOffset("HeaderSize");
             writer.Write(files.Count);
 
@@ -144,20 +152,46 @@ namespace PCKTool
             }
         }
 
-        public string ReadPCKSig(ExtendedBinaryReader reader, int size = 0x14)
+        /// <summary>
+        /// Reads and Checks the Signature of the file.
+        /// Messy as it supports multiple games.
+        /// </summary>
+        /// <param name="reader">StreamReader to read the signature from</param>
+        /// <param name="expected">The expected signature</param>
+        /// <returns>Length of the signature</returns>
+        public int CheckPCKSig(ExtendedBinaryReader reader, string expected)
         {
-            string s = Encoding.ASCII.GetString(reader.ReadBytes(size));
-            int trim = 0;
-            if (s.Contains(' '))
-                trim = s.IndexOf(" ", StringComparison.Ordinal);
-            if (s.Contains('\0'))
-                trim = s.IndexOf("\0", StringComparison.Ordinal);
-            return s.Substring(0, trim);
+            // Read and check the signature
+            string sig = reader.ReadSignature(expected.Length);
+            if (sig != expected)
+                throw new InvalidSignatureException(expected, sig);
+            // Calculate Size of Padding
+            int padding = 0;
+            while (true)
+            {
+                if (reader.ReadByte() != 0x20)
+                {
+                    if (expected.Length + padding >= 0x14)
+                        reader.JumpBehind((expected.Length + padding) - 0x14 + 1);
+                    else if (expected.Length + padding >= 0x08)
+                        reader.JumpBehind((expected.Length + padding) - 0x08 + 1);
+                    break;
+                }
+                ++padding;
+            }
+            // Total length of the signature
+            return expected.Length + padding;
         }
 
-        public void WritePCKSig(ExtendedBinaryWriter writer, string sig)
+        /// <summary>
+        /// Writes a signature to the writer.
+        /// </summary>
+        /// <param name="writer">StreamWriter to write the signature to</param>
+        /// <param name="sig">The signature that must be written</param>
+        /// <param name="smallSig">If the older smaller signatures should be used (This must be false for DAL: RR)</param>
+        public void WritePCKSig(ExtendedBinaryWriter writer, string sig, bool smallSig)
         {
-            writer.WriteSignature(sig + new string(' ', 0x14 - sig.Length));
+            writer.WriteSignature(sig + new string(' ', (smallSig ? 0x08 : 0x14) - sig.Length));
         }
 
         public void FixDirectories()
@@ -212,7 +246,7 @@ namespace PCKTool
                 {
                     if (directory != null)
                     {
-                        file.Name = directory.Name + "/" + file.Name;
+                        file.Name = directory.Name + file.Name;
                         directory.Data.RemoveAt(i--);
                         if (directory.Parent != null)
                             directory.Parent.Data.Add(file);

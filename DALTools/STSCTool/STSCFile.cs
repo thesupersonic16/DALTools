@@ -12,7 +12,7 @@ namespace STSCTool
 {
     public class STSCFile : FileBase
     {
-        public string ScriptName = "";
+        public string ScriptName { get; set; }
         public uint ScriptID = 0; // Used to store script information
         public List<STSCInstructions.Instruction> Instructions = new List<STSCInstructions.Instruction>();
 
@@ -38,16 +38,40 @@ namespace STSCTool
             while (true)
             {
                 byte opcode = reader.ReadByte();
-                // Check if its a known instruction
-                if (STSCInstructions.Instructions[opcode] == null)
+
+                if (opcode >= 0x90)
                 {
-                    Console.WriteLine("Error: Instruction {0:X2} at {1:X} is unknown, Disassembler must abort now!", opcode, (int)reader.BaseStream.Position);
+                    Console.WriteLine("Error: Attempted to disassemble Instruction at {1:X} but got {0:X2}.", opcode, (int)reader.BaseStream.Position - 1);
+                    Console.WriteLine("This usually means the Script is corrupt or one or more STSCFile's definitions are incorrect.");
+                    Console.WriteLine("Disassembler must abort now!");
                     Console.ReadKey(true);
                     return;
                 }
 
-                var instruction = STSCInstructions.Instructions[opcode].Read(reader);
-                Instructions.Add(instruction);
+                // Check if its a known instruction
+                if (STSCInstructions.Instructions[opcode] == null)
+                {
+                    Console.WriteLine("Error: Instruction {0:X2} at {1:X} is unknown!", opcode, (int)reader.BaseStream.Position - 1);
+                    Console.WriteLine("This usually means STSCFile does not yet know the parameters on the instruction.");
+                    Console.WriteLine("Disassembler must abort now!");
+                    Console.ReadKey(true);
+                    return;
+                }
+
+                try
+                {
+                    var instruction = STSCInstructions.Instructions[opcode].Read(reader);
+                    Instructions.Add(instruction);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error: Failed to Read instruction {0:X2} at {1:X}!", opcode, (int)reader.BaseStream.Position - 1);
+                    Console.WriteLine("This usually means the Script is corrupt or one or more STSCFile's definitions are incorrect.");
+                    Console.WriteLine("Please check the output file for finding out what instruction went wrong.");
+                    Console.WriteLine("Disassembler must abort now! Exception: {0}", e);
+                    Console.ReadKey(true);
+                    return;
+                }
                 if (reader.BaseStream.Position >= reader.Offset)
                     break;
             }
@@ -58,16 +82,17 @@ namespace STSCTool
             ExtendedBinaryWriter writer = new ExtendedBinaryWriter(fileStream, Encoding.UTF8);
             var strings = new List<string>();
             writer.WriteSignature("STSC");
-            writer.Write(0x3C);
-            writer.Write(0x07);
+            writer.AddOffset("EntryPosition");
+            writer.Write(0x07); // Version
             writer.WriteSignature(ScriptName);
-            writer.WriteNulls((uint) (0x20 - ScriptName.Length));
+            writer.WriteNulls((uint) (0x20 - ScriptName.Length)); // Pad Script Name
             writer.Write(0x000507E3);
             writer.Write((short) 0x09);
             writer.Write((short) 0x0D);
             writer.Write((short) 0x19);
             writer.Write((short) 0x0D);
             writer.Write(ScriptID);
+            writer.FillInOffset("EntryPosition");
             foreach (var instruction in Instructions)
             {
                 writer.Write((byte)STSCInstructions.Instructions.FindIndex(t => t?.Name == instruction.Name));
@@ -80,6 +105,11 @@ namespace STSCTool
                 writer.WriteNullTerminatedString(strings[i]);
             }
             writer.FixPadding(0x10);
+        }
+
+        public override string ToString()
+        {
+            return ScriptName;
         }
     }
 }
