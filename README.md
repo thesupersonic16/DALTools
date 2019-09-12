@@ -43,7 +43,7 @@ This repo has a small list of known functions in [FUNCTIONS.md][functions_url]
 STSCTool is currently really far from being complete but is usable at this point, and outputs all the instructions in as much detail as needed to be easily reassembled.
 
 ## FontEditor - DATE A LIVE: Rio Reincarnation Font Editor
-Incomplete, Can be used for editing font codes, but changing character definitions do not work due to the game refusing to use the code for unknown reasons.
+Incomplete, Can be used for editing font codes, but adding new character definitions do not work due to the game refusing to use the code for unknown reasons.
 
 
 [functions_url]: ./FUNCTIONS.md
