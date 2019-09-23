@@ -19,12 +19,12 @@ namespace STSCTool
             new Instruction("Endv", null),
             null, // InfinitWait
             new Instruction("Wait", new []{ AT_Int32 }),
-            new Instruction("Goto", new []{ AT_Pointer }),
+            new Instruction("Goto", new []{ AT_CodePointer }),
             new Instruction("return", null),
             null, // ReturnPush
             null, // ReturnPop
             null, // Call_iv
-            new Instruction("SubStart", new []{ AT_Byte, AT_Pointer }),
+            new Instruction("SubStart", new []{ AT_Byte, AT_CodePointer }),
             new Instruction("SubEnd", new []{ AT_Byte }),
             new Instruction("RandJump", new []{ AT_PointerArray }),
             new Instruction("Printf", new []{ AT_String }),
@@ -40,14 +40,14 @@ namespace STSCTool
             new Instruction("PrmAdd", new []{ AT_Int32, AT_Int32 }), 
             null, // PrmAddWk
             null, // PrmBranch
-            new Instruction("Call", new []{ AT_Pointer }),
+            new Instruction("Call", new []{ AT_CodePointer }),
             new Instruction("CallReturn", null),
             null, // SubEndWait
             new InstructionIf(),
             new InstructionSwitch("switch", null),
             null, // PrmRand
 
-            new Instruction("DataBaseParam", new []{ AT_Byte, AT_Int32, AT_Int32 }),
+            new Instruction("DataBaseParam", new []{ AT_Byte, AT_ManualBinary }),
             new Instruction("NewGameOpen", null),
             new Instruction("EventStartMes", new []{ AT_String }),
             new Instruction("Dummy23", null),
@@ -73,12 +73,12 @@ namespace STSCTool
             new Instruction("SeVolume", new []{ AT_Int16, AT_Int32, AT_Int16 }),
             new Instruction("SeAllStop", null),
             new Instruction("BgmDummy", new []{ AT_Int32, AT_Int16 }), // Data is discarded
-            new Instruction("Dummy29", null),
-            new Instruction("Dummy2A", null),
-            new Instruction("Dummy2B", null),
-            new Instruction("Dummy2C", null),
-            new Instruction("Dummy2D", null),
-            new Instruction("Dummy2E", null),
+            new Instruction("Dummy39", null),
+            new Instruction("Dummy3A", null),
+            new Instruction("Dummy3B", null),
+            new Instruction("Dummy3C", null),
+            new Instruction("Dummy3D", null),
+            new Instruction("Dummy3E", null),
             new Instruction("Dummy3F", null),
 
             new Instruction("SetNowLoading", new []{ AT_Bool }),
@@ -101,14 +101,14 @@ namespace STSCTool
             new Instruction("Mes", new []{ AT_Byte, AT_Bool, AT_Byte, AT_Bool, AT_String, AT_Int16 }),
             new Instruction("MesWait", null),
             new Instruction("MesTitle", new []{ AT_Byte }),
-            new Instruction("SetChoice", new []{ AT_Pointer, AT_String, AT_Int16 }),
+            new Instruction("SetChoice", new []{ AT_CodePointer, AT_String, AT_Int16 }),
             new Instruction("ShowChoices", new []{ AT_Bool }),
             new Instruction("SetFontSize", new []{ AT_Byte }),
-            new Instruction("MapPlace", new []{ AT_Int16, AT_Int32, AT_Int32 }),
+            new Instruction("MapPlace", new []{ AT_Int16, AT_Int32, AT_CodePointer }),
             new Instruction("MapChara", new []{ AT_Int16, AT_Int16, AT_Byte }),
             new Instruction("MapBg", new []{ AT_Byte }), // mapBg{}.tex
             new Instruction("MapCoord", new []{ AT_Int16, AT_Byte, AT_Bool, AT_Int16, AT_Int16 }),
-            new Instruction("MapStart", new []{ AT_Bool }),
+            new Instruction("MapStart", null),
             new Instruction("MapInit", null),
             new Instruction("MesWinClose", null),
             new Instruction("BgOpen", new []{ AT_Int32, AT_Int32}), // MesWinOpen?
@@ -138,10 +138,10 @@ namespace STSCTool
             new Instruction("BustAnime", new []{ AT_Byte, AT_Byte}), // TODO
             null, // CameraMoveXY
             null, // CameraMoveZ
-            null, // CameraMoveXYZ
+            new Instruction("CameraMoveXYZ", new []{ AT_Int16, AT_Int16, AT_Float, AT_Int16, AT_Int16}), // TODO
             new Instruction("ScaleMode", new []{ AT_Byte}), // TODO
             new Instruction("GetBgNo", new []{ AT_Int32}), // TODO
-            null, // GetFadeState
+            new Instruction("GetFadeState", new []{ AT_Int32}), // TODO
             new Instruction("SetAmbiguous", new []{ AT_Float, AT_Byte, AT_Bool }),
             new Instruction("AmbiguousPowerFade", new []{ AT_Float, AT_Float, AT_Int16 }),
             new Instruction("SetBlur", new []{ AT_Int32, AT_Bool }),
@@ -151,8 +151,8 @@ namespace STSCTool
             
             new Instruction("MiragePowerFade", new [] { AT_Int32, AT_Float, AT_Int16 }), // TODO
             new Instruction("MessageVoiceWait", new [] { AT_Byte }), // TODO
-            new Instruction("RasterScroll", new [] { AT_Int32, AT_Int32, AT_Int16 }), // TODO
-            null, // RasterScrollPowerFade
+            new Instruction("SetRasterScroll", new [] { AT_Byte, AT_Float, AT_Int16, AT_Byte }),
+            new Instruction("RasterScrollPowerFade", new [] { AT_Int32, AT_Float, AT_Int16 }),
             new Instruction("MesDel", null),
             new Instruction("MemoryOn", new [] { AT_Int16 }),
             new Instruction("SaveDateSet", new []{ AT_Byte, AT_String }),
@@ -162,7 +162,7 @@ namespace STSCTool
             new Instruction("DateChange", new []{ AT_Int32, AT_Int16 }),
             new Instruction("BustSpeed", new []{ AT_Byte, AT_Int32 }),
             new Instruction("DateRestNumber", new []{ AT_Byte }),
-            null, // MapTutorial
+            new Instruction("MapTutorial", new []{ AT_Int16, AT_Int16 }),
             new Instruction("Ending", new []{ AT_Byte }),
             new Instruction("Set/Del+FixAuto", new []{ AT_Byte, AT_Byte, AT_Byte }),
             new Instruction("ExiLoopStop", new []{ AT_Int16, AT_Byte }),
@@ -172,7 +172,7 @@ namespace STSCTool
 
         public enum ArgumentType
         {
-            AT_Bool, AT_Byte, AT_Int16, AT_Int32, AT_Float, AT_String, AT_Pointer, AT_DataReference, AT_PointerArray
+            AT_Bool, AT_Byte, AT_Int16, AT_Int32, AT_Float, AT_String, AT_StringPtr, AT_CodePointer, AT_DataReference, AT_PointerArray, AT_ManualBinary
         }
 
         public class Instruction
@@ -213,7 +213,7 @@ namespace STSCTool
                 return instruction;
             }
 
-            public virtual void Write(ExtendedBinaryWriter writer, List<string> strings = null)
+            public virtual void Write(ExtendedBinaryWriter writer, ref int manualCount, List<string> strings = null)
             {
                 if (ArgTypes == null)
                     return;
@@ -227,7 +227,7 @@ namespace STSCTool
                             writer.Write(pointer);
                     }
                     else
-                        WriteByType(writer, ArgTypes[i], Arguments[i], strings);
+                        WriteByType(writer, ArgTypes[i], Arguments[i], ref manualCount, strings);
                 }
             }
 
@@ -247,10 +247,11 @@ namespace STSCTool
                             size += 2;
                             break;
                         case AT_Int32:
-                        case AT_Pointer:
+                        case AT_CodePointer:
                         case AT_DataReference:
                         case AT_Float:
                         case AT_String:
+                        case AT_ManualBinary:
                             size += 4;
                             break;
                         case AT_PointerArray:
@@ -277,16 +278,20 @@ namespace STSCTool
                         return reader.ReadSingle();
                     case AT_String:
                         return reader.ReadStringElsewhere();
-                    case AT_Pointer:
+                    case AT_StringPtr:
+                        return reader.ReadStringPointer();
+                    case AT_CodePointer:
                         return reader.ReadInt32();
                     case AT_DataReference:
                         return reader.ReadUInt32();
+                    case AT_ManualBinary:
+                        return reader.ReadArrayRange(reader.ReadInt32(), reader.ReadInt32());
                     default:
                         return null;
                 }
             }
 
-            public static void WriteByType(ExtendedBinaryWriter writer, ArgumentType type, object value, List<string> strings = null)
+            public static void WriteByType(ExtendedBinaryWriter writer, ArgumentType type, object value, ref int manualCount, List<string> strings = null)
             {
                 switch (type)
                 {
@@ -311,23 +316,36 @@ namespace STSCTool
                         writer.AddOffset($"Strings_{strings.Count}");
                         strings.Add((string)value);
                         break;
-                    case AT_Pointer:
+                    case AT_StringPtr:
+                        if (strings == null)
+                            break;
+                        writer.AddOffset($"StringsPtr_{strings.Count}");
+                        strings.Add((string)value);
+                        break;
+                    case AT_CodePointer:
                         writer.Write((int)value);
                         break;
                     case AT_DataReference:
                         writer.Write((int)value);
                         break;
+                    case AT_ManualBinary:
+                        writer.AddOffset($"Manual_Ptr_{manualCount}l");
+                        writer.AddOffset($"Manual_Ptr_{manualCount}h");
+                        ++manualCount;
+                        break;
                 }
             }
         }
 
-        public static string ReadStringElsewhere(this ExtendedBinaryReader reader, int position = 0)
+        public static string ReadStringElsewhere(this ExtendedBinaryReader reader, int position = 0, bool absolute = true)
         {
             long oldPos = reader.BaseStream.Position;
             try
             {
                 if (position == 0)
-                    reader.JumpTo(reader.ReadInt32());
+                    reader.JumpTo(reader.ReadInt32(), absolute);
+                else
+                    reader.JumpTo(position, absolute);
                 if (reader.Offset > reader.BaseStream.Position)
                     reader.Offset = (uint) reader.BaseStream.Position;
                 string s = reader.ReadNullTerminatedString();
@@ -343,6 +361,47 @@ namespace STSCTool
                 return "";
             }
         }
+
+        public static string ReadStringPointer(this ExtendedBinaryReader reader)
+        {
+            long oldPos = reader.BaseStream.Position;
+            try
+            {
+                reader.JumpTo(reader.ReadInt32());
+                reader.JumpTo(reader.ReadInt32());
+                if (reader.Offset > reader.BaseStream.Position)
+                    reader.Offset = (uint)reader.BaseStream.Position;
+                string s = reader.ReadNullTerminatedString();
+                reader.JumpTo(oldPos + 4);
+                return s;
+            }
+            catch
+            {
+                reader.JumpTo(oldPos);
+                return "";
+            }
+        }
+
+        public static byte[] ReadArrayRange(this ExtendedBinaryReader reader, int start, int end)
+        {
+            long oldPos = reader.BaseStream.Position;
+            try
+            {
+                reader.JumpTo(start);
+                if (reader.Offset > reader.BaseStream.Position)
+                    reader.Offset = (uint)reader.BaseStream.Position;
+                int length = end - start;
+                byte[] bytes = reader.ReadBytes(length);
+                reader.JumpTo(oldPos);
+                return bytes;
+            }
+            catch
+            {
+                reader.JumpTo(oldPos);
+                return new byte[0] { };
+            }
+        }
+
 
         public class InstructionIf : Instruction
         {
@@ -366,7 +425,7 @@ namespace STSCTool
             }
             public List<Comparison> Comparisons = new List<Comparison>();
 
-            public InstructionIf() : base("if", new [] {AT_Pointer})
+            public InstructionIf() : base("if", new [] {AT_CodePointer})
             {
 
             }
@@ -386,7 +445,7 @@ namespace STSCTool
                 return instruction;
             }
 
-            public override void Write(ExtendedBinaryWriter writer, List<string> strings = null)
+            public override void Write(ExtendedBinaryWriter writer, ref int manualCount, List<string> strings = null)
             {
                 writer.Write((short)Comparisons.Count);
                 writer.Write(GetArgument<int>(0));
@@ -436,13 +495,13 @@ namespace STSCTool
                     instruction.ArgTypes[i * 2 + 3 + 0] = AT_Int32;
                     instruction.Arguments.Add(reader.ReadInt32());
                     // location
-                    instruction.ArgTypes[i * 2 + 3 + 1] = AT_Pointer;
+                    instruction.ArgTypes[i * 2 + 3 + 1] = AT_CodePointer;
                     instruction.Arguments.Add(reader.ReadInt32());
                 }
                 return instruction;
             }
 
-            public override void Write(ExtendedBinaryWriter writer, List<string> strings = null)
+            public override void Write(ExtendedBinaryWriter writer, ref int manualCount, List<string> strings = null)
             {
                 writer.Write(GetArgument<uint>(0));
                 writer.Write((ushort)(GetArgument<ushort>(1) | GetArgument<ushort>(2) << 15));

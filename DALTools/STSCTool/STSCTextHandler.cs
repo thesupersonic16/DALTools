@@ -72,7 +72,7 @@ namespace STSCTool
             {
                 string[] argString = instruction.Arguments.Select((arg, index) =>
                 {
-                    if (instruction.ArgTypes[index] == STSCInstructions.ArgumentType.AT_Pointer)
+                    if (instruction.ArgTypes[index] == STSCInstructions.ArgumentType.AT_CodePointer)
                     {
                         int jumpAddress = instruction.GetArgument<int>(index);
                         string labelName = $"LABEL_{jumpAddress:X4}";
@@ -207,7 +207,7 @@ namespace STSCTool
                         instruction.ArgTypes[ii * 2 + 3 + 0] = STSCInstructions.ArgumentType.AT_Int32;
                         instruction.Arguments.Add(int.Parse(ProcessLiterals(code[ii * 2 + 4 + 0])));
                         // location
-                        instruction.ArgTypes[ii * 2 + 3 + 1] = STSCInstructions.ArgumentType.AT_Pointer;
+                        instruction.ArgTypes[ii * 2 + 3 + 1] = STSCInstructions.ArgumentType.AT_CodePointer;
                         instruction.Arguments.Add(code[ii * 2 + 4 + 1]);
                     }
                     file.Instructions.Add(instruction);
@@ -230,7 +230,7 @@ namespace STSCTool
             {
                 if (t.ArgTypes != null)
                     for (int i = 0; i < t.ArgTypes.Length; ++i)
-                        if (t.ArgTypes[i] == STSCInstructions.ArgumentType.AT_Pointer && t.Arguments[i].GetType() == typeof(string))
+                        if (t.ArgTypes[i] == STSCInstructions.ArgumentType.AT_CodePointer && t.Arguments[i].GetType() == typeof(string))
                             t.Arguments[i] = labels[t.Arguments[i] as string];
             });
         }
@@ -244,7 +244,7 @@ namespace STSCTool
                 case STSCInstructions.ArgumentType.AT_Byte:
                 case STSCInstructions.ArgumentType.AT_Int16:
                 case STSCInstructions.ArgumentType.AT_Int32:
-                case STSCInstructions.ArgumentType.AT_Pointer:
+                case STSCInstructions.ArgumentType.AT_CodePointer:
                     int num = instruction.GetArgument<int>(index);
                     if (num > 2048 || num < -2048)
                         return $"0x{num:X}";
@@ -255,6 +255,7 @@ namespace STSCTool
                 case STSCInstructions.ArgumentType.AT_Float:
                     return $"{instruction.GetArgument<float>(index)}f";
                 case STSCInstructions.ArgumentType.AT_String:
+                case STSCInstructions.ArgumentType.AT_StringPtr:
                     return $"\"{instruction.GetArgument<string>(index).Replace("\"", "\\\"")}\"";
             }
             return "";
@@ -275,7 +276,7 @@ namespace STSCTool
                 case STSCInstructions.ArgumentType.AT_Int32:
                     instruction.Arguments.Add(int.Parse(value));
                     return;
-                case STSCInstructions.ArgumentType.AT_Pointer:
+                case STSCInstructions.ArgumentType.AT_CodePointer:
                     instruction.Arguments.Add(value);
                     return;
                 case STSCInstructions.ArgumentType.AT_DataReference:

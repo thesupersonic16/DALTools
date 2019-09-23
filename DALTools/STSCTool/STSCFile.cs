@@ -16,6 +16,8 @@ namespace STSCTool
         public uint ScriptID = 0; // Used to store script information
         public List<STSCInstructions.Instruction> Instructions = new List<STSCInstructions.Instruction>();
 
+        public int ManualCount = 0;
+
         public override void Load(Stream fileStream)
         {
             var reader = new ExtendedBinaryReader(fileStream, Encoding.UTF8);
@@ -96,7 +98,7 @@ namespace STSCTool
             foreach (var instruction in Instructions)
             {
                 writer.Write((byte)STSCInstructions.Instructions.FindIndex(t => t?.Name == instruction.Name));
-                instruction.Write(writer, strings);
+                instruction.Write(writer, ref ManualCount, strings);
             }
             // Write String Table
             for (int i = 0; i < strings.Count; ++i)
