@@ -18,7 +18,7 @@ using zlib;
 namespace TEXTool
 {
     [Serializable]
-    public class TEXFile : FileBase
+    public class TEXFile : FileBase, IDisposable
     {
 
         public enum Format
@@ -267,18 +267,25 @@ namespace TEXTool
 
         public void FlipColors()
         {
-            byte[] buffer = new byte[4];
+            byte buffer = 0;
             for (int i = 0; i < SheetData.Length; i += 4)
             {
-                buffer[0] = SheetData[i + 0];
-                buffer[1] = SheetData[i + 1];
-                buffer[2] = SheetData[i + 2];
-                buffer[3] = SheetData[i + 3];
-                SheetData[i + 0] = buffer[2];
-                SheetData[i + 1] = buffer[1];
-                SheetData[i + 2] = buffer[0];
-                SheetData[i + 3] = buffer[3];
+                buffer = SheetData[i + 0];
+                SheetData[i + 0] = SheetData[i + 2];
+                SheetData[i + 2] = buffer;
             }
+        }
+
+        public static byte[] FlipColorsNew(byte[] array)
+        {
+            byte[] newArray = new byte[array.Length];
+            Array.Copy(array, newArray, array.Length);
+            for (int i = 0; i < array.Length; i += 4)
+            {
+                newArray[i + 0] = array[i + 2];
+                newArray[i + 2] = array[i + 0];
+            }
+            return newArray;
         }
 
         public int CheckPCKSig(ExtendedBinaryReader reader, string expected)
@@ -308,6 +315,13 @@ namespace TEXTool
         public void WritePCKSig(ExtendedBinaryWriter writer, string sig, bool smallSig)
         {
             writer.WriteSignature(sig + new string(' ', (smallSig ? 0x08 : 0x14) - sig.Length));
+        }
+
+        public void Dispose()
+        {
+            Frames.Clear();
+            Frames = null;
+            SheetData = null;
         }
     }
 }
