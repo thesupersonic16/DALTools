@@ -1,5 +1,5 @@
-# STSC v7 Functions
-A little list of some known STSC functions used in DATE A LIVE: Rio Reincarnation  
+# DAL: RR Script Basic Function List
+A little list of some known script functions used in DATE A LIVE: Rio Reincarnation  
 A lot of assumptions are being used in this list which could be wrong and please use common sense when using this list.
 
 ## Exit()
