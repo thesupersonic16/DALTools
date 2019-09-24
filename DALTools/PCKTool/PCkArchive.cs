@@ -204,7 +204,7 @@ namespace PCKTool
                 if (file?.Name.IndexOf("/", StringComparison.Ordinal) != -1)
                 {
                     string dir = file?.Name.Substring(0, file.Name.IndexOf('/'));
-                    file.Name = file?.Name.Substring(file.Name.IndexOf('/'));
+                    file.Name = file?.Name.Substring(file.Name.IndexOf('/') + 1);
                     CreateDirectories(dir).Data.Add(file);
                     Data.RemoveAt(i--);
                 }
