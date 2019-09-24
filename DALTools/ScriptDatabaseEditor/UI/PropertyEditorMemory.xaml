@@ -1,0 +1,40 @@
+﻿<Window x:Class="ScriptDatabaseEditor.PropertyEditorMemory"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ScriptDatabaseEditor"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d" WindowStartupLocation="CenterScreen"
+        Title="Memory Property Editor" Height="348.991" Width="450" Style="{StaticResource HedgeWindow}">
+    <Window.Resources>
+        <ObjectDataProvider x:Key="GamesEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="local:GameID"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="2" Background="#323235">
+            <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,10,10" Height="20" Click="ButtonSave_Click"/>
+            <Button Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,90,10" Height="20" Click="ButtonCancel_Click"/>
+        </Grid>
+        <GroupBox Header="Properties" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5,5,5,5">
+            <Grid>
+                <Label Content="Memory Name: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                <TextBox HorizontalAlignment="Stretch" Height="23" Text="{Binding Memory.Name, Mode=TwoWay}" VerticalAlignment="Top" Margin="118,8,5,0"/>
+                <Label Content="Memory ID: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,36,0,0"/>
+                <local:NumericUpDown HorizontalAlignment="Stretch" Height="23" Value="{Binding Memory.ID, Mode=TwoWay}" VerticalAlignment="Top" Margin="118,39,5,0"/>
+                <Label Content="Memory Game: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,67,0,0"/>
+                <ComboBox HorizontalAlignment="Stretch" Height="23" SelectedItem="{Binding Memory.GameID, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource GamesEnum}}" VerticalAlignment="Top" Margin="118,70,5,0"/>
+                <Label Content="Memory Description: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,98,0,0"/>
+                <TextBox HorizontalAlignment="Stretch" Text="{Binding Memory.Description, Mode=TwoWay}" VerticalAlignment="Stretch" Margin="20,130,10,10" AcceptsReturn="True" FontSize="14"/>
+                <Label Content="{Binding Note}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,130,0,0"/>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</Window>

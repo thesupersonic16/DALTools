@@ -1,0 +1,52 @@
+﻿<Window x:Class="ScriptDatabaseEditor.PropertyEditorVoiceName"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ScriptDatabaseEditor"
+        mc:Ignorable="d" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded"
+        Title="Voice Name Property Editor" Height="426" Width="373" Style="{StaticResource HedgeWindow}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="170"/>
+            <RowDefinition/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="2" Background="#323235">
+            <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,10,10" Height="20" Click="ButtonSave_Click"/>
+            <Button Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,90,10" Height="20" Click="ButtonCancel_Click"/>
+        </Grid>
+        <GroupBox Header="Properties" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5,5,5,5">
+            <Grid>
+                <StackPanel>
+                    <Grid>
+                        <Label Content="Unknown Name: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                        <TextBox HorizontalAlignment="Stretch" Height="23" Text="{Binding Voice.UnknownName, Mode=TwoWay}" VerticalAlignment="Top" Margin="118,8,5,0"/>
+                    </Grid>
+                    <Grid>
+                        <Label Content="Known Name: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                        <TextBox HorizontalAlignment="Stretch" Height="23" Text="{Binding Voice.KnownName, Mode=TwoWay}" VerticalAlignment="Top" Margin="118,8,5,0"/>
+                    </Grid>
+                    <Grid>
+                        <Label Content="Prefered Name: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                        <TextBox HorizontalAlignment="Stretch" Height="23" Text="{Binding Voice.PreferedName, Mode=TwoWay}" VerticalAlignment="Top" Margin="118,8,5,0"/>
+                    </Grid>
+                    <Grid>
+                        <Label Content="Voice ID: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                        <local:NumericUpDown HorizontalAlignment="Stretch" Height="23" Value="{Binding Voice.ID, Mode=TwoWay}" VerticalAlignment="Top" Margin="118,8,5,0"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Icon" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5,0,5,5" Grid.Row="1">
+            <Grid>
+                <!-- Background (Frame 27) -->
+                <Image Source="{Binding _parent.VN_BG}"></Image>
+                <!-- Character -->
+                <Image Source="{Binding _parent.VN_CH}"></Image>
+                <!-- Frame (Frame 26) -->
+                <Image Source="{Binding _parent.VN_FR}"></Image>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</Window>

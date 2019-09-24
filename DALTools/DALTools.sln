@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.705
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCKTool", "PCKTool\PCKTool.csproj", "{146A533A-23B5-4EA9-AFE9-860FFE2E9891}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STSCTool", "STSCTool\STSCTool.csproj", "{B13BF845-7A7C-4AA3-B456-8D47C0EB3480}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FontEditor", "FontEditor\FontEditor.csproj", "{231F66B1-3FDF-4CBE-921C-668BA5C5199A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptDatabaseEditor", "ScriptDatabaseEditor\ScriptDatabaseEditor.csproj", "{BB978EB7-5B08-4DA2-AB0A-267486657018}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +49,10 @@ Global
 		{231F66B1-3FDF-4CBE-921C-668BA5C5199A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{231F66B1-3FDF-4CBE-921C-668BA5C5199A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{231F66B1-3FDF-4CBE-921C-668BA5C5199A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB978EB7-5B08-4DA2-AB0A-267486657018}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB978EB7-5B08-4DA2-AB0A-267486657018}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB978EB7-5B08-4DA2-AB0A-267486657018}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB978EB7-5B08-4DA2-AB0A-267486657018}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

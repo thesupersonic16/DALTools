@@ -1,0 +1,32 @@
+﻿<Window x:Class="ScriptDatabaseEditor.PropertyEditorCharacter"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ScriptDatabaseEditor"
+        mc:Ignorable="d" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded"
+        Title="Character Property Editor" Height="330" Width="411" Style="{StaticResource HedgeWindow}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="134"/>
+            <RowDefinition/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="2" Background="#323235">
+            <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,10,10" Height="20" Click="ButtonSave_Click"/>
+            <Button Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,90,10" Height="20" Click="ButtonCancel_Click"/>
+        </Grid>
+        <GroupBox Header="Properties" HorizontalAlignment="Stretch" Height="124" VerticalAlignment="Top" Margin="5,5,5,0">
+            <Grid>
+                <Label Content="Character Name: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                <TextBox HorizontalAlignment="Stretch" Height="23" Text="{Binding Character.FriendlyName, Mode=TwoWay}" VerticalAlignment="Top" Margin="118,8,5,0"/>
+                <Label Content="Character ID: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,36,0,0"/>
+                <local:NumericUpDown HorizontalAlignment="Stretch" Height="23" Value="{Binding Character.ID, Mode=TwoWay}" VerticalAlignment="Top" Margin="118,39,5,0"/>
+                <Label Content="" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,62,0,0"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Name Image" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5,0,5,5" Grid.Row="1">
+            <Image x:Name="EventNameImage" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,2,2,2"/>
+        </GroupBox>
+    </Grid>
+</Window>

@@ -44,6 +44,15 @@ STSCTool is currently really far from being complete but is usable at this point
 
 ## FontEditor - DATE A LIVE: Rio Reincarnation Font Editor
 Incomplete, Can be used for editing font codes, but adding new character definitions do not work due to the game refusing to use the code for unknown reasons.
+ 
+## ScriptDatabaseEditor - DATE A LIVE: Rio Reincarnation Script Database Editor
+A GUI tool made to allow editing the database.bin file located in the Script directory. The database file contains information mainly extras, menu and some common definitions like character and voice names. 
+ 
+Note: This tool can preview some reources if DATE A LIVE: Rio Reincarnation is found installed.
+ 
+Using this tool is easy, drag your database.bin file onto the exe file or run it alone for it to load your current script you have in your DATE A LIVE: Rio Reincarnation installation (By default English will be loaded). 
+
+![Screenshot of ScriptDatabaseEditor viewing ](/Images/ScriptDatabaseEditor_Screenshot_00.png)
 
 
 [functions_url]: ./FUNCTIONS.md

@@ -1,0 +1,25 @@
+﻿<Window x:Class="ScriptDatabaseEditor.PropertyEditorSystemText"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ScriptDatabaseEditor"
+        mc:Ignorable="d" WindowStartupLocation="CenterScreen"
+        Title="SystemText Property Editor" Height="172" Width="640" Style="{StaticResource HedgeWindow}" Loaded="Window_Loaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <GroupBox Header="Properties" HorizontalAlignment="Stretch" Height="74" VerticalAlignment="Top" Margin="5,5,5,0">
+            <Grid>
+                <TextBox x:Name="PropertyTextBox" Height="23" VerticalAlignment="Top" Margin="8,8,8,8" KeyDown="PropertyTextBox_KeyDown" TextChanged="PropertyTextBox_TextChanged"/>
+            </Grid>
+        </GroupBox>
+        <Grid Background="#323235" Grid.Row="1">
+            <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,10,10" Height="20" Click="ButtonSave_Click"/>
+            <Button Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,90,10" Height="20" Click="ButtonCancel_Click"/>
+        </Grid>
+
+    </Grid>
+</Window>

@@ -1,0 +1,42 @@
+﻿<Window x:Class="ScriptDatabaseEditor.OptionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:ScriptDatabaseEditor"
+        mc:Ignorable="d" WindowStartupLocation="CenterScreen"
+        Title="Options" Height="360.3" Width="300" Style="{StaticResource HedgeWindow}">
+    <Window.Resources>
+        <ObjectDataProvider x:Key="LangEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="local:GameLanguage"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <GroupBox Header="Options" Margin="5,5,5,5">
+            <StackPanel>
+                <Grid>
+                    <Label Content="Game Language: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" ToolTip="Language used for viewing resources"/>
+                    <ComboBox HorizontalAlignment="Stretch" Height="23" SelectedItem="{Binding MainWindow.Game.GameLanguage, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource LangEnum}}" VerticalAlignment="Top" Margin="129,13,10,0" SelectionChanged="LG_ComboBox_SelectionChanged"/>
+                </Grid>
+                <Grid>
+                    <Label Content="Default Language: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" ToolTip="Language used when loading ScriptDatabaseEditor without a script"/>
+                    <ComboBox HorizontalAlignment="Stretch" Height="23" SelectedItem="{Binding MainWindow.Config.DefaultGameLanguage, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource LangEnum}}" VerticalAlignment="Top" Margin="129,13,10,0"/>
+                </Grid>
+                <Grid>
+                    <Label Content="Enable Animations: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,5,0,0" ToolTip="Language used when loading ScriptDatabaseEditor without a script"/>
+                    <CheckBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="131,11,0,0" IsChecked="{Binding MainWindow.Config.EnableAnimations, Mode=TwoWay}" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"/>
+                </Grid>
+            </StackPanel>
+        </GroupBox>
+        <Grid Grid.Row="2" Background="#323235">
+            <Button Content="Close" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,10,10" Height="20" Click="ButtonClose_Click"/>
+        </Grid>
+    </Grid>
+</Window>

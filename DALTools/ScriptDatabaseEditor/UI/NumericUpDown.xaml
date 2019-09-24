@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="ScriptDatabaseEditor.NumericUpDown"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ScriptDatabaseEditor"
+             mc:Ignorable="d" 
+             d:DesignHeight="23" d:DesignWidth="100">
+    <UserControl.Resources>
+        <Style TargetType="RepeatButton">
+            <Setter Property="Background" Value="#FF3F3F46" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="FontSize"  Value="11" />
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <TextBox       x:Name="NumTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,20,0" Text="" TextChanged="NumTextBox_TextChanged"/>
+        <RepeatButton  HorizontalAlignment="Right" VerticalAlignment="Top"    Width="10" Height="11" MinWidth="20" MinHeight="11" FontFamily="Marlett" Content="5" Click="RepeatButtonUp_Click"/>
+        <RepeatButton  HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="10" Height="12" MinWidth="20" MinHeight="11" FontFamily="Marlett" Content="6" Click="RepeatButtonDown_Click"/>
+    </Grid>
+</UserControl>
