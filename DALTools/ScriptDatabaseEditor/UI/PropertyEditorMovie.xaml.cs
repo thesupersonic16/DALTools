@@ -1,5 +1,6 @@
-﻿using HedgeLib.Archives;
-using PCKTool;
+﻿#pragma warning disable CS0067
+using DALLib.File;
+using DALLib.Imaging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,7 +15,6 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using TEXTool;
 using static ScriptDatabaseEditor.STSCFileDatabase;
 
 namespace ScriptDatabaseEditor
@@ -35,8 +35,8 @@ namespace ScriptDatabaseEditor
         public string Note { get; set; }
 
         protected TEXFile _texture;
-        protected PCKStreamArchive _archive;
-        public PropertyEditorMovie(MovieEntry entry, Game game, PCKStreamArchive archive)
+        protected PCKFile _archive;
+        public PropertyEditorMovie(MovieEntry entry, Game game, PCKFile archive)
         {
             InitializeComponent();
             Movie = new MovieEntry() { FriendlyName = entry.FriendlyName, ID = entry.ID, FilePath = entry.FilePath, Unknown4 = entry.Unknown4, GameID = entry.GameID, Unknown5 = entry.Unknown5 };
@@ -56,7 +56,7 @@ namespace ScriptDatabaseEditor
                     return;
                 using (var stream = new MemoryStream(file))
                     (_texture = new TEXFile()).Load(stream);
-                ThumbnailImage.Source = ImageTools.ConvertToSource(_texture.GetBitmap());
+                ThumbnailImage.Source = ImageTools.ConvertToSource(_texture.CreateBitmap());
             }
         }
 

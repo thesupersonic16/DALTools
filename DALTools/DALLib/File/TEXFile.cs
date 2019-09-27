@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using HedgeLib.Exceptions;
-using HedgeLib.IO;
-using HedgeLib.Misc;
+using DALLib.Compression;
+using DALLib.Imaging;
+using DALLib.IO;
 using Scarlet.Drawing;
 using Scarlet.IO;
 using zlib;
 
-namespace TEXTool
+namespace DALLib.File
 {
     [Serializable]
     public class TEXFile : FileBase, IDisposable
@@ -57,44 +56,19 @@ namespace TEXTool
         /// </summary>
         public bool UseSmallSig = false;
         /// <summary>
-        /// Toggle for using Not including a signature, It is unknown what needs it or now
+        /// Toggle for using not including a signature, It is unknown what needs it or now
         /// Default is false (include signature) as most files needs it
         /// </summary>
         public bool Sigless = false;
 
-
-        public static byte[] DecompressData(Stream inputStream, bool closeStream = true)
+        /// <summary>
+        /// Loads and parses file from stream into memory
+        /// </summary>
+        /// <param name="reader">Reader of the file</param>
+        public override void Load(ExtendedBinaryReader reader)
         {
-            byte[] buffer = null;
-            using (MemoryStream outMemoryStream = new MemoryStream())
-            using (ZOutputStream outZStream = new ZOutputStream(outMemoryStream))
-            {
-                CopyStream(inputStream, outZStream);
-                outZStream.finish();
-                buffer = outMemoryStream.ToArray();
-                if (closeStream)
-                    inputStream.Close();
-            }
-            return buffer;
-        }
-
-        public static void CopyStream(Stream input, Stream output)
-        {
-            byte[] buffer = new byte[32];
-            int len;
-            while ((len = input.Read(buffer, 0, 32)) > 0)
-            {
-                output.Write(buffer, 0, len);
-            }
-            output.Flush();
-        }
-
-        public override void Load(Stream fileStream)
-        {
-            var reader = new ExtendedBinaryReader(fileStream);
-
             // Decompress Zlib stream
-            if (reader.PeekChar() == 'Z')
+            if (reader.PeekSignature() == "ZLIB")
             {
                 // Skip Zlib Header
                 // 0x00 - "ZLIB"
@@ -102,17 +76,18 @@ namespace TEXTool
                 // 0x08 - CompressedSize
                 // 0x0C - Zlib Data
                 reader.JumpAhead(12);
-                reader = new ExtendedBinaryReader(new MemoryStream(DecompressData(reader.BaseStream)));
+                // Set stream to ZLIB
+                reader.SetStream(new ZOutputStream(reader.BaseStream));
             }
 
             // Read Signature to guess the type of TEX
-            int sigSize = CheckPCKSig(reader, "Texture");
+            int sigSize = reader.CheckDALSignature("Texture");
             Sigless = sigSize < 4;
             UseSmallSig = sigSize <= 8;
 
             int textureSectionSize = reader.ReadInt32();
             if (Sigless)
-                reader.JumpTo(0);
+                reader.JumpBehind(11);
             Format format = (Format)(reader.ReadUInt16() | (reader.ReadByte() << 16));
             byte unknown = reader.ReadByte();
             int dataLength;
@@ -131,20 +106,22 @@ namespace TEXTool
                 SheetWidth = reader.ReadInt16();
                 SheetHeight = reader.ReadInt16();
             }
-            
+
+            bool useLZ77 = reader.PeekSignature() == "LZ77";
+
             // Read Image Data
             SheetData = reader.ReadBytes(dataLength);
             
-            // LZ77 Decompression
-            if (BitConverter.ToInt32(SheetData, 0) == 0x37375A4C)
-                SheetData = SheetData.Lz77Decompress();
+            // Decompress LZ77 Image
+            if (useLZ77)
+                SheetData = SheetData.DecompressLZ77();
 
             // Decompress/Process Image based on format
-            TEXDecoder.Decode(this, format, reader);
+            TEXConverter.Decode(this, format, reader);
 
 
             // Parts
-            sigSize = CheckPCKSig(reader, "Parts");
+            sigSize = reader.CheckDALSignature("Parts");
             if (sigSize < 4)
                 return;
             int partsSectionSize = reader.ReadInt32();
@@ -171,21 +148,18 @@ namespace TEXTool
 
             // Anime
             reader.FixPadding(0x8);
-            sigSize = CheckPCKSig(reader, "Anime");
+            sigSize = reader.CheckDALSignature("Anime");
             if (sigSize < 4)
                 return;
             int animeSectionSize = reader.ReadInt32();
             
         }
 
-        // May not work, Only tested with title.tex
-        public override void Save(Stream fileStream)
+        public override void Save(ExtendedBinaryWriter writer)
         {
-            var writer = new ExtendedBinaryWriter(fileStream);
-
             if (!Sigless)
             {
-                WritePCKSig(writer, "Texture", UseSmallSig);
+                writer.WriteDALSignature("Texture", UseSmallSig);
                 writer.AddOffset("HeaderSize");
             }
 
@@ -203,7 +177,7 @@ namespace TEXTool
                 writer.Write((short)SheetWidth);
                 writer.Write((short)SheetHeight);
             }
-            writer.Write(TEXEncoder.Encode(this, format, writer));
+            writer.Write(SheetData);
             writer.FillInOffset("DataLength", (uint)writer.BaseStream.Position - (Sigless ? 0x10u : 0x28u));
 
             // Sigless files do not have Parts or Anime
@@ -213,7 +187,7 @@ namespace TEXTool
             // Parts
             writer.FillInOffset("HeaderSize");
             long header = writer.BaseStream.Position;
-            WritePCKSig(writer, "Parts", UseSmallSig);
+            writer.WriteDALSignature("Parts", UseSmallSig);
             writer.AddOffset("HeaderSize");
             writer.Write(Frames.Count);
 
@@ -232,7 +206,7 @@ namespace TEXTool
 
             // Anime
             header = writer.BaseStream.Position;
-            WritePCKSig(writer, "Anime", UseSmallSig);
+            writer.WriteDALSignature("Anime", UseSmallSig);
             writer.AddOffset("HeaderSize");
             writer.WriteNulls(4);
             writer.FillInOffset("HeaderSize", (uint)(writer.BaseStream.Position - header));
@@ -240,81 +214,14 @@ namespace TEXTool
 
         }
 
-        public void SaveImage(string path)
+        public void SaveSheetImage(string path)
         {
-            var Image = new Bitmap(SheetWidth, SheetHeight, PixelFormat.Format32bppArgb);
-
-            // Copy Data into Bitmap
-            var bitmap = Image.LockBits(new Rectangle(0, 0, SheetWidth, SheetHeight), ImageLockMode.ReadWrite, Image.PixelFormat);
-            FlipColors();
-            Marshal.Copy(SheetData, 0, bitmap.Scan0, SheetWidth * SheetHeight * 4);
-            Image.UnlockBits(bitmap);
-            Image.Save(path);
+            ImageTools.SaveImage(path, SheetWidth, SheetHeight, SheetData);
         }
 
-        public void LoadImage(string path)
+        public void LoadSheetImage(string path)
         {
-            var image = new Bitmap(path);
-            SheetWidth = (short) image.Width;
-            SheetHeight = (short) image.Height;
-            SheetData = new byte[SheetWidth * SheetHeight * 4];
-            var bitmap = image.LockBits(new Rectangle(0, 0, SheetWidth, SheetHeight), ImageLockMode.ReadWrite,
-                image.PixelFormat);
-            Marshal.Copy(bitmap.Scan0, SheetData, 0, SheetWidth * SheetHeight * 4);
-            image.UnlockBits(bitmap);
-            FlipColors();
-        }
-
-        public void FlipColors()
-        {
-            byte buffer = 0;
-            for (int i = 0; i < SheetData.Length; i += 4)
-            {
-                buffer = SheetData[i + 0];
-                SheetData[i + 0] = SheetData[i + 2];
-                SheetData[i + 2] = buffer;
-            }
-        }
-
-        public static byte[] FlipColorsNew(byte[] array)
-        {
-            byte[] newArray = new byte[array.Length];
-            Array.Copy(array, newArray, array.Length);
-            for (int i = 0; i < array.Length; i += 4)
-            {
-                newArray[i + 0] = array[i + 2];
-                newArray[i + 2] = array[i + 0];
-            }
-            return newArray;
-        }
-
-        public int CheckPCKSig(ExtendedBinaryReader reader, string expected)
-        {
-            // Read and check the signature
-            string sig = reader.ReadSignature(expected.Length);
-            if (sig != expected)
-                return 0;
-            // Calculate Size of Padding
-            int padding = 0;
-            while (true)
-            {
-                if (reader.ReadByte() != 0x20)
-                {
-                    if (expected.Length + padding >= 0x14)
-                        reader.JumpBehind((expected.Length + padding) - 0x14 + 1);
-                    else if (expected.Length + padding >= 0x08)
-                        reader.JumpBehind((expected.Length + padding) - 0x08 + 1);
-                    break;
-                }
-                ++padding;
-            }
-            // Total length of the signature
-            return expected.Length + padding;
-        }
-
-        public void WritePCKSig(ExtendedBinaryWriter writer, string sig, bool smallSig)
-        {
-            writer.WriteSignature(sig + new string(' ', (smallSig ? 0x08 : 0x14) - sig.Length));
+            ImageTools.LoadImage(path, ref SheetWidth, ref SheetHeight, ref SheetData);
         }
 
         public void Dispose()

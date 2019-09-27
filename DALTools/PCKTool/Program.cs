@@ -1,10 +1,10 @@
-﻿using System;
+﻿using DALLib.File;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HedgeLib.Archives;
 
 namespace PCKTool
 {
@@ -15,7 +15,7 @@ namespace PCKTool
             if (args.Length == 0)
             {
                 Console.WriteLine("Error: Not Enough Arguments!");
-                Console.WriteLine("  PCKTool {filePath/Directory}");
+                Console.WriteLine("  PCKTool {filePath(s)/Directory}");
                 Console.WriteLine("  Switches: ");
                 Console.WriteLine("    -s           Build all archives using small signatures");
                 Console.ReadKey(true);
@@ -38,49 +38,20 @@ namespace PCKTool
                     }
                     continue;
                 }
-                PCKArchive arc = new PCKArchive();
+                PCKFile arc = new PCKFile();
                 arc.UseSmallSig = useSmallSig;
                 var attr = File.GetAttributes(args[i]);
                 if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
                 {
-                    arc.Data.AddRange(GetFilesFromDir(args[i], true));
-                    arc.Save(args[i] + ".pck", true);
+                    arc.AddAllFiles(args[i]);
+                    arc.Save(args[i] + ".pck");
                 }
                 else
                 {
-                    arc.Load(args[i]);
-                    arc.Extract(Path.GetFileNameWithoutExtension(args[i]));
+                    arc.Load(args[i], true);
+                    arc.ExtractAllFiles(Path.GetFileNameWithoutExtension(args[i]));
                 }
             }
         }
-
-
-        // Workaround for a bug in HedgeLib that does not set dir names
-        public static List<ArchiveData> GetFilesFromDir(string dir,
-            bool includeSubDirectories = false)
-        {
-            // Add each file in the current sub-directory
-            var data = new List<ArchiveData>();
-            foreach (string filePath in Directory.GetFiles(dir))
-            {
-                data.Add(new ArchiveFile(filePath));
-            }
-
-            // Repeat for each sub directory
-            if (includeSubDirectories)
-            {
-                foreach (string subDir in Directory.GetDirectories(dir))
-                {
-                    data.Add(new ArchiveDirectory()
-                    {
-                        Data = GetFilesFromDir(subDir, includeSubDirectories),
-                        Name = Path.GetFileName(subDir)
-                    });
-                }
-            }
-
-            return data;
-        }
-
     }
 }

@@ -1,5 +1,5 @@
-﻿using HedgeLib.Archives;
-using PCKTool;
+﻿using DALLib.File;
+using DALLib.Imaging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +14,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using TEXTool;
 using static ScriptDatabaseEditor.STSCFileDatabase;
 
 namespace ScriptDatabaseEditor
@@ -29,8 +28,8 @@ namespace ScriptDatabaseEditor
         public CharacterEntry OldCharacter { get; set; }
 
         protected TEXFile _texture;
-        protected PCKStreamArchive _archive;
-        public PropertyEditorCharacter(CharacterEntry entry, PCKStreamArchive archive)
+        protected PCKFile _archive;
+        public PropertyEditorCharacter(CharacterEntry entry, PCKFile archive)
         {
             InitializeComponent();
             Character = new CharacterEntry() { FriendlyName = entry.FriendlyName, ID = entry.ID };
@@ -48,7 +47,7 @@ namespace ScriptDatabaseEditor
                     return;
                 using (var stream = new MemoryStream(file))
                     (_texture = new TEXFile()).Load(stream);
-                EventNameImage.Source = ImageTools.ConvertToSource(_texture.GetBitmap());
+                EventNameImage.Source = ImageTools.ConvertToSource(_texture.CreateBitmap());
             }
         }
 

@@ -1,5 +1,4 @@
-﻿using HedgeLib.IO;
-using STSCTool;
+﻿using DALLib.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,20 +12,18 @@ namespace ScriptDatabaseEditor
     public partial class STSCFileDatabase
     {
 
-        public override void Load(Stream fileStream)
+        public override void Load(ExtendedBinaryReader fileReader)
         {
             // Read STSC
-            base.Load(fileStream);
+            base.Load(fileReader);
 
-            // Used to read resources like strings, another reader is used for reading structs
-            var fileReader = new ExtendedBinaryReader(fileStream, Encoding.UTF8);
 
             // System text
             using (var reader = CreateReader(0))
             {
                 while (!EOF(reader))
                 {
-                    SystemText.Add(fileReader.ReadStringElsewhere(reader.ReadInt32(), false));
+                    SystemText.Add(fileReader.ReadStringElsewhere(reader.ReadInt32()));
                 }
             }
 
@@ -36,7 +33,7 @@ namespace ScriptDatabaseEditor
                 while (!EOF(reader))
                 {
                     var entry = new CGEntry();
-                    entry.Name          = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
+                    entry.Name          = fileReader.ReadStringElsewhere(reader.ReadInt32());
                     entry.ID            = reader.ReadInt32();
                     entry.CGID          = reader.ReadInt32();
                     entry.CGID2         = reader.ReadInt32();
@@ -81,8 +78,8 @@ namespace ScriptDatabaseEditor
                 while (!EOF(reader))
                 {
                     var entry = new MovieEntry();
-                    entry.FriendlyName  = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
-                    entry.FilePath      = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
+                    entry.FriendlyName  = fileReader.ReadStringElsewhere(reader.ReadInt32());
+                    entry.FilePath      = fileReader.ReadStringElsewhere(reader.ReadInt32());
                     entry.ID            = reader.ReadInt32();
                     entry.Unknown4      = reader.ReadByte();
                     entry.GameID        = (GameID)reader.ReadByte();
@@ -97,8 +94,8 @@ namespace ScriptDatabaseEditor
                 while (!EOF(reader))
                 {
                     var entry = new MemoryEntry();
-                    entry.Name          = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
-                    entry.Description   = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
+                    entry.Name          = fileReader.ReadStringElsewhere(reader.ReadInt32());
+                    entry.Description   = fileReader.ReadStringElsewhere(reader.ReadInt32());
                     entry.ID            = reader.ReadInt32();
                     entry.GameID        = (GameID)reader.ReadByte();
                     entry.Game          = (MemoryEntry.MemoryGame)reader.ReadByte();
@@ -113,7 +110,7 @@ namespace ScriptDatabaseEditor
                 while (!EOF(reader))
                 {
                     var entry = new CharacterEntry();
-                    entry.FriendlyName  = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
+                    entry.FriendlyName  = fileReader.ReadStringElsewhere(reader.ReadInt32());
                     entry.ID            = reader.ReadInt32();
                     Characters.Add(entry);
                 }
@@ -149,9 +146,9 @@ namespace ScriptDatabaseEditor
                 while (!EOF(reader))
                 {
                     var entry = new VoiceEntry();
-                    entry.UnknownName   = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
-                    entry.KnownName     = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
-                    entry.PreferedName  = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
+                    entry.UnknownName   = fileReader.ReadStringElsewhere(reader.ReadInt32());
+                    entry.KnownName     = fileReader.ReadStringElsewhere(reader.ReadInt32());
+                    entry.PreferedName  = fileReader.ReadStringElsewhere(reader.ReadInt32());
                     entry.ID            = reader.ReadInt32();
                     Voices.Add(entry);
                 }
@@ -175,9 +172,9 @@ namespace ScriptDatabaseEditor
                 while (!EOF(reader))
                 {
                     var entry = new ArtBookPageEntry();
-                    entry.PagePathThumbnail = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
-                    entry.PagePathData  = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
-                    entry.Name          = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
+                    entry.PagePathThumbnail = fileReader.ReadStringElsewhere(reader.ReadInt32());
+                    entry.PagePathData  = fileReader.ReadStringElsewhere(reader.ReadInt32());
+                    entry.Name          = fileReader.ReadStringElsewhere(reader.ReadInt32());
                     entry.ID            = reader.ReadInt32();
                     entry.GameID        = (GameID)reader.ReadInt16();
                     entry.Page          = reader.ReadInt16();
@@ -191,10 +188,10 @@ namespace ScriptDatabaseEditor
                 while (!EOF(reader))
                 {
                     var entry = new DramaCDEntry();
-                    entry.FileName      = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
-                    entry.FriendlyName  = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
-                    entry.SourceAlbum   = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
-                    entry.InternalName  = fileReader.ReadStringElsewhere(reader.ReadInt32(), false);
+                    entry.FileName      = fileReader.ReadStringElsewhere(reader.ReadInt32());
+                    entry.FriendlyName  = fileReader.ReadStringElsewhere(reader.ReadInt32());
+                    entry.SourceAlbum   = fileReader.ReadStringElsewhere(reader.ReadInt32());
+                    entry.InternalName  = fileReader.ReadStringElsewhere(reader.ReadInt32());
                     entry.ID            = reader.ReadInt16();
                     entry.Game          = (GameID)reader.ReadInt16();
                     entry.Unknown7      = reader.ReadInt16();

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DALLib.File;
+using DALLib.Scripting;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
@@ -7,37 +9,16 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
-using HedgeLib.IO;
-using static STSCTool.STSCInstructions.InstructionIf.Comparison;
+using static DALLib.Scripting.STSCInstructions.InstructionIf.Comparison;
 
 namespace STSCTool
 {
     public class STSCTextHandler
     {
 
-        public static int FindAddress(STSCFile file, int index)
-        {
-            int address = 0;
-            for (int i = 0; i < index; ++i)
-                address += file.Instructions[i].GetInstructionSize();
-            return address;
-        }
-
-        public static int FindIndex(STSCFile file, int address)
-        {
-            int tempAddress = 0x3C;
-            for (int i = 0; i < file.Instructions.Count; ++i)
-            {
-                if (tempAddress == address)
-                    return i;
-                tempAddress += file.Instructions[i].GetInstructionSize();
-            }
-            return 0;
-        }
-
         public static void PlaceLine(STSCFile file, List<string> strings, List<int> lines, int address, string s)
         {
-            int index = FindIndex(file, address);
+            int index = file.FindIndex(address);
             strings.Insert(lines[index], s);
             for (int i = index; i < lines.Count; ++i)
                 ++lines[i];
@@ -77,13 +58,13 @@ namespace STSCTool
                         int jumpAddress = instruction.GetArgument<int>(index);
                         string labelName = $"LABEL_{jumpAddress:X4}";
                         // Change Label name if its been used as a function
-                        if (instruction.Name == STSCInstructions.Instructions[0x1A].Name)
+                        if (instruction.Name == STSCInstructions.DALRRInstructions[0x1A].Name)
                             labelName = $"SUB_{jumpAddress:X4}";
 
                         if (!labels.ContainsKey(labelName))
                         {
                             labels.Add(labelName, jumpAddress);
-                            if (FindIndex(file, jumpAddress) < instructionPointer)
+                            if (file.FindIndex(jumpAddress) < instructionPointer)
                                 PlaceLine(file, strings, lines, jumpAddress, $"#label {labelName}");
                         }
                         return labelName;
@@ -91,8 +72,8 @@ namespace STSCTool
                     return ConvertArgumentToString(instruction, index);
                 }).ToArray();
                 // Macros
-                if (instruction.Name == STSCInstructions.Instructions[0x52].Name)
-                    argString[0] = STSCMacros.CharacterNames[int.Parse(argString[0])] ?? argString[0];
+                if (instruction.Name == STSCInstructions.DALRRInstructions[0x52].Name)
+                    argString[0] = STSCMacros.DALRRCharacterNames[int.Parse(argString[0])] ?? argString[0];
                 lines.Add(strings.Count);
                 strings.Add($"{new string(' ', currentIndent * 4)}{instruction.Name}({string.Join(", ", argString)})");
             }
@@ -154,7 +135,7 @@ namespace STSCTool
                     continue;
                 }
                 var code = ParseCodeLine(line);
-                var baseInstruction = STSCInstructions.Instructions.FirstOrDefault(t => t?.Name == code[0]);
+                var baseInstruction = STSCInstructions.DALRRInstructions.FirstOrDefault(t => t?.Name == code[0]);
                 if (baseInstruction == null)
                 {
                     Console.WriteLine("Error: Could not find any instructions for \"{0}\"! Please check line {1} in the source file.", code[0], i);
@@ -376,7 +357,7 @@ namespace STSCTool
         public static string ProcessLiterals(string s)
         {
             int number = 0;
-            if ((number = Array.IndexOf(STSCMacros.CharacterNames, s)) != -1)
+            if ((number = Array.IndexOf(STSCMacros.DALRRCharacterNames, s)) != -1)
                 return number.ToString();
             if (s.StartsWith("0x") && int.TryParse(s.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out number))
                 return number.ToString();

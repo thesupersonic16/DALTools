@@ -1,4 +1,5 @@
-﻿using HedgeLib.IO;
+﻿using DALLib.File;
+using DALLib.IO;
 using Scarlet.Drawing;
 using Scarlet.IO;
 using System;
@@ -10,11 +11,14 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using static TEXTool.TEXFile;
+using static DALLib.File.TEXFile;
 
-namespace TEXTool
+namespace DALLib.Imaging
 {
-    public static class TEXDecoder
+    /// <summary>
+    /// Class containing functions for decoding data from textures
+    /// </summary>
+    public static class TEXConverter
     {
         public static void Decode(this TEXFile file, Format format, ExtendedBinaryReader reader)
         {

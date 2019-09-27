@@ -43,20 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="STSCInstructions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="STSCFile.cs" />
-    <Compile Include="STSCMacros.cs" />
     <Compile Include="STSCTextHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\HedgeLib\HedgeLib\HedgeLib.csproj">
-      <Project>{eeb16fca-ff9f-40b5-9d43-f2460aa930c8}</Project>
-      <Name>HedgeLib</Name>
+    <ProjectReference Include="..\DALLib\DALLib.csproj">
+      <Project>{2bed1292-f508-46b9-bacb-366ab23dd04a}</Project>
+      <Name>DALLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

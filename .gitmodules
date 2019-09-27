@@ -1,6 +1,3 @@
-[submodule "HedgeLib"]
-	path = HedgeLib
-	url = https://github.com/Radfordhound/HedgeLib
 [submodule "Scarlet"]
 	path = Scarlet
 	url = https://github.com/TGEnigma/Scarlet

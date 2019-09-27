@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DALLib.File;
+using DALLib.IO;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -6,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.TextFormatting;
-using HedgeLib.IO;
 
 namespace FontEditor
 {
@@ -17,9 +18,8 @@ namespace FontEditor
         public float HeightScale = 0;
         public List<FontEntry> Characters = new List<FontEntry>();
 
-        public override void Load(Stream fileStream)
+        public override void Load(ExtendedBinaryReader reader)
         {
-            var reader = new ExtendedBinaryReader(fileStream, Encoding.GetEncoding("utf-8"));
             CharacterHeight = reader.ReadInt32();
             int characterCount = reader.ReadInt32();
             WidthScale = reader.ReadSingle();

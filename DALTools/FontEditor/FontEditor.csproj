@@ -105,21 +105,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\HedgeLib\HedgeLib\HedgeLib.csproj">
-      <Project>{eeb16fca-ff9f-40b5-9d43-f2460aa930c8}</Project>
-      <Name>HedgeLib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PCKTool\PCKTool.csproj">
-      <Project>{146a533a-23b5-4ea9-afe9-860ffe2e9891}</Project>
-      <Name>PCKTool</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TEXTool\TEXTool.csproj">
-      <Project>{53f094b0-9c5d-4973-896f-0bfbaf6acdeb}</Project>
-      <Name>TEXTool</Name>
-    </ProjectReference>
+    <Resource Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="icon.ico" />
+    <ProjectReference Include="..\DALLib\DALLib.csproj">
+      <Project>{2BED1292-F508-46B9-BACB-366AB23DD04A}</Project>
+      <Name>DALLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

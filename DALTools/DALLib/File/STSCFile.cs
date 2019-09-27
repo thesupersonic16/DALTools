@@ -1,29 +1,40 @@
-﻿using System;
+﻿using DALLib.Exceptions;
+using DALLib.IO;
+using DALLib.Scripting;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HedgeLib.Exceptions;
-using HedgeLib.IO;
 
-namespace STSCTool
+namespace DALLib.File
 {
     public class STSCFile : FileBase
     {
+        /// <summary>
+        /// Name of the script, This is usually just the name of the file
+        /// </summary>
         public string ScriptName { get; set; }
-        public uint ScriptID = 0; // Used to store script information
+        /// <summary>
+        /// The script ID is used to identify the script
+        /// </summary>
+        public uint ScriptID = 0;
+        /// <summary>
+        /// List of instructions inside the script
+        /// </summary>
         public List<STSCInstructions.Instruction> Instructions = new List<STSCInstructions.Instruction>();
-
+        /// <summary>
+        /// Count of manual offsets ready
+        /// </summary>
         public int ManualCount = 0;
 
-        public override void Load(Stream fileStream)
+        public override void Load(ExtendedBinaryReader reader)
         {
-            var reader = new ExtendedBinaryReader(fileStream, Encoding.UTF8);
             string sig = reader.ReadSignature();
             if (sig != "STSC")
-                throw new InvalidSignatureException("STSC", sig);
+                throw new SignatureMismatchException("STSC", sig);
             uint headerSize = reader.ReadUInt32();
             uint version = reader.ReadUInt32();
             if (version != 7)
@@ -51,7 +62,7 @@ namespace STSCTool
                 }
 
                 // Check if its a known instruction
-                if (STSCInstructions.Instructions[opcode] == null)
+                if (STSCInstructions.DALRRInstructions[opcode] == null)
                 {
                     Console.WriteLine("Error: Instruction {0:X2} at {1:X} is unknown!", opcode, (int)reader.BaseStream.Position - 1);
                     Console.WriteLine("This usually means STSCFile does not yet know the parameters on the instruction.");
@@ -62,7 +73,7 @@ namespace STSCTool
 
                 try
                 {
-                    var instruction = STSCInstructions.Instructions[opcode].Read(reader);
+                    var instruction = STSCInstructions.DALRRInstructions[opcode].Read(reader);
                     Instructions.Add(instruction);
                 }
                 catch (Exception e)
@@ -79,9 +90,8 @@ namespace STSCTool
             }
         }
 
-        public override void Save(Stream fileStream)
+        public override void Save(ExtendedBinaryWriter writer)
         {
-            ExtendedBinaryWriter writer = new ExtendedBinaryWriter(fileStream, Encoding.UTF8);
             var strings = new List<string>();
             writer.WriteSignature("STSC");
             writer.AddOffset("EntryPosition");
@@ -97,7 +107,7 @@ namespace STSCTool
             writer.FillInOffset("EntryPosition");
             foreach (var instruction in Instructions)
             {
-                writer.Write((byte)STSCInstructions.Instructions.FindIndex(t => t?.Name == instruction.Name));
+                writer.Write((byte)STSCInstructions.DALRRInstructions.FindIndex(t => t?.Name == instruction.Name));
                 instruction.Write(writer, ref ManualCount, strings);
             }
             // Write String Table
@@ -107,6 +117,26 @@ namespace STSCTool
                 writer.WriteNullTerminatedString(strings[i]);
             }
             writer.FixPadding(0x10);
+        }
+
+        public int FindAddress(int index)
+        {
+            int address = 0;
+            for (int i = 0; i < index; ++i)
+                address += Instructions[i].GetInstructionSize();
+            return address;
+        }
+
+        public int FindIndex(int address)
+        {
+            int tempAddress = 0x3C;
+            for (int i = 0; i < Instructions.Count; ++i)
+            {
+                if (tempAddress == address)
+                    return i;
+                tempAddress += Instructions[i].GetInstructionSize();
+            }
+            return 0;
         }
 
         public override string ToString()

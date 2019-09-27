@@ -1,6 +1,6 @@
 ﻿#pragma warning disable CS0067
-using HedgeLib.IO;
-using STSCTool;
+using DALLib.File;
+using DALLib.IO;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -44,7 +44,7 @@ namespace ScriptDatabaseEditor
         public void aLoad(Stream fileStream)
         {
             base.Load(fileStream);
-            var reader = new ExtendedBinaryReader(fileStream, Encoding.UTF8);
+            var reader = new ExtendedBinaryReader(fileStream);
             var array = Instructions[0].GetArgument<byte[]>(1);
             for (int i = 0; i < array.Length / 4; ++i)
             {

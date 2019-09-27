@@ -13,7 +13,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
-        <Label Content="DALTools: Script Database Editor" HorizontalAlignment="Center" VerticalAlignment="Top" Height="Auto" Width="Auto" FontSize="30" Margin="10,10,10,10"/>
+        <Label Content="DALTools: Script Database Editor" HorizontalAlignment="Center" VerticalAlignment="Top" Height="Auto" Width="Auto" FontSize="30" Margin="10,0,10,0"/>
         <GroupBox Header="Credits:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" Margin="10,10,10,10">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -25,7 +25,7 @@
                     <Label Content="Sajid"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <Label Content="Main Developer, Reverse Engineering"/>
+                    <Label Content="Main Developer, Reverse Engineering, DALLib"/>
                     <Label Content="GUI Theme, Help with PCKFile and TEXFile"/>
                 </StackPanel>
             </Grid>

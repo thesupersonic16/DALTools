@@ -1,8 +1,7 @@
 ﻿#pragma warning disable CS0067
-using HedgeLib.Archives;
+using DALLib.File;
+using DALLib.Imaging;
 using Microsoft.Win32;
-using PCKTool;
-using STSCTool;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,7 +18,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using TEXTool;
 
 namespace ScriptDatabaseEditor
 {
@@ -29,13 +27,13 @@ namespace ScriptDatabaseEditor
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
 
-        private STSCFileDatabase _stscDatabase = new STSCFileDatabase();
-        private PCKStreamArchive _nameTextureArchive = new PCKStreamArchive();
-        private PCKStreamArchive _movieTextureArchive = new PCKStreamArchive();
-        private PCKStreamArchive _CGThumbnailTextureArchive = new PCKStreamArchive();
-        private PCKStreamArchive _novelTextureArchive = new PCKStreamArchive();
+        private STSCFileDatabase _stscDatabase      = new STSCFileDatabase();
+        private PCKFile _nameTextureArchive         = new PCKFile();
+        private PCKFile _movieTextureArchive        = new PCKFile();
+        private PCKFile _CGThumbnailTextureArchive  = new PCKFile();
+        private PCKFile _novelTextureArchive        = new PCKFile();
 
-        private TEXFile _optionTexture = new TEXFile();
+        private TEXFile _optionTexture              = new TEXFile();
 
         private Game _game;
 
@@ -57,8 +55,6 @@ namespace ScriptDatabaseEditor
 
         public STSCFileDatabase STSCDatabase => _stscDatabase;
 
-        public string GamePath = @"C:\Program Files (x86)\Steam\steamapps\common\DATE A LIVE Rio Reincarnation";
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindow()
@@ -77,15 +73,15 @@ namespace ScriptDatabaseEditor
             try
             {
                 // Load Archives and Textures
-                _nameTextureArchive.Load(Path.Combine(_game.LangPath, "Event\\Name.pck"));
-                _movieTextureArchive.Load(Path.Combine(_game.LangPath, "Extra\\mov\\movieThumb.pck"));
-                _CGThumbnailTextureArchive.Load(Path.Combine(_game.GamePath, "Data\\Data\\Extra\\gal\\GalThumb.pck"));
-                _novelTextureArchive.Load(Path.Combine(_game.LangPath, "Extra\\nov\\NovData.pck"));
-                (_optionTexture = new TEXFile()).Load(Path.Combine(_game.LangPath, "Init\\option.tex"));
+                _nameTextureArchive.Load(Path.Combine(_game.LangPath, "Event\\Name.pck"), true);
+                _movieTextureArchive.Load(Path.Combine(_game.LangPath, "Extra\\mov\\movieThumb.pck"), true);
+                _CGThumbnailTextureArchive.Load(Path.Combine(_game.GamePath, "Data\\Data\\Extra\\gal\\GalThumb.pck"), true);
+                _novelTextureArchive.Load(Path.Combine(_game.LangPath, "Extra\\nov\\NovData.pck"), true);
+                (_optionTexture = new TEXFile()).Load(Path.Combine(_game.LangPath, "Init\\option.tex"), true);
 
                 // Create and Set ImageSource
-                VN_BG = ImageTools.ConvertToSource(_optionTexture.GetBitmap(27));
-                VN_FR = ImageTools.ConvertToSource(_optionTexture.GetBitmap(26));
+                VN_BG = ImageTools.ConvertToSource(_optionTexture.CreateBitmapFromFrame(27));
+                VN_FR = ImageTools.ConvertToSource(_optionTexture.CreateBitmapFromFrame(26));
             }
             catch (Exception e)
             {
@@ -202,7 +198,7 @@ namespace ScriptDatabaseEditor
                 return;
 
             // Change Character Image
-            VN_CH = ImageTools.ConvertToSource(_optionTexture.GetBitmap(Consts.VOICETOFRAMEID[id]));
+            VN_CH = ImageTools.ConvertToSource(_optionTexture.CreateBitmapFromFrame(Consts.VOICETOFRAMEID[id]));
         }
 
         private void CG_ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -225,7 +221,7 @@ namespace ScriptDatabaseEditor
                 using (var stream = new MemoryStream(data))
                     tex.Load(stream);
 
-                CG_IM = ImageTools.ConvertToSource(tex.GetBitmap());
+                CG_IM = ImageTools.ConvertToSource(tex.CreateBitmap());
             }
         }
 
@@ -255,7 +251,7 @@ namespace ScriptDatabaseEditor
                     using (var stream = new MemoryStream(data))
                         tex.Load(stream);
 
-                    tex.SaveImage(sfd.FileName);
+                    tex.SaveSheetImage(sfd.FileName);
                 }
             }
 
@@ -279,7 +275,7 @@ namespace ScriptDatabaseEditor
                 using (var stream = new MemoryStream(data))
                     tex.Load(stream);
 
-                AB_PG = ImageTools.ConvertToSource(tex.GetBitmap());
+                AB_PG = ImageTools.ConvertToSource(tex.CreateBitmap());
                 tex.Dispose();
             }
 
@@ -287,7 +283,7 @@ namespace ScriptDatabaseEditor
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            _stscDatabase.Save(App.DataBasePath, true);
+            _stscDatabase.Save(App.DataBasePath);
         }
 
         private void LoadButton_Click(object sender, RoutedEventArgs e)

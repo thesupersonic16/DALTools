@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DALLib.File;
+using DALLib.Scripting;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,7 +34,7 @@ namespace STSCTool
                 else
                 {
                     STSCTextHandler.ConvertToObject(file, File.ReadAllLines(args[i]));
-                    file.Save(Path.ChangeExtension(args[i], ".bin"), true);
+                    file.Save(Path.ChangeExtension(args[i], ".bin"));
                 }
             }
         }

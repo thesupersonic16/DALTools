@@ -1,5 +1,5 @@
-﻿using HedgeLib.IO;
-using STSCTool;
+﻿using DALLib.IO;
+using DALLib.Scripting;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,10 +13,9 @@ namespace ScriptDatabaseEditor
     public partial class STSCFileDatabase
     {
 
-        public override void Save(Stream fileStream)
+        public override void Save(ExtendedBinaryWriter writer)
         {
             ManualCount = 0;
-            ExtendedBinaryWriter writer = new ExtendedBinaryWriter(fileStream, Encoding.UTF8);
             var strings = new List<string>();
             writer.WriteSignature("STSC");
             writer.AddOffset("EntryPosition");
@@ -32,7 +31,7 @@ namespace ScriptDatabaseEditor
             writer.FillInOffset("EntryPosition");
             foreach (var instruction in Instructions)
             {
-                writer.Write((byte)STSCInstructions.Instructions.FindIndex(t => t?.Name == instruction.Name));
+                writer.Write((byte)STSCInstructions.DALRRInstructions.FindIndex(t => t?.Name == instruction.Name));
                 instruction.Write(writer, ref ManualCount, strings);
             }
             // Write String Table

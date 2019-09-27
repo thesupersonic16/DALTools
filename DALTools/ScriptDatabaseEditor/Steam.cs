@@ -43,9 +43,8 @@ namespace ScriptDatabaseEditor
             {
                 vdf = SteamVDF.Load(vdfLocation);
             }
-            catch (Exception ex)
+            catch
             {
-                // TODO
             }
 
             // Default Common Path

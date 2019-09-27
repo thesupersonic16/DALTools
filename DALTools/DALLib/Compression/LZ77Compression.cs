@@ -1,32 +1,33 @@
-﻿using System;
+﻿using DALLib.IO;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HedgeLib.IO;
 
-namespace TEXTool
+namespace DALLib.Compression
 {
-    public static class LZ77
+    /// <summary>
+    /// LZ77 Decompressor used for decompressing files that were directly ported from the PlayStation
+    /// <para/>
+    /// Based off ps_lz77 from QuickBMS
+    /// </summary>
+    public static class LZ77Compression
     {
-        public static int Position(this ExtendedBinaryReader reader)
-        {
-            return (int)reader.BaseStream.Position;
-        }
 
-        public static byte[] Lz77Decompress(this byte[] compressed)
+        public static byte[] DecompressLZ77(this byte[] compressed)
         {
             var reader = new ExtendedBinaryReader(new MemoryStream(compressed));
             byte[] buffer = null;
             int position = 0;
-            int flagposition = 0;
+            long flagPosition = 0;
             if (reader.ReadSignature() == "LZ77")
             {
                 int uncompressedSize = reader.ReadInt32();
                 int lz77Step = reader.ReadInt32();
                 int offset = reader.ReadInt32();
-                flagposition = reader.Position();
+                flagPosition = reader.GetPosition();
                 reader.JumpTo(offset);
                 buffer = new byte[uncompressedSize];
             }
@@ -37,16 +38,16 @@ namespace TEXTool
             {
                 if (flagCount == 0)
                 {
-                    if (flagposition >= compressed.Length)
+                    if (flagPosition >= compressed.Length)
                         break;
-                    if (flagposition == reader.Position())
+                    if (flagPosition == reader.GetPosition())
                         reader.JumpAhead(1);
-                    flag = compressed[flagposition++];
+                    flag = compressed[flagPosition++];
                     flagCount = 8;
                 }
                 if ((flag & 0x80) != 0)
                 {
-                    if (reader.Position() + 2 > compressed.Length)
+                    if (reader.GetPosition() + 2 > compressed.Length)
                         break;
                     int backStep = reader.ReadByte();
                     int amount = reader.ReadByte();

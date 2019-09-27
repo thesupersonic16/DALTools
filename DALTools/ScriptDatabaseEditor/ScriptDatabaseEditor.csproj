@@ -202,21 +202,9 @@
     <Resource Include="res\IMG_FRAME_MM.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\HedgeLib\HedgeLib\HedgeLib.csproj">
-      <Project>{EEB16FCA-FF9F-40B5-9D43-F2460AA930C8}</Project>
-      <Name>HedgeLib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PCKTool\PCKTool.csproj">
-      <Project>{146a533a-23b5-4ea9-afe9-860ffe2e9891}</Project>
-      <Name>PCKTool</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\STSCTool\STSCTool.csproj">
-      <Project>{b13bf845-7a7c-4aa3-b456-8d47c0eb3480}</Project>
-      <Name>STSCTool</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TEXTool\TEXTool.csproj">
-      <Project>{53f094b0-9c5d-4973-896f-0bfbaf6acdeb}</Project>
-      <Name>TEXTool</Name>
+    <ProjectReference Include="..\DALLib\DALLib.csproj">
+      <Project>{2bed1292-f508-46b9-bacb-366ab23dd04a}</Project>
+      <Name>DALLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

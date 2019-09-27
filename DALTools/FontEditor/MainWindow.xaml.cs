@@ -15,10 +15,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using HedgeLib.Archives;
+using DALLib.File;
+using DALLib.Imaging;
 using Microsoft.Win32;
-using PCKTool;
-using TEXTool;
 using Path = System.IO.Path;
 
 namespace FontEditor
@@ -30,7 +29,7 @@ namespace FontEditor
     {
 
         public TEXFile FontImageTexFile = new TEXFile();
-        public PCKArchive PCKFile = new PCKArchive();
+        public PCKFile PCKFontArchive = new PCKFile();
         public FontFile FontCodeFile = new FontFile();
         public List<Border> Borders = new List<Border>();
 
@@ -125,7 +124,7 @@ namespace FontEditor
             UI_YTextBox.Text = y.ToString(CultureInfo.GetCultureInfo("en-US"));
             UI_WTextBox.Text = entry.Width.ToString();
             UI_KTextBox.Text = entry.Kerning.ToString();
-            UI_PreviewImage.Source = ImageTools.ConvertToSource(FontImageTexFile.GetBitmap((int)x, (int)y, (int)w, (int)h));
+            UI_PreviewImage.Source = ImageTools.ConvertToSource(FontImageTexFile.CreateBitmap((int)x, (int)y, (int)w, (int)h));
         }
 
         public void SaveFont()
@@ -135,44 +134,41 @@ namespace FontEditor
                 // PCK Save
                 using (var stream = new MemoryStream())
                 {
-                    var fontCodeFile = PCKFile.Data.FirstOrDefault(t => t.Name.Contains(".code")) as ArchiveFile;
                     FontCodeFile.Save(stream);
-                    fontCodeFile.Data = stream.ToArray();
+                    PCKFontArchive.ReplaceFile(PCKFontArchive.SearchForFile(".code"), stream.ToArray());
                 }
-                PCKFile.Save(FilePath, true);
+                PCKFontArchive.Save(FilePath);
             }
             else
             {
                 // Code Save
-                FontCodeFile.Save(FilePath, true);
+                FontCodeFile.Save(FilePath);
             }
         }
 
         public void LoadFontPCK(string path)
         {
             FilePath = path;
-            PCKFile = new PCKArchive();
-            PCKFile.Load(path);
+            PCKFontArchive = new PCKFile();
+            PCKFontArchive.Load(path, true);
 
-            var textureFile = PCKFile.Data.FirstOrDefault(t => t.Name.Contains(".tex")) as ArchiveFile;
-            var fontCodeFile = PCKFile.Data.FirstOrDefault(t => t.Name.Contains(".code")) as ArchiveFile;
+            var textureFilePath = PCKFontArchive.SearchForFile(".tex");
+            var fontCodeFilePath = PCKFontArchive.SearchForFile(".code");
             FontImageTexFile = new TEXFile();
             FontCodeFile = new FontFile();
 
             // Load Font Code
-            if (fontCodeFile != null)
-                using (var stream = new MemoryStream(fontCodeFile.Data))
-                    FontCodeFile.Load(stream);
+            if (fontCodeFilePath != null)
+                FontCodeFile.Load(PCKFontArchive.GetFileStream(fontCodeFilePath));
             else
                 MessageBox.Show("Failed to load Code File!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
-            if (textureFile != null)
+            if (textureFilePath != null)
             {
                 // Load Texture
-                using (var stream = new MemoryStream(textureFile.Data))
-                    FontImageTexFile.Load(stream);
+                FontImageTexFile.Load(PCKFontArchive.GetFileStream(textureFilePath));
                 // Set Texture
-                UI_FontImage.Source = ImageTools.ConvertToSource(FontImageTexFile.GetBitmap());
+                UI_FontImage.Source = ImageTools.ConvertToSource(FontImageTexFile.CreateBitmap());
             }
             else
                 MessageBox.Show("Failed to load Texture!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -217,7 +213,7 @@ namespace FontEditor
             {
                 // Load Font TEX
                 FontImageTexFile.Load(FilePath.Replace(".code", "_data.tex"));
-                UI_FontImage.Source = ImageTools.ConvertToSource(FontImageTexFile.GetBitmap());
+                UI_FontImage.Source = ImageTools.ConvertToSource(FontImageTexFile.CreateBitmap());
             }
             catch
             {
@@ -418,7 +414,7 @@ namespace FontEditor
             {
                 // Load Font TEX
                 FontImageTexFile.Load(ofd.FileName);
-                UI_FontImage.Source = ImageTools.ConvertToSource(FontImageTexFile.GetBitmap());
+                UI_FontImage.Source = ImageTools.ConvertToSource(FontImageTexFile.CreateBitmap());
             }
         }
 
@@ -430,7 +426,7 @@ namespace FontEditor
             {
                 if (ofd.FileName.ToLower(CultureInfo.GetCultureInfo("en-US")).EndsWith(".tex"))
                 {
-                    var textureFile = PCKFile.Data.FirstOrDefault(t => t.Name.Contains(".tex")) as ArchiveFile;
+                    var textureFilePath = PCKFontArchive.SearchForFile(".tex");
                     var newTexture = new TEXFile();
 
                     // Set Sigless
@@ -452,21 +448,21 @@ namespace FontEditor
                     }
 
                     // Import Texture into PCK
-                    textureFile.Data = File.ReadAllBytes(ofd.FileName);
+                    PCKFontArchive.ReplaceFile(textureFilePath, File.ReadAllBytes(ofd.FileName));
 
                     // Set Texture
-                    UI_FontImage.Source = ImageTools.ConvertToSource((FontImageTexFile = newTexture).GetBitmap());
+                    UI_FontImage.Source = ImageTools.ConvertToSource((FontImageTexFile = newTexture).CreateBitmap());
                 }
                 else
                 {
-                    var textureFile = PCKFile.Data.FirstOrDefault(t => t.Name.Contains(".tex")) as ArchiveFile;
+                    var textureFilePath = PCKFontArchive.SearchForFile(".tex");
                     var newTexture = new TEXFile();
 
                     // Set Sigless
                     newTexture.Sigless = true;
                     
                     // Load Image to Texture
-                    newTexture.LoadImage(ofd.FileName);
+                    newTexture.LoadSheetImage(ofd.FileName);
 
                     // Check Dimensions
                     if (FontImageTexFile.SheetData != null &&
@@ -484,11 +480,11 @@ namespace FontEditor
                     using (var stream = new MemoryStream())
                     {
                         newTexture.Save(stream);
-                        textureFile.Data = stream.GetBuffer();
+                        PCKFontArchive.ReplaceFile(textureFilePath, stream.ToArray());
                     }
 
                     // Set Texture
-                    UI_FontImage.Source = ImageTools.ConvertToSource((FontImageTexFile = newTexture).GetBitmap());
+                    UI_FontImage.Source = ImageTools.ConvertToSource((FontImageTexFile = newTexture).CreateBitmap());
                 }
             }
         }

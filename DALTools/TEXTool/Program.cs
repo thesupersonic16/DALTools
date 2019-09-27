@@ -1,4 +1,7 @@
-﻿using System;
+﻿using DALLib;
+using DALLib.File;
+using DALLib.Imaging;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -66,7 +69,7 @@ namespace TEXTool
                                 if (string.IsNullOrEmpty(path))
                                     path = Path.ChangeExtension(args[args.Length - 1], ".png");
                                 if (CheckForOverWrite(path))
-                                    tex.SaveImage(path);
+                                    tex.SaveSheetImage(path);
                                 break;
                             case 'i':
                                 tex.Load(args[args.Length - 1]);
@@ -84,14 +87,14 @@ namespace TEXTool
                                 if (string.IsNullOrEmpty(path))
                                     path = Path.ChangeExtension(args[args.Length - 1], ".tex");
                                 if (CheckForOverWrite(path))
-                                    tex.Save(path, true);
+                                    tex.Save(path);
                                 break;
                             case 'm':
                                 BuildTEX(ref tex, args[i + 1]);
                                 if (string.IsNullOrEmpty(path))
                                     path = Path.ChangeExtension(args[args.Length - 1], ".tex");
                                 if (CheckForOverWrite(path))
-                                    tex.Save(path, true);
+                                    tex.Save(path);
                                 break;
                         }
                     }
@@ -105,12 +108,12 @@ namespace TEXTool
                     BuildTEX(ref tex, args[0]);
                     string path = Path.ChangeExtension(args[0], ".tex");
                     if (CheckForOverWrite(path))
-                        tex.Save(path, true);
+                        tex.Save(path);
                 }
                 else
                 {
                     tex.Load(args[0]);
-                    tex.SaveImage(Path.ChangeExtension(args[0], ".png"));
+                    tex.SaveSheetImage(Path.ChangeExtension(args[0], ".png"));
                     SaveAllFrameInformation(tex, Path.ChangeExtension(args[0], ".xml"));
                 }
             }
@@ -154,7 +157,7 @@ namespace TEXTool
             if (Directory.Exists(name))
                 BuildSheet(tex, Path.Combine(name, "frame{0:d2}.png"));
             else if (File.Exists(name + ".png"))
-                tex.LoadImage(name + ".png");
+                tex.LoadSheetImage(name + ".png");
             else
                 Console.WriteLine("WARNING: No Image was found! Please Extract it using the -s or -p switch.");
         }
@@ -164,7 +167,7 @@ namespace TEXTool
             var serializer = new XmlSerializer(typeof(TEXFile));
             using (var stream = File.OpenRead(frameXML))
                 tex = serializer.Deserialize(stream) as TEXFile;
-            tex.LoadImage(sheetpath);
+            tex.LoadSheetImage(sheetpath);
         }
 
         public static void BuildSheet(TEXFile tex, string path)
@@ -192,7 +195,7 @@ namespace TEXTool
                     }
                 }
             }
-            tex.FlipColors();
+            ImageTools.FlipColors(tex.SheetData);
         }
 
         public static byte[] LoadImageBytes(string path)
