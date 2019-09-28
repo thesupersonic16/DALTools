@@ -119,14 +119,18 @@ namespace ScriptDatabaseEditor
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Reads Steam information
-            Steam.Init();
-
             // Load Config from Registry
             _config.LoadConfig();
+            List<SteamGame> games = new List<SteamGame>();
+            try
+            {
+                // Reads Steam information
+                Steam.Init();
 
-            // Searches for Date a Live
-            var games = Steam.SearchForGames("DATE A LIVE: Rio Reincarnation");
+                // Searches for DATE A LIVE: Rio Reincarnation
+                games = Steam.SearchForGames("DATE A LIVE: Rio Reincarnation");
+            }catch { }
+
             if (games.Count != 0)
                 _game = new Game(games[0].RootDirectory, GameLanguage.English);
             else
@@ -145,7 +149,8 @@ namespace ScriptDatabaseEditor
             if (string.IsNullOrEmpty(App.DataBasePath))
                 App.DataBasePath = Path.Combine(_game.LangPath, @"Script\database.bin");
 
-            ChangeDatabase(App.DataBasePath);
+            if (File.Exists(App.DataBasePath))
+                ChangeDatabase(App.DataBasePath);
             LoadGameFiles();
         }
 
