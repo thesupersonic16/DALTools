@@ -67,7 +67,7 @@ namespace DALLib.File
         /// A flag for if the texture should be ZLIB compressed or not
         /// Default is false as DAL: RR does not support ZLIB compressed textures
         /// </summary>
-        public bool Compress = true;
+        public bool Compress = false;
 
         /// <summary>
         /// Loads and parses file from stream into memory
