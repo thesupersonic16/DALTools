@@ -75,6 +75,10 @@ namespace DALLib.Imaging
                     imagePNG.Dispose();
                 }
             }
+            else if ((format & Format.RGBA) != 0)
+            {
+                return;
+            }
             else
             {
                 throw new InvalidTextureFormatException((int)format);
