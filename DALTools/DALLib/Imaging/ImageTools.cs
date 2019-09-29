@@ -21,8 +21,9 @@ namespace DALLib.Imaging
         {
             for (int i = 0; i < array.Length; i += 4)
             {
+                byte buf = array[i + 0];
                 array[i + 0] = array[i + 2];
-                array[i + 2] = array[i + 0];
+                array[i + 2] = buf;
             }
         }
 
@@ -165,7 +166,5 @@ namespace DALLib.Imaging
             }
             return output;
         }
-
-
     }
 }

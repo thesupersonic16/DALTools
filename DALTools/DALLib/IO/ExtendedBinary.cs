@@ -58,17 +58,17 @@ namespace DALLib.IO
 
         public void JumpTo(long position, bool absolute = true)
         {
-            BaseStream.Position = (absolute) ? position : position + Offset;
+            stream.Position = (absolute) ? position : position + Offset;
         }
 
         public void JumpAhead(long amount = 1)
         {
-            BaseStream.Position += amount;
+            stream.Position += amount;
         }
 
         public void JumpBehind(long amount = 1)
         {
-            BaseStream.Position -= amount;
+            stream.Position -= amount;
         }
 
         public void FixPadding(uint amount = 4)
@@ -76,7 +76,7 @@ namespace DALLib.IO
             if (amount < 1) return;
 
             long jumpAmount = 0;
-            while ((BaseStream.Position + jumpAmount) % amount != 0) ++jumpAmount;
+            while ((stream.Position + jumpAmount) % amount != 0) ++jumpAmount;
             JumpAhead(jumpAmount);
         }
 
@@ -88,13 +88,13 @@ namespace DALLib.IO
 
         public string GetString(uint offset, bool isNullTerminated = true)
         {
-            long curPos = BaseStream.Position;
-            BaseStream.Position = offset;
+            long curPos = stream.Position;
+            stream.Position = offset;
 
             string str = (isNullTerminated) ?
                 ReadNullTerminatedString() : ReadString();
 
-            BaseStream.Position = curPos;
+            stream.Position = curPos;
             return str;
         }
 
@@ -112,15 +112,15 @@ namespace DALLib.IO
 
         public string ReadStringElsewhere(int position = 0, bool absolute = true)
         {
-            long oldPos = BaseStream.Position;
+            long oldPos = stream.Position;
             try
             {
                 if (position == 0)
                     JumpTo(ReadInt32(), absolute);
                 else
                     JumpTo(position, absolute);
-                if (Offset > BaseStream.Position)
-                    Offset = (uint)BaseStream.Position;
+                if (Offset > stream.Position)
+                    Offset = (uint)stream.Position;
                 string s = ReadNullTerminatedString();
                 if (position == 0)
                     JumpTo(oldPos + 4);
@@ -137,13 +137,13 @@ namespace DALLib.IO
 
         public string ReadNullTerminatedStringPointer()
         {
-            long oldPos = BaseStream.Position;
+            long oldPos = stream.Position;
             try
             {
                 JumpTo(ReadInt32());
                 JumpTo(ReadInt32());
-                if (Offset > BaseStream.Position)
-                    Offset = (uint)BaseStream.Position;
+                if (Offset > stream.Position)
+                    Offset = (uint)stream.Position;
                 string s = ReadNullTerminatedString();
                 JumpTo(oldPos + 4);
                 return s;
@@ -157,12 +157,12 @@ namespace DALLib.IO
 
         public byte[] ReadArrayRange(int start, int end)
         {
-            long oldPos = BaseStream.Position;
+            long oldPos = stream.Position;
             try
             {
                 JumpTo(start);
-                if (Offset > BaseStream.Position)
-                    Offset = (uint)BaseStream.Position;
+                if (Offset > stream.Position)
+                    Offset = (uint)stream.Position;
                 int length = end - start;
                 byte[] bytes = ReadBytes(length);
                 JumpTo(oldPos);
@@ -178,8 +178,7 @@ namespace DALLib.IO
         public string ReadNullTerminatedString()
         {
             var sb = new StringBuilder();
-            var fs = BaseStream;
-            long len = fs.Length;
+            long len = stream.Length;
             char curChar;
 
             do
@@ -188,7 +187,7 @@ namespace DALLib.IO
                 if (curChar == 0) break;
                 sb.Append(curChar);
             }
-            while (fs.Position < len);
+            while (stream.Position < len);
             return sb.ToString();
         }
 
@@ -301,6 +300,18 @@ namespace DALLib.IO
         {
             ulong v = ReadUInt64();
             return *((double*)&v);
+        }
+
+        public override byte[] ReadBytes(int count)
+        {
+            byte[] bytes = new byte[count];
+            stream.Read(bytes, 0, count);
+            return bytes;
+        }
+
+        public override byte ReadByte()
+        {
+            return (byte)stream.ReadByte();
         }
 
         protected override void FillBuffer(int numBytes)
@@ -442,6 +453,15 @@ namespace DALLib.IO
         {
             OutStream.Position = pos;
             Write((absolute) ? value : value - Offset);
+        }
+
+        /// <summary>
+        /// Sets the Extended Stream
+        /// </summary>
+        /// <param name="stream"></param>
+        public void SetStream(Stream stream)
+        {
+            OutStream = stream;
         }
 
         public void WriteDALSignature(string sig, bool smallSig)

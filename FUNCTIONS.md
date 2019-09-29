@@ -189,4 +189,4 @@ Trophy(1)
 
 
 
-[macros_url]: ./DALTools/STSCTool/STSCMacros.cs
+[macros_url]: ./DALTools/DALLib/Scripting/STSCMacros.cs 

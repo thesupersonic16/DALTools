@@ -1,4 +1,5 @@
-﻿using DALLib.File;
+﻿using DALLib.Exceptions;
+using DALLib.File;
 using DALLib.IO;
 using Scarlet.Drawing;
 using Scarlet.IO;
@@ -29,26 +30,23 @@ namespace DALLib.Imaging
                     Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
                 file.SheetData = image.GetOutputPixelData(0);
             }
-
-            if ((format & Format.DXT5) != 0 || (format & Format.Large) != 0)
+            else if ((format & Format.DXT5) != 0 || (format & Format.Large) != 0)
             {
                 image = new ImageBinary(file.SheetWidth, file.SheetHeight, PixelDataFormat.FormatDXT5,
                     Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
                 file.SheetData = image.GetOutputPixelData(0);
             }
-
-            if ((format & Format.Luminance8) != 0)
+            else if ((format & Format.Luminance8) != 0)
             {
                 image = new ImageBinary(file.SheetWidth, file.SheetHeight, PixelDataFormat.FormatLuminance8,
                     Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
                 file.SheetData = image.GetOutputPixelData(0);
             }
-            if ((format & Format.Unknown) != 0)
+            else if ((format & Format.Unknown) != 0)
             {
-                Console.WriteLine("Failed to Decode File, Format not Supported 0x0000_1000!");
-                Console.ReadKey();
+                throw new InvalidTextureFormatException((int)format);
             }
-            if ((format & Format.Raster) != 0)
+            else if ((format & Format.Raster) != 0)
             {
                 // Read Colour Palette
                 reader.JumpBehind(256 * 4);
@@ -64,7 +62,7 @@ namespace DALLib.Imaging
                     file.SheetData[i * 4 + 3] = colorpalette[indies[i] * 4 + 3];
                 }
             }
-            if ((format & Format.PNG) != 0)
+            else if ((format & Format.PNG) != 0)
             {
                 using (var endStream = new MemoryStream())
                 using (var stream = new MemoryStream(file.SheetData))
@@ -77,7 +75,10 @@ namespace DALLib.Imaging
                     imagePNG.Dispose();
                 }
             }
-
+            else
+            {
+                throw new InvalidTextureFormatException((int)format);
+            }
         }
     }
 }

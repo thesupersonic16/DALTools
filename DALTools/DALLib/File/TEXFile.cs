@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -12,7 +13,6 @@ using DALLib.Imaging;
 using DALLib.IO;
 using Scarlet.Drawing;
 using Scarlet.IO;
-using zlib;
 
 namespace DALLib.File
 {
@@ -20,6 +20,9 @@ namespace DALLib.File
     public class TEXFile : FileBase, IDisposable
     {
 
+        /// <summary>
+        /// List of formats decribing how pixel data is stored
+        /// </summary>
         public enum Format
         {
             None       = 0x0000_0000,
@@ -60,6 +63,11 @@ namespace DALLib.File
         /// Default is false (include signature) as most files needs it
         /// </summary>
         public bool Sigless = false;
+        /// <summary>
+        /// A flag for if the texture should be ZLIB compressed or not
+        /// Default is false as DAL: RR does not support ZLIB compressed textures
+        /// </summary>
+        public bool Compress = true;
 
         /// <summary>
         /// Loads and parses file from stream into memory
@@ -70,14 +78,15 @@ namespace DALLib.File
             // Decompress Zlib stream
             if (reader.PeekSignature() == "ZLIB")
             {
-                // Skip Zlib Header
+                // Skip ZLIB Header
                 // 0x00 - "ZLIB"
-                // 0x04 - UncompressedSize
-                // 0x08 - CompressedSize
-                // 0x0C - Zlib Data
-                reader.JumpAhead(12);
-                // Set stream to ZLIB
-                reader.SetStream(new ZOutputStream(reader.BaseStream));
+                // 0x04 - Uncompressed Size
+                // 0x08 - Compressed Size
+                // 0x0C - ZLIB flags
+                // 0x0E - Compressed Data
+                reader.JumpAhead(14);
+                // Set stream to DeflateStream
+                reader.SetStream(new DeflateStream(reader.BaseStream, CompressionMode.Decompress).CacheStream());
             }
 
             // Read Signature to guess the type of TEX
@@ -119,7 +128,6 @@ namespace DALLib.File
             // Decompress/Process Image based on format
             TEXConverter.Decode(this, format, reader);
 
-
             // Parts
             sigSize = reader.CheckDALSignature("Parts");
             if (sigSize < 4)
@@ -157,6 +165,11 @@ namespace DALLib.File
 
         public override void Save(ExtendedBinaryWriter writer)
         {
+            // ZLIB Compression
+            Stream mainStream = null;
+            if (Compress)
+                mainStream = writer.StartDeflateEncapsulation();
+
             if (!Sigless)
             {
                 writer.WriteDALSignature("Texture", UseSmallSig);
@@ -170,7 +183,13 @@ namespace DALLib.File
             writer.Write((short)format);
             writer.Write((byte)((int)format >> 16));
             writer.Write((byte)0);
-            if (!flag1)
+            if (flag1)
+            {
+                writer.AddOffset("DataLength");
+                writer.Write(SheetWidth);
+                writer.Write(SheetHeight);
+            }
+            else
             {
                 writer.Write(0x8100000);
                 writer.AddOffset("DataLength");
@@ -212,6 +231,9 @@ namespace DALLib.File
             writer.FillInOffset("HeaderSize", (uint)(writer.BaseStream.Position - header));
             writer.FixPadding(0x10);
 
+            // Finalise ZLIB Compression
+            if (Compress)
+                writer.EndDeflateEncapsulation(mainStream);
         }
 
         public void SaveSheetImage(string path)

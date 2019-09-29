@@ -1,11 +1,12 @@
-﻿using DALLib.IO;
+﻿using DALLib.Compression;
+using DALLib.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using zlib;
 
 namespace DALLib.File
 {
@@ -20,6 +21,8 @@ namespace DALLib.File
         /// </summary>
         public bool UseSmallSig = false;
 
+        public bool Compress = false;
+
         public List<FileEntry> FileEntries = new List<FileEntry>();
 
         public override void Load(ExtendedBinaryReader reader)
@@ -27,14 +30,15 @@ namespace DALLib.File
             // Decompress Zlib stream
             if (reader.PeekSignature() == "ZLIB")
             {
-                // Skip Zlib Header
+                // Skip ZLIB Header
                 // 0x00 - "ZLIB"
-                // 0x04 - UncompressedSize
-                // 0x08 - CompressedSize
-                // 0x0C - Zlib Data
-                reader.JumpAhead(12);
-                // Set stream to ZLIB
-                reader.SetStream(new ZOutputStream(reader.BaseStream));
+                // 0x04 - Uncompressed Size
+                // 0x08 - Compressed Size
+                // 0x0C - ZLIB flags
+                // 0x0E - Compressed Data
+                reader.JumpAhead(14);
+                // Set stream to DeflateStream
+                reader.SetStream(new DeflateStream(reader.BaseStream, CompressionMode.Decompress).CacheStream());
             }
 
             _reader = reader;
@@ -81,6 +85,11 @@ namespace DALLib.File
             // Preload all files, This is needed as we can not edit archives while writing streams safely yet
             Preload();
 
+            // ZLIB Compression
+            Stream mainStream = null;
+            if (Compress)
+                mainStream = writer.StartDeflateEncapsulation();
+
             writer.WriteDALSignature("Filename", UseSmallSig);
             writer.AddOffset("HeaderSize");
             foreach (var entry in FileEntries)
@@ -117,6 +126,10 @@ namespace DALLib.File
                 writer.Write(entry.Data);
                 writer.FixPadding(0x8);
             }
+
+            // Finalise ZLIB Compression
+            if (Compress)
+                writer.EndDeflateEncapsulation(mainStream);
         }
 
         /// <summary>
