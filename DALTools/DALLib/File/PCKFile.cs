@@ -204,14 +204,17 @@ namespace DALLib.File
 
         public void AddAllFiles(string path)
         {
-            foreach (string filePath in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+            foreach (string dirPath in Directory.EnumerateDirectories(path, "*", SearchOption.AllDirectories).Concat(new [] { path }))
             {
-                FileEntry entry = new FileEntry();
-                // Set and Remove starting folder name
-                entry.FileName = filePath.Substring(path.Length + 1);
-                entry.Data = System.IO.File.ReadAllBytes(filePath);
-                entry.DataLength = entry.Data.Length;
-                FileEntries.Add(entry);
+                foreach (string filePath in Directory.EnumerateFiles(dirPath, "*"))
+                {
+                    FileEntry entry = new FileEntry();
+                    // Set and Remove starting folder name
+                    entry.FileName = filePath.Substring(path.Length + 1).Replace('\\', '/');
+                    entry.Data = System.IO.File.ReadAllBytes(filePath);
+                    entry.DataLength = entry.Data.Length;
+                    FileEntries.Add(entry);
+                }
             }
         }
 
