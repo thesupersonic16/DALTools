@@ -56,6 +56,11 @@ namespace DALLib.IO
             this.stream = stream;
         }
 
+        public void SetEndian(bool isBigEndian)
+        {
+            IsBigEndian = isBigEndian;
+        }
+
         public void JumpTo(long position, bool absolute = true)
         {
             stream.Position = (absolute) ? position : position + Offset;

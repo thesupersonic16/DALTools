@@ -42,6 +42,12 @@ namespace DALLib.Imaging
                     Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
                 file.SheetData = image.GetOutputPixelData(0);
             }
+            else if ((format & Format.Luminance4) != 0)
+            {
+                image = new ImageBinary(file.SheetWidth, file.SheetHeight, PixelDataFormat.FormatLuminance4,
+                    Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
+                file.SheetData = image.GetOutputPixelData(0);
+            }
             else if ((format & Format.Unknown) != 0)
             {
                 throw new InvalidTextureFormatException((int)format);
@@ -75,7 +81,7 @@ namespace DALLib.Imaging
                     imagePNG.Dispose();
                 }
             }
-            else if ((format & Format.RGBA) != 0)
+            else if ((format & Format.BGRA) != 0)
             {
                 return;
             }

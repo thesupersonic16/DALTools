@@ -29,10 +29,11 @@ namespace DALLib.File
             DXT1       = 0x0000_0001,
             DXT5       = 0x0000_0002,
             Luminance8 = 0x0000_0080,
+            Luminance4 = 0x0000_0100,
             Raster     = 0x0000_0200,
             Unknown    = 0x0000_1000,
             Large      = 0x0000_2000,
-            RGBA       = 0x0000_4000,
+            BGRA       = 0x0000_4000,
             PNG        = 0x0001_0000
         }
 
@@ -163,7 +164,7 @@ namespace DALLib.File
             }
 
             // Format
-            var format = Format.RGBA;
+            var format = Format.BGRA;
             bool flag1 = false;
 
             writer.Write((short)format);
