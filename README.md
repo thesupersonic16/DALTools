@@ -20,9 +20,11 @@ You can get a list of options and examples by running TEXTool.exe without any ar
     -f {id}                        Exports a single frame
     -b {sheet.png} {frame.xml}     Build TEX using sheet and FrameXML
     -m {path}                      Build TEX using sheet and FrameXML (Search by name) (Recommended over -b)
+    -e                             Read/Write in Big Endian (PS3) Default is Little Endian (PC/PS4)
   Examples:
     TEXTool -p title.tex           Extracts all frames
     TEXTool -s title.tex           Extracts sheet from TEX
+    TEXTool -s -e title.tex        Extracts sheet from a BE TEX (PS3)
     TEXTool -i title.tex           Extracts frame information
     TEXTool -b title.png title.xml Builds TEX using sheet
     TEXTool -m title               Builds TEX using frames

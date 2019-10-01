@@ -69,6 +69,12 @@ namespace DALLib.File
         /// Default is false as DAL: RR does not support ZLIB compressed textures
         /// </summary>
         public bool Compress = false;
+        /// <summary>
+        /// Should the file be read/written in Big Endian (PS3)
+        /// Default is false as DAL: RR PC/PS4 are in Little Endian
+        /// </summary>
+        public bool UseBigEndian = false;
+
 
         /// <summary>
         /// Loads and parses file from stream into memory
@@ -76,6 +82,9 @@ namespace DALLib.File
         /// <param name="reader">Reader of the file</param>
         public override void Load(ExtendedBinaryReader reader)
         {
+            // Set the Endianness before start reading
+            reader.SetEndian(UseBigEndian);
+
             // Read Signature to guess the type of TEX
             int sigSize = reader.CheckDALSignature("Texture");
             Sigless = sigSize < 4;
@@ -84,8 +93,9 @@ namespace DALLib.File
             int textureSectionSize = reader.ReadInt32();
             if (Sigless)
                 reader.JumpBehind(11);
-            Format format = (Format)(reader.ReadUInt16() | (reader.ReadByte() << 16));
-            byte unknown = reader.ReadByte();
+            uint buf = reader.ReadUInt32();
+            Format format = (Format)(buf & 0xFFFFFF);
+            byte unknown = (byte)(buf >> 24);
             int dataLength;
 
             // Read Image Information
@@ -157,6 +167,8 @@ namespace DALLib.File
             if (Compress)
                 mainStream = writer.StartDeflateEncapsulation();
 
+            writer.SetEndian(UseBigEndian);
+
             if (!Sigless)
             {
                 writer.WriteDALSignature("Texture", UseSmallSig);
@@ -167,9 +179,7 @@ namespace DALLib.File
             var format = Format.BGRA;
             bool flag1 = false;
 
-            writer.Write((short)format);
-            writer.Write((byte)((int)format >> 16));
-            writer.Write((byte)0);
+            writer.Write((int)(format | 0 << 24));
             if (flag1)
             {
                 writer.AddOffset("DataLength");

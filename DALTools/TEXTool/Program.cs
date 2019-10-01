@@ -32,9 +32,11 @@ namespace TEXTool
                 Console.WriteLine("    -f {id}                        Exports a single frame");
                 Console.WriteLine("    -b {sheet.png} {frame.xml}     Build TEX using sheet and FrameXML");
                 Console.WriteLine("    -m {path}                      Build TEX using sheet and FrameXML (Search by name) (Recommended over -b)");
+                Console.WriteLine("    -e                             Read/Write in Big Endian (PS3) Default is Little Endian (PC/PS4)");
                 Console.WriteLine("  Examples: ");
                 Console.WriteLine("    TEXTool -p title.tex           Extracts all frames");
                 Console.WriteLine("    TEXTool -s title.tex           Extracts sheet from TEX");
+                Console.WriteLine("    TEXTool -s -e title.tex        Extracts sheet from a BE TEX (PS3)");
                 Console.WriteLine("    TEXTool -i title.tex           Extracts frame information");
                 Console.WriteLine("    TEXTool -b title.png title.xml Builds TEX using sheet");
                 Console.WriteLine("    TEXTool -m title               Builds TEX using frames");
@@ -95,6 +97,9 @@ namespace TEXTool
                                     path = Path.ChangeExtension(args[args.Length - 1], ".tex");
                                 if (CheckForOverWrite(path))
                                     tex.Save(path);
+                                break;
+                            case 'e':
+                                tex.UseBigEndian = true;
                                 break;
                         }
                     }

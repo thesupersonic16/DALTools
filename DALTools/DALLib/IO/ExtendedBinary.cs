@@ -266,6 +266,15 @@ namespace DALLib.IO
                 (ushort)(buffer[1] << 8 | buffer[0]);
         }
 
+        // 3-Byte Types
+        public int ReadInt24()
+        {
+            FillBuffer(3);
+            return (IsBigEndian) ?
+                buffer[0] << 16 | buffer[1] << 8 | buffer[2] :
+                buffer[2] << 16 | buffer[1] << 8 | buffer[0];
+        }
+
         // 4-Byte Types
         public override int ReadInt32()
         {
@@ -411,6 +420,11 @@ namespace DALLib.IO
         }
 
         // Methods
+        public void SetEndian(bool isBigEndian)
+        {
+            IsBigEndian = isBigEndian;
+        }
+
         public virtual void AddOffset(string name, uint offsetLength = 4)
         {
             if (offsets.ContainsKey(name))

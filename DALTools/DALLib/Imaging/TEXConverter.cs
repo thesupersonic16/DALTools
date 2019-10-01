@@ -24,28 +24,29 @@ namespace DALLib.Imaging
         public static void Decode(this TEXFile file, Format format, ExtendedBinaryReader reader)
         {
             ImageBinary image;
+            var endian = file.UseBigEndian ? Endian.BigEndian : Endian.LittleEndian;
             if ((format & Format.DXT1) != 0)
             {
                 image = new ImageBinary(file.SheetWidth, file.SheetHeight, PixelDataFormat.FormatDXT1Rgba,
-                    Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
+                    endian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
                 file.SheetData = image.GetOutputPixelData(0);
             }
             else if ((format & Format.DXT5) != 0 || (format & Format.Large) != 0)
             {
                 image = new ImageBinary(file.SheetWidth, file.SheetHeight, PixelDataFormat.FormatDXT5,
-                    Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
+                    endian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
                 file.SheetData = image.GetOutputPixelData(0);
             }
             else if ((format & Format.Luminance8) != 0)
             {
                 image = new ImageBinary(file.SheetWidth, file.SheetHeight, PixelDataFormat.FormatLuminance8,
-                    Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
+                    endian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
                 file.SheetData = image.GetOutputPixelData(0);
             }
             else if ((format & Format.Luminance4) != 0)
             {
                 image = new ImageBinary(file.SheetWidth, file.SheetHeight, PixelDataFormat.FormatLuminance4,
-                    Endian.LittleEndian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
+                    endian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
                 file.SheetData = image.GetOutputPixelData(0);
             }
             else if ((format & Format.Unknown) != 0)
@@ -77,6 +78,9 @@ namespace DALLib.Imaging
                     var bitmap = imagePNG.LockBits(new Rectangle(0, 0, file.SheetWidth, file.SheetHeight), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
                     file.SheetData = new byte[file.SheetWidth * file.SheetHeight * 4];
                     Marshal.Copy(bitmap.Scan0, file.SheetData, 0, file.SheetWidth * file.SheetHeight * 4);
+                    // Flip Red and Blue channels as this converter does not support ARGB
+                    if (file.UseBigEndian)
+                        ImageTools.FlipColors(file.SheetData);
                     imagePNG.UnlockBits(bitmap);
                     imagePNG.Dispose();
                 }
