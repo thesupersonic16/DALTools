@@ -5,33 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FontEditor"
         mc:Ignorable="d"
-        Title="DATE A LIVE: Rio Reincarnation Font Editor" Height="540" Width="1240" 
+        Title="DATE A LIVE: Rio Reincarnation Font Editor" Height="640" Width="1240" 
         Background="#FF2D2D30" Icon="icon.ico"
-        Loaded="MainWindow_OnLoaded" SizeChanged="MainWindow_OnSizeChanged">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Theme.xaml" />
-                <ResourceDictionary>
-                    <Style TargetType="{x:Type Border}" x:Key="WindowFrame">
-                        <Setter Property="BorderBrush" Value="#FF0066CC"/>
-                        <Setter Property="Background" Value="#FF2D2D30"/>
-                        <Setter Property="BorderThickness" Value="1"/>
-                    </Style>
-                    <Style TargetType="{x:Type Grid}" x:Key="WindowFrameButton">
-                        <Setter Property="Width" Value="35"/>
-                        <Setter Property="Height" Value="25"/>
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Style.Triggers>
-                            <Trigger Property="Grid.IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#FF3F3F41" />
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </ResourceDictionary>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
+        Loaded="MainWindow_OnLoaded" SizeChanged="MainWindow_OnSizeChanged" Style="{StaticResource HedgeWindow}">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0.10*"/>
@@ -46,7 +22,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <GroupBox Header="Characters" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="4,4,4,4">
-            <ListBox x:Name="UI_CharactersListBox" Margin="-4,-4,-4,-4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DisplayMemberPath="Display" SelectionChanged="UI_CharactersListBox_OnSelectionChanged"/>
+            <ListBox x:Name="UI_CharactersListBox" Margin="-4,-4,-4,-4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DisplayMemberPath="Character" SelectionChanged="UI_CharactersListBox_OnSelectionChanged"/>
         </GroupBox>
         <GroupBox Header="Properties" Grid.Column="0" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="4,4,4,4">
             <StackPanel>

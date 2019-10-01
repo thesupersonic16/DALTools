@@ -16,13 +16,12 @@ namespace ScriptDatabaseEditor
 
         public static void Init()
         {
-            // Gets Steam's Registry Key
+            // Gets Steam's registry subkey
             var key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Valve\\Steam");
-            // If null then try get it from the 64-bit Registry
+            // If null then try the 64-bit subkey
             if (key == null)
-                key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64)
-                    .OpenSubKey("SOFTWARE\\Wow6432Node\\Valve\\Steam");
-            // Checks if the Key and Value exists.
+                key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Wow6432Node\\Valve\\Steam");
+            // Checks if the key and value exists
             if (key != null && key.GetValue("InstallPath") is string steamPath)
                 SteamLocation = steamPath;
         }
@@ -69,20 +68,6 @@ namespace ScriptDatabaseEditor
                 return games.OrderBy(x => x.GameName != preference).ToList();
             else return games;
         }
-
-        public static bool CheckGame(string path)
-        {
-            return File.Exists(path) && !(
-                File.Exists(Path.Combine(Path.GetDirectoryName(path), "steamclient64.dll")) ||
-                File.Exists(Path.Combine(Path.GetDirectoryName(path), "steamclient.dll")));
-        }
-
-        public static bool CheckDirectory(string path)
-        {
-            return !(
-                File.Exists(Path.Combine(path, "steamclient64.dll")) ||
-                File.Exists(Path.Combine(path, "steamclient.dll")));
-        }
     }
 
 
@@ -128,83 +113,84 @@ namespace ScriptDatabaseEditor
         public static Dictionary<string, object> Load(Stream fileStream)
         {
             var defs = new Dictionary<string, object>();
-            var reader = new StreamReader(fileStream, true);
-
-            string line, str = "", nm = "";
-            bool doReadString = false;
-            char c;
-
-            ReadContainers(defs);
-            return defs;
-
-            // Sub-Methods
-            void ReadContainers(Dictionary<string, object> parent)
+            using (var reader = new StreamReader(fileStream, true))
             {
-                Dictionary<string, object> container = null;
-                string name = "";
-                nm = str = "";
+                string line, str = "", nm = "";
+                bool doReadString = false;
+                char c;
 
-                while (!reader.EndOfStream)
+                ReadContainers(defs);
+                return defs;
+
+                // Sub-Methods
+                void ReadContainers(Dictionary<string, object> parent)
                 {
-                    line = reader.ReadLine();
-                    doReadString = false;
+                    Dictionary<string, object> container = null;
+                    string name = "";
+                    nm = str = "";
 
-                    for (int i = 0; i < line.Length; ++i)
+                    while (!reader.EndOfStream)
                     {
-                        c = line[i];
-                        if (c == '"')
-                        {
-                            doReadString = !doReadString;
+                        line = reader.ReadLine();
+                        doReadString = false;
 
-                            if (doReadString)
+                        for (int i = 0; i < line.Length; ++i)
+                        {
+                            c = line[i];
+                            if (c == '"')
                             {
-                                continue;
-                            }
-                            else
-                            {
-                                if (string.IsNullOrEmpty(nm))
+                                doReadString = !doReadString;
+
+                                if (doReadString)
                                 {
-                                    nm = str;
-                                    str = "";
+                                    continue;
                                 }
                                 else
                                 {
-                                    if (container != null)
-                                        container.Add(nm, str);
+                                    if (string.IsNullOrEmpty(nm))
+                                    {
+                                        nm = str;
+                                        str = "";
+                                    }
                                     else
-                                        parent.Add(nm, str);
+                                    {
+                                        if (container != null)
+                                            container.Add(nm, str);
+                                        else
+                                            parent.Add(nm, str);
 
-                                    nm = str = "";
+                                        nm = str = "";
+                                    }
                                 }
                             }
-                        }
-                        else if (c == '{')
-                        {
-                            if (container == null)
+                            else if (c == '{')
                             {
-                                container = new Dictionary<string, object>();
-                                name = nm;
-                            }
-                            else
-                            {
-                                var subContainer = new Dictionary<string, object>();
-                                ReadContainers(subContainer);
-                                container.Add(nm, subContainer);
-                            }
+                                if (container == null)
+                                {
+                                    container = new Dictionary<string, object>();
+                                    name = nm;
+                                }
+                                else
+                                {
+                                    var subContainer = new Dictionary<string, object>();
+                                    ReadContainers(subContainer);
+                                    container.Add(nm, subContainer);
+                                }
 
-                            nm = "";
-                        }
-                        else if (c == '}')
-                        {
-                            if (container != null)
-                            {
-                                parent.Add(name, container);
-                                container = null;
+                                nm = "";
                             }
-                        }
-                        else if (doReadString)
-                        {
-                            str += c;
+                            else if (c == '}')
+                            {
+                                if (container != null)
+                                {
+                                    parent.Add(name, container);
+                                    container = null;
+                                }
+                            }
+                            else if (doReadString)
+                            {
+                                str += c;
+                            }
                         }
                     }
                 }
@@ -219,8 +205,7 @@ namespace ScriptDatabaseEditor
         public string ExeName { get; set; }
         public string RootDirectory { get; set; }
         public string ExeDirectory { get { return Path.Combine(RootDirectory, ExeName); } }
-        public bool Status { get { return Steam.CheckGame(ExeDirectory); } }
-
+        
         public SteamGame(string gameName, string exe, string gameID)
         {
             GameName = gameName;

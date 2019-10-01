@@ -1,4 +1,5 @@
 ﻿using DALLib.Compression;
+using DALLib.Exceptions;
 using DALLib.IO;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace DALLib.File
 {
     public class PCKFile : FileBase, IDisposable
     {
-        protected ExtendedBinaryReader _reader;
+        protected ExtendedBinaryReader _internalReader;
 
         // Options
         /// <summary>
@@ -27,39 +28,45 @@ namespace DALLib.File
 
         public override void Load(ExtendedBinaryReader reader)
         {
-            // Decompress Zlib stream
-            if (reader.PeekSignature() == "ZLIB")
-            {
-                // Skip ZLIB Header
-                // 0x00 - "ZLIB"
-                // 0x04 - Uncompressed Size
-                // 0x08 - Compressed Size
-                // 0x0C - ZLIB flags
-                // 0x0E - Compressed Data
-                reader.JumpAhead(14);
-                // Set stream to DeflateStream
-                reader.SetStream(new DeflateStream(reader.BaseStream, CompressionMode.Decompress).CacheStream());
-            }
-
-            _reader = reader;
+            // Store the current reader so we can stream files
+            _internalReader = reader;
+            
+            // Filename Section
+            //  This section contains an array of addresses to each of the file's name and the strings itself
+            //   this section is only used for finding file indices from within game
+            //
+            //  Workaround for reading different versions of PCK files
+            //  Older PCK files seem to have smaller padding (0x08 for Signatures, 0x04 for Padding)
+            //  While DAL: RR has larger padding (0x14 for Signatures, 0x08 for Padding)
+            //  This workaround works by checking the padding in the signature to determine the version
             int sigSize = reader.CheckDALSignature("Filename");
             bool oldPCK = false;
             if (sigSize < 0x14)
                 oldPCK = true;
             if (oldPCK)
                 reader.JumpTo(0x08);
-            int packAddress = reader.ReadInt32();
-            int fileNameAddress = (int)reader.BaseStream.Position;
 
-            reader.JumpTo(packAddress);
+            // The length of the Filename section
+            int filenameSectionSize = reader.ReadInt32();
+            // The address to the Filename section
+            int fileNameSectionAddress = (int)reader.BaseStream.Position;
+            // Jump to the next section, which should be Pack
+            reader.JumpTo(filenameSectionSize);
 
-            // Pack
+            // Pack Section
+            //  This section contains an array of all the file's data
             reader.FixPadding(oldPCK ? 0x04u : 0x08u);
-            sigSize = reader.CheckDALSignature("Pack");
+            // Check Signature
+            string packSig = reader.ReadDALSignature("Pack");
+            // Check if signature is valid
+            if (packSig != "Pack" && packSig.Length <= 4)
+                throw new SignatureMismatchException("Pack", packSig);
 
-            int headerSize = reader.ReadInt32();
+            // The length of the Pack section
+            int packSectionSize = reader.ReadInt32();
+            // The amount of files that is currently stored in the archive
             int fileCount = reader.ReadInt32();
-
+            // Read file entries
             for (int i = 0; i < fileCount; ++i)
             {
                 FileEntries.Add(new FileEntry());
@@ -67,17 +74,14 @@ namespace DALLib.File
                 FileEntries[i].DataLength = reader.ReadInt32();
             }
 
-            reader.JumpTo(fileNameAddress);
-
+            // Jump back to the Filename section so we can name all the files
+            reader.JumpTo(fileNameSectionAddress);
+            // Reads all the file names
             for (int i = 0; i < fileCount; ++i)
             {
                 int position = reader.ReadInt32() + (oldPCK ? 0xC : 0x18);
-                long oldPosition = reader.BaseStream.Position;
-                reader.JumpTo(position);
-                FileEntries[i].FileName = reader.ReadNullTerminatedString();
-                reader.JumpTo(oldPosition);
+                FileEntries[i].FileName = reader.ReadStringElsewhere(position);
             }
-
         }
 
         public override void Save(ExtendedBinaryWriter writer)
@@ -90,41 +94,62 @@ namespace DALLib.File
             if (Compress)
                 mainStream = writer.StartDeflateEncapsulation();
 
+            // Filename Section
+            // Address to the start of the Filename section, This is used as a base address
+            long sectionPosition = writer.BaseStream.Position;
+            // Writes the signature for the section
             writer.WriteDALSignature("Filename", UseSmallSig);
-            writer.AddOffset("HeaderSize");
+            // Allocates 4 bytes for the section size
+            writer.AddOffset("SectionSize");
+            // Allocates space for all the file name pointers
             foreach (var entry in FileEntries)
                 writer.AddOffset(entry.FileName);
+            // Fills in all the file names
             foreach (var entry in FileEntries)
             {
-                // TODO: Check if - 0x18 is correct for other .pck(s)
-                writer.FillInOffset(entry.FileName, (uint)writer.BaseStream.Position - 0x18);
+                // Writes an absolute address to the array of file name pointers
+                writer.FillInOffset(entry.FileName, (uint)(writer.BaseStream.Position - sectionPosition));
+                // Writes the file name and adds a null byte to terminate the string
                 writer.WriteNullTerminatedString(entry.FileName);
             }
+            // Finalises the Filename section by writing the length of the section
+            writer.FillInOffset("SectionSize");
+            // Pads the file to a divisible of 0x08 for DAL: RR or 0x04 for others 
+            writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
 
-            // Pack
-            writer.FillInOffset("HeaderSize");
-            writer.FixPadding(0x8);
-            long headerPosition = writer.BaseStream.Position;
+            // Pack Section
+            // Address to the start of the Pack section, This is used as a base address
+            sectionPosition = writer.BaseStream.Position;
+            // Writes the signature for the section
             writer.WriteDALSignature("Pack", UseSmallSig);
-            writer.AddOffset("HeaderSize");
+            // Allocates 4 bytes for the section size
+            writer.AddOffset("SectionSize");
+            // Writes the file count
             writer.Write(FileEntries.Count);
 
-            // File sizes
-            foreach (var entry in FileEntries)
+            // Writes file data entries
+            for (int i = 0; i < FileEntries.Count; ++i)
             {
-                writer.AddOffset(entry.FileName);
-                writer.Write(entry.Data.Length);
+                // Allocates 4 bytes for the absolute address of the contents of the file
+                writer.AddOffset($"DataPtr{i}");
+                // Writes the length of the file
+                writer.Write(FileEntries[i].Data.Length);
             }
 
-            writer.FillInOffset("HeaderSize", (uint)(writer.BaseStream.Position - headerPosition));
-            writer.FixPadding(0x8);
+            // Finalises the Pack section by writing the length of the section
+            writer.FillInOffset("SectionSize", (uint)(writer.BaseStream.Position - sectionPosition));
+            // Pads the file to a divisible of 0x08 for DAL: RR or 0x04 for others 
+            writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
 
             // Data
-            foreach (var entry in FileEntries)
+            for (int i = 0; i < FileEntries.Count; ++i)
             {
-                writer.FillInOffset(entry.FileName);
-                writer.Write(entry.Data);
-                writer.FixPadding(0x8);
+                // Writes the absolute address of where we are currently at which will contain the file contents
+                writer.FillInOffset($"DataPtr{i}");
+                // Write the file contents
+                writer.Write(FileEntries[i].Data);
+                // Pads the file to a divisible of 0x08 for DAL: RR or 0x04 for others 
+                writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
             }
 
             // Finalise ZLIB Compression
@@ -142,8 +167,8 @@ namespace DALLib.File
                 // Check if file is already preloaded
                 if (entry.Data != null)
                     continue;
-                _reader.JumpTo(entry.DataPosition);
-                entry.Data = _reader.ReadBytes(entry.DataLength);
+                _internalReader.JumpTo(entry.DataPosition);
+                entry.Data = _internalReader.ReadBytes(entry.DataLength);
             }
         }
 
@@ -163,8 +188,8 @@ namespace DALLib.File
             // Check if preloaded
             if (entry.Data != null)
                 return entry.Data;
-            _reader.JumpTo(entry.DataPosition);
-            return _reader.ReadBytes(entry.DataLength);
+            _internalReader.JumpTo(entry.DataPosition);
+            return _internalReader.ReadBytes(entry.DataLength);
         }
 
         // TODO: add Virtual Stream
@@ -180,8 +205,8 @@ namespace DALLib.File
                 t => t.FileName.ToLowerInvariant() == name.ToLowerInvariant());
             if (entry == null)
                 return null;
-            _reader.JumpTo(entry.DataPosition);
-            return _reader.BaseStream;
+            _internalReader.JumpTo(entry.DataPosition);
+            return _internalReader.BaseStream;
         }
 
         /// <summary>
@@ -193,25 +218,33 @@ namespace DALLib.File
             foreach (var entry in FileEntries)
             {
                 // Set Location
-                _reader.JumpTo(entry.DataPosition);
+                _internalReader.JumpTo(entry.DataPosition);
                 // Create Directories
                 Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(path, entry.FileName)));
                 // Write Data
                 System.IO.File.WriteAllBytes(Path.Combine(path, entry.FileName),
-                    _reader.ReadBytes(entry.DataLength));
+                    _internalReader.ReadBytes(entry.DataLength));
             }
         }
 
+        /// <summary>
+        /// Enumerates all files from the directory pointed by path and adds them to the archive
+        /// <para/>
+        /// Note: This function is recursive and also includes files from the root directory
+        /// </summary>
+        /// <param name="path">The Directory to add files from</param>
         public void AddAllFiles(string path)
         {
             foreach (string dirPath in Directory.EnumerateDirectories(path, "*", SearchOption.AllDirectories).Concat(new [] { path }))
             {
                 foreach (string filePath in Directory.EnumerateFiles(dirPath, "*"))
                 {
-                    FileEntry entry = new FileEntry();
-                    // Set and Remove starting folder name
-                    entry.FileName = filePath.Substring(path.Length + 1).Replace('\\', '/');
-                    entry.Data = System.IO.File.ReadAllBytes(filePath);
+                    FileEntry entry = new FileEntry
+                    {
+                        // Set and Remove starting folder name
+                        FileName = filePath.Substring(path.Length + 1).Replace('\\', '/'),
+                        Data = System.IO.File.ReadAllBytes(filePath),
+                    };
                     entry.DataLength = entry.Data.Length;
                     FileEntries.Add(entry);
                 }
@@ -225,10 +258,12 @@ namespace DALLib.File
         /// <param name="data">Array of bytes in which the file contains</param>
         public void AddFile(string filename, byte[] data)
         {
-            FileEntry entry = new FileEntry();
-            entry.FileName = filename;
-            entry.Data = data;
-            entry.DataLength = data.Length;
+            FileEntry entry = new FileEntry
+            {
+                FileName = filename,
+                Data = data,
+                DataLength = data.Length
+            };
             FileEntries.Add(entry);
         }
 
@@ -267,8 +302,8 @@ namespace DALLib.File
 
         public void Dispose()
         {
-            if (_reader != null)
-                _reader.Dispose();
+            if (_internalReader != null)
+                _internalReader.Dispose();
             FileEntries.Clear();
         }
 

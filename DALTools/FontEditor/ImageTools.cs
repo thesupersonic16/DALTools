@@ -47,8 +47,6 @@ namespace FontEditor
                 if (entry == null)
                     continue;
                 width += entry.Width;
-                if (entry.Character == 'p')
-                    width += 0;
                 float x = entry.XScale * texture.SheetWidth;
                 float y = entry.YScale * texture.SheetHeight;
                 fontPixels[i] = texture.SplitImage((int)x, (int)y, entry.Width + entry.Kerning, file.CharacterHeight);

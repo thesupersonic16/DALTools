@@ -294,7 +294,7 @@ namespace FontEditor
                 return;
             if (UI_CharTextBox.Text.Length == 0)
                 return;
-            FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Display = UI_CharTextBox.Text;
+            FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Character = UI_CharTextBox.Text.First();
             UpdateBorderSize(UI_CharactersListBox.SelectedIndex);
         }
 
@@ -310,7 +310,7 @@ namespace FontEditor
                                UI_FontImage.Source.Width;
                 FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].XScale = (float)xScale;
             }
-            FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Display = UI_CharTextBox.Text;
+            FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Character = UI_CharTextBox.Text.First();
             UpdateBorderSize(UI_CharactersListBox.SelectedIndex);
             UpdatePreview();
         }
@@ -326,7 +326,7 @@ namespace FontEditor
                 double yScale = output / UI_FontImage.Source.Height;
                 FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].YScale = (float)yScale;
             }
-            FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Display = UI_CharTextBox.Text;
+            FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Character = UI_CharTextBox.Text.First();
             UpdateBorderSize(UI_CharactersListBox.SelectedIndex);
             UpdatePreview();
         }
@@ -341,7 +341,7 @@ namespace FontEditor
             {
                 FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Width = output;
             }
-            FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Display = UI_CharTextBox.Text;
+            FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Character = UI_CharTextBox.Text.First();
             UpdateBorderSize(UI_CharactersListBox.SelectedIndex);
             UpdatePreview();
         }
@@ -356,7 +356,7 @@ namespace FontEditor
             {
                 FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Kerning = output;
             }
-            FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Display = UI_CharTextBox.Text;
+            FontCodeFile.Characters[UI_CharactersListBox.SelectedIndex].Character = UI_CharTextBox.Text.First();
             UpdateBorderSize(UI_CharactersListBox.SelectedIndex);
             UpdatePreview();
         }

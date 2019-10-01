@@ -67,16 +67,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FontFile.cs" />
     <Compile Include="ImageTools.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Theme.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -112,6 +107,18 @@
       <Project>{2BED1292-F508-46B9-BACB-366AB23DD04A}</Project>
       <Name>DALLib</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="res\icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="res\IMG_FRAME_C.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="res\IMG_FRAME_M.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="res\IMG_FRAME_MM.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -215,6 +215,29 @@ namespace DALLib.IO
             return expected.Length + padding;
         }
 
+        public string ReadDALSignature(string expected)
+        {
+            // Read and check the signature
+            string sig = ReadSignature(expected.Length);
+            if (sig != expected)
+                return sig;
+            // Calculate Size of Padding
+            int padding = 0;
+            while (true)
+            {
+                if (ReadByte() != 0x20)
+                {
+                    if (expected.Length + padding >= 0x14)
+                        JumpBehind((expected.Length + padding) - 0x14 + 1);
+                    else if (expected.Length + padding >= 0x08)
+                        JumpBehind((expected.Length + padding) - 0x08 + 1);
+                    break;
+                }
+                ++padding;
+            }
+            return sig + new string(' ', padding);
+        }
+
         // 1-Byte Types
         public override bool ReadBoolean()
         {

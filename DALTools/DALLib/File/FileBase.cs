@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,9 +37,26 @@ namespace DALLib.File
         /// Load file from Stream
         /// </summary>
         /// <param name="stream">The stream to read data from</param>
-        public virtual void Load(Stream stream)
+        /// <param name="autoDecompress">Automatically check for full file compression</param>
+        public virtual void Load(Stream stream, bool autoDecompress = true)
         {
-            Load(new ExtendedBinaryReader(stream));
+            var reader = new ExtendedBinaryReader(stream);
+            if (autoDecompress)
+            {
+                // Decompress Zlib stream
+                if (reader.PeekSignature() == "ZLIB")
+                {
+                    // Skip ZLIB Header
+                    reader.JumpAhead(14);
+                    // Decompress stream
+                    using (var deflate = new DeflateStream(reader.BaseStream, CompressionMode.Decompress, false))
+                        reader.SetStream(deflate.CacheStream());
+                    // Parse file
+                    Load(reader);
+                    return;
+                }
+            }
+            Load(reader);
         }
 
         /// <summary>

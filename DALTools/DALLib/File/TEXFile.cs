@@ -75,20 +75,6 @@ namespace DALLib.File
         /// <param name="reader">Reader of the file</param>
         public override void Load(ExtendedBinaryReader reader)
         {
-            // Decompress Zlib stream
-            if (reader.PeekSignature() == "ZLIB")
-            {
-                // Skip ZLIB Header
-                // 0x00 - "ZLIB"
-                // 0x04 - Uncompressed Size
-                // 0x08 - Compressed Size
-                // 0x0C - ZLIB flags
-                // 0x0E - Compressed Data
-                reader.JumpAhead(14);
-                // Set stream to DeflateStream
-                reader.SetStream(new DeflateStream(reader.BaseStream, CompressionMode.Decompress).CacheStream());
-            }
-
             // Read Signature to guess the type of TEX
             int sigSize = reader.CheckDALSignature("Texture");
             Sigless = sigSize < 4;
