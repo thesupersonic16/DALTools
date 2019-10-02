@@ -18,11 +18,13 @@ namespace PCKTool
                 Console.WriteLine("  PCKTool {filePath(s)/Directory}");
                 Console.WriteLine("  Switches: ");
                 Console.WriteLine("    -s           Build all archives using small signatures");
+                Console.WriteLine("    -e           Read/Write in Big Endian (PS3) Default is Little Endian (PC/PS4)");
                 Console.ReadKey(true);
                 return;
             }
 
             bool useSmallSig = false;
+            bool useBigEndian = false;
 
             for (int i = 0; i < args.Length; ++i)
             {
@@ -33,23 +35,28 @@ namespace PCKTool
                         case 's': // Use smallSigs
                             useSmallSig = true;
                             break;
+                        case 'e': // Use Big Endian
+                            useBigEndian = true;
+                            break;
                         default:
                             break;
                     }
                     continue;
                 }
-                PCKFile arc = new PCKFile();
-                arc.UseSmallSig = useSmallSig;
-                var attr = File.GetAttributes(args[i]);
-                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+
+                using (var arc = new PCKFile { UseSmallSig = useSmallSig, UseBigEndian = useBigEndian })
                 {
-                    arc.AddAllFiles(args[i]);
-                    arc.Save(args[i] + ".pck");
-                }
-                else
-                {
-                    arc.Load(args[i], true);
-                    arc.ExtractAllFiles(Path.GetFileNameWithoutExtension(args[i]));
+                    var attr = File.GetAttributes(args[i]);
+                    if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                    {
+                        arc.AddAllFiles(args[i]);
+                        arc.Save(args[i] + ".pck");
+                    }
+                    else
+                    {
+                        arc.Load(args[i], true);
+                        arc.ExtractAllFiles(Path.GetFileNameWithoutExtension(args[i]));
+                    }
                 }
             }
         }

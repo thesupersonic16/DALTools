@@ -16,6 +16,13 @@ namespace DALLib.File
     {
 
         /// <summary>
+        /// Should the file be read/written in Big Endian (PS3)
+        /// <para/>
+        /// Default is false as DALLib is intended to be used on Little Endian (PC/PS4) games
+        /// </summary>
+        public bool UseBigEndian = false;
+
+        /// <summary>
         /// Load file from disk (At the end this calls Load(Stream))
         /// </summary>
         /// <param name="path">Path to the file to load</param>
@@ -51,11 +58,16 @@ namespace DALLib.File
                     // Decompress stream
                     using (var deflate = new DeflateStream(reader.BaseStream, CompressionMode.Decompress, false))
                         reader.SetStream(deflate.CacheStream());
+                    // Set Endianness of the reader
+                    reader.SetEndian(UseBigEndian);
                     // Parse file
                     Load(reader);
                     return;
                 }
             }
+            // Set Endianness of the reader
+            reader.SetEndian(UseBigEndian);
+            // Parse File
             Load(reader);
         }
 

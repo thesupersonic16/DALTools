@@ -69,12 +69,6 @@ namespace DALLib.File
         /// Default is false as DAL: RR does not support ZLIB compressed textures
         /// </summary>
         public bool Compress = false;
-        /// <summary>
-        /// Should the file be read/written in Big Endian (PS3)
-        /// Default is false as DAL: RR PC/PS4 are in Little Endian
-        /// </summary>
-        public bool UseBigEndian = false;
-
 
         /// <summary>
         /// Loads and parses file from stream into memory
@@ -82,9 +76,6 @@ namespace DALLib.File
         /// <param name="reader">Reader of the file</param>
         public override void Load(ExtendedBinaryReader reader)
         {
-            // Set the Endianness before start reading
-            reader.SetEndian(UseBigEndian);
-
             // Read Signature to guess the type of TEX
             int sigSize = reader.CheckDALSignature("Texture");
             Sigless = sigSize < 4;

@@ -24,12 +24,6 @@ namespace DALLib.File
 
         public bool Compress = false;
 
-        /// <summary>
-        /// Should the file be read in Big Endian
-        /// Default is false as DAL: RR PC/PS4 are in Little Endian
-        /// </summary>
-        public bool UseBigEndian = false;
-
         public List<FileEntry> FileEntries = new List<FileEntry>();
 
         public override void Load(ExtendedBinaryReader reader)
@@ -37,9 +31,6 @@ namespace DALLib.File
             // Store the current reader so we can stream files
             _internalReader = reader;
 
-            // Set Endianness
-            reader.SetEndian(UseBigEndian);
-            
             // Filename Section
             //  This section contains an array of addresses to each of the file's name and the strings itself
             //   this section is only used for finding file indices from within game
@@ -55,16 +46,6 @@ namespace DALLib.File
 
             // The length of the Filename section
             int filenameSectionSize = reader.ReadInt32();
-
-            // Endian check workaround
-            if ((uint)filenameSectionSize > 0xFFFFu)
-            {
-                // Set Endianness to Big Endian
-                reader.SetEndian(UseBigEndian = true);
-                // Re-read the section size
-                reader.JumpBehind(4);
-                filenameSectionSize = reader.ReadInt32();
-            }
 
             // The address to the Filename section
             int fileNameSectionAddress = (int)reader.BaseStream.Position;
