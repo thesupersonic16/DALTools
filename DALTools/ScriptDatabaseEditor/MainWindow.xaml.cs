@@ -2,6 +2,7 @@
 using DALLib.File;
 using DALLib.Imaging;
 using Microsoft.Win32;
+using ScriptDatabaseEditor.UI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

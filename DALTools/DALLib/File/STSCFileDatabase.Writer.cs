@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScriptDatabaseEditor
+namespace DALLib.File
 {
     // Writer class for STSCFileDatabase
     public partial class STSCFileDatabase

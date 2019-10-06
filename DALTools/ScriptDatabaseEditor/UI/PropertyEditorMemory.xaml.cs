@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DALLib.Misc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,8 +12,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using static ScriptDatabaseEditor.STSCFileDatabase;
-using static ScriptDatabaseEditor.STSCFileDatabase.MemoryEntry;
+using static DALLib.File.STSCFileDatabase;
+using static DALLib.File.STSCFileDatabase.MemoryEntry;
 
 namespace ScriptDatabaseEditor
 {

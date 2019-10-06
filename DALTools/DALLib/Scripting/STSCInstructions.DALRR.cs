@@ -162,6 +162,7 @@ namespace DALLib.Scripting
             new Instruction("DateRestNumber", new []{ AT_Byte }),
             new Instruction("MapTutorial", new []{ AT_Int16, AT_Int16 }),
             new Instruction("Ending", new []{ AT_Byte }),
+
             new Instruction("Set/Del+FixAuto", new []{ AT_Byte, AT_Byte, AT_Byte }),
             new Instruction("ExiLoopStop", new []{ AT_Int16, AT_Byte }),
             new Instruction("ExiEndWait", new []{ AT_Int16, AT_Byte }), // TODO

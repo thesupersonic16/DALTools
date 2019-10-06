@@ -22,7 +22,7 @@ namespace ScriptDatabaseEditor
 
         public static string StartDirectory = AppDomain.CurrentDomain.BaseDirectory;
         public static string VersionString = "1.0.1";
-
+        
         public static string DataBasePath = "";
         public static string[] Args;
 
@@ -38,7 +38,7 @@ namespace ScriptDatabaseEditor
             // For Debugging
             Args = args;
 #if !DEBUG
-            // Enable our Crash Window if Compiled in Release
+            // Enable our crash window if compiled in Release
             AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
             {
                 ExceptionWindow.UnhandledExceptionEventHandler(e.ExceptionObject as Exception, e.IsTerminating);

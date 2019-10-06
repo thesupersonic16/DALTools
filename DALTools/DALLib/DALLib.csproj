@@ -58,6 +58,9 @@
     <Compile Include="Compression\LZ77Compression.cs" />
     <Compile Include="Exceptions\InvalidTextureFormatException.cs" />
     <Compile Include="File\FontFile.cs" />
+    <Compile Include="File\STSCFileDatabase.cs" />
+    <Compile Include="File\STSCFileDatabase.Reader.cs" />
+    <Compile Include="File\STSCFileDatabase.Writer.cs" />
     <Compile Include="IO\StreamTools.cs" />
     <Compile Include="Exceptions\SignatureMismatchException.cs" />
     <Compile Include="File\FileBase.cs" />
@@ -66,6 +69,7 @@
     <Compile Include="File\TEXFile.cs" />
     <Compile Include="Imaging\ImageTools.cs" />
     <Compile Include="IO\ExtendedBinary.cs" />
+    <Compile Include="Misc\GameID.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Imaging\TEXConverter.cs" />
     <Compile Include="Scripting\STSCInstructions.cs" />

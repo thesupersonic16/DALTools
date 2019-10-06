@@ -1,6 +1,6 @@
 ﻿#pragma warning disable CS0067
-using DALLib.File;
 using DALLib.IO;
+using DALLib.Misc;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScriptDatabaseEditor
+namespace DALLib.File
 {
     // Main STSCFileDatabase class
     public partial class STSCFileDatabase : STSCFile
@@ -48,7 +48,7 @@ namespace ScriptDatabaseEditor
             var array = Instructions[0].GetArgument<byte[]>(1);
             for (int i = 0; i < array.Length / 4; ++i)
             {
-                int address = BitConverter.ToInt32(array, i * 4);
+                int address             = BitConverter.ToInt32(array, i * 4);
                 SystemText.Add(reader.ReadStringElsewhere(address));
             }
             array = Instructions[1].GetArgument<byte[]>(1);
@@ -56,41 +56,41 @@ namespace ScriptDatabaseEditor
             {
                 int nameAddress = BitConverter.ToInt32(array, i * 0x6C);
                 var entry = new CGEntry();
-                entry.Name          = reader.ReadStringElsewhere(nameAddress);
-                entry.ID            = BitConverter.ToInt32(array, i * 0x6C + 0x0004);
-                entry.CGID          = BitConverter.ToInt32(array, i * 0x6C + 0x0008);
-                entry.CGID2         = BitConverter.ToInt32(array, i * 0x6C + 0x000C);
-                entry.Unknown5      = BitConverter.ToUInt32(array, i * 0x6C + 0x0010);
-                entry.Unknown6      = BitConverter.ToUInt16(array, i * 0x6C + 0x0014);
-                entry.TextureWidth  = BitConverter.ToInt16(array, i * 0x6C + 0x0016);
-                entry.TextureHeight = BitConverter.ToInt16(array, i * 0x6C + 0x0018);
-                entry.Unknown7      = BitConverter.ToUInt16(array, i * 0x6C + 0x001A);
-                entry.Unknown81     = array[i * 0x6C + 0x001C];
-                entry.Unknown82     = array[i * 0x6C + 0x001D];
-                entry.Unknown83     = array[i * 0x6C + 0x001E];
-                entry.Page          = array[i * 0x6C + 0x001F];
-                entry.FrameCount    = array[i * 0x6C + 0x0020];
-                entry.GameID        = (GameID)array[i * 0x6C + 0x0021];
-                entry.Unknown93     = array[i * 0x6C + 0x0022];
-                entry.Unknown94     = array[i * 0x6C + 0x0023];
-                entry.Unknown10     = BitConverter.ToUInt32(array, i * 0x6C + 0x0024);
-                entry.Unknown11     = BitConverter.ToUInt32(array, i * 0x6C + 0x0028);
-                entry.Unknown12     = BitConverter.ToUInt32(array, i * 0x6C + 0x002C);
-                entry.Unknown13     = BitConverter.ToUInt32(array, i * 0x6C + 0x0030);
-                entry.Unknown14     = BitConverter.ToUInt32(array, i * 0x6C + 0x0034);
-                entry.Unknown15     = BitConverter.ToUInt32(array, i * 0x6C + 0x0038);
-                entry.Unknown16     = BitConverter.ToUInt32(array, i * 0x6C + 0x003C);
-                entry.Unknown17     = BitConverter.ToUInt32(array, i * 0x6C + 0x0040);
-                entry.Unknown18     = BitConverter.ToUInt32(array, i * 0x6C + 0x0044);
-                entry.Unknown19     = BitConverter.ToUInt32(array, i * 0x6C + 0x0048);
-                entry.Unknown20     = BitConverter.ToUInt32(array, i * 0x6C + 0x004C);
-                entry.Unknown21     = BitConverter.ToUInt32(array, i * 0x6C + 0x0050);
-                entry.Unknown22     = BitConverter.ToUInt32(array, i * 0x6C + 0x0054);
-                entry.Unknown23     = BitConverter.ToUInt32(array, i * 0x6C + 0x0058);
-                entry.Unknown24     = BitConverter.ToUInt32(array, i * 0x6C + 0x005C);
-                entry.Unknown25     = BitConverter.ToUInt32(array, i * 0x6C + 0x0060);
-                entry.Unknown26     = BitConverter.ToUInt32(array, i * 0x6C + 0x0064);
-                entry.Unknown27     = BitConverter.ToUInt32(array, i * 0x6C + 0x0068);
+                entry.Name              = reader.ReadStringElsewhere(nameAddress);
+                entry.ID                = BitConverter.ToInt32(array, i * 0x6C + 0x0004);
+                entry.CGID              = BitConverter.ToInt32(array, i * 0x6C + 0x0008);
+                entry.CGID2             = BitConverter.ToInt32(array, i * 0x6C + 0x000C);
+                entry.Unknown5          = BitConverter.ToUInt32(array, i * 0x6C + 0x0010);
+                entry.Unknown6          = BitConverter.ToUInt16(array, i * 0x6C + 0x0014);
+                entry.TextureWidth      = BitConverter.ToInt16(array, i * 0x6C + 0x0016);
+                entry.TextureHeight     = BitConverter.ToInt16(array, i * 0x6C + 0x0018);
+                entry.Unknown7          = BitConverter.ToUInt16(array, i * 0x6C + 0x001A);
+                entry.Unknown81         = array[i * 0x6C + 0x001C];
+                entry.Unknown82         = array[i * 0x6C + 0x001D];
+                entry.Unknown83         = array[i * 0x6C + 0x001E];
+                entry.Page              = array[i * 0x6C + 0x001F];
+                entry.FrameCount        = array[i * 0x6C + 0x0020];
+                entry.GameID            = (GameID)array[i * 0x6C + 0x0021];
+                entry.Unknown93         = array[i * 0x6C + 0x0022];
+                entry.Unknown94         = array[i * 0x6C + 0x0023];
+                entry.Unknown10         = BitConverter.ToUInt32(array, i * 0x6C + 0x0024);
+                entry.Unknown11         = BitConverter.ToUInt32(array, i * 0x6C + 0x0028);
+                entry.Unknown12         = BitConverter.ToUInt32(array, i * 0x6C + 0x002C);
+                entry.Unknown13         = BitConverter.ToUInt32(array, i * 0x6C + 0x0030);
+                entry.Unknown14         = BitConverter.ToUInt32(array, i * 0x6C + 0x0034);
+                entry.Unknown15         = BitConverter.ToUInt32(array, i * 0x6C + 0x0038);
+                entry.Unknown16         = BitConverter.ToUInt32(array, i * 0x6C + 0x003C);
+                entry.Unknown17         = BitConverter.ToUInt32(array, i * 0x6C + 0x0040);
+                entry.Unknown18         = BitConverter.ToUInt32(array, i * 0x6C + 0x0044);
+                entry.Unknown19         = BitConverter.ToUInt32(array, i * 0x6C + 0x0048);
+                entry.Unknown20         = BitConverter.ToUInt32(array, i * 0x6C + 0x004C);
+                entry.Unknown21         = BitConverter.ToUInt32(array, i * 0x6C + 0x0050);
+                entry.Unknown22         = BitConverter.ToUInt32(array, i * 0x6C + 0x0054);
+                entry.Unknown23         = BitConverter.ToUInt32(array, i * 0x6C + 0x0058);
+                entry.Unknown24         = BitConverter.ToUInt32(array, i * 0x6C + 0x005C);
+                entry.Unknown25         = BitConverter.ToUInt32(array, i * 0x6C + 0x0060);
+                entry.Unknown26         = BitConverter.ToUInt32(array, i * 0x6C + 0x0064);
+                entry.Unknown27         = BitConverter.ToUInt32(array, i * 0x6C + 0x0068);
                 CGs.Add(entry);
             }
 
@@ -98,12 +98,12 @@ namespace ScriptDatabaseEditor
             for (int i = 0; i < array.Length / 0x10; ++i)
             {
                 var entry = new MovieEntry();
-                entry.FriendlyName = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 0));
-                entry.FilePath     = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 4));
-                entry.ID           = BitConverter.ToInt32(array, i * 0x10 + 8);
-                entry.Unknown4     = array[i * 0x10 + 12];
-                entry.GameID       = (GameID)array[i * 0x10 + 13];
-                entry.Unknown5     = BitConverter.ToInt16(array, i * 0x10 + 14);
+                entry.FriendlyName      = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 0));
+                entry.FilePath          = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 4));
+                entry.ID                = BitConverter.ToInt32(array, i * 0x10 + 8);
+                entry.Unknown4          = array[i * 0x10 + 12];
+                entry.GameID            = (GameID)array[i * 0x10 + 13];
+                entry.Unknown5          = BitConverter.ToInt16(array, i * 0x10 + 14);
                 Movies.Add(entry);
             }
 
@@ -111,11 +111,11 @@ namespace ScriptDatabaseEditor
             for (int i = 0; i < array.Length / 0x10; ++i)
             {
                 var entry = new MemoryEntry();
-                entry.Name = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 0));
-                entry.Description = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 4));
-                entry.ID = BitConverter.ToInt32(array, i * 0x10 + 8);
-                entry.GameID = (GameID)array[i * 0x10 + 12];
-                entry.Game = (MemoryEntry.MemoryGame)array[i * 0x10 + 13];
+                entry.Name              = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 0));
+                entry.Description       = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 4));
+                entry.ID                = BitConverter.ToInt32(array, i * 0x10 + 8);
+                entry.GameID            = (GameID)array[i * 0x10 + 12];
+                entry.Game              = (MemoryEntry.MemoryGame)array[i * 0x10 + 13];
                 Memories.Add(entry);
             }
 
@@ -123,33 +123,33 @@ namespace ScriptDatabaseEditor
             for (int i = 0; i < array.Length / 0x08; ++i)
             {
                 var entry = new CharacterEntry();
-                entry.FriendlyName = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x08 + 0));
-                entry.ID = BitConverter.ToInt32(array, i * 0x08 + 4);
+                entry.FriendlyName      = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x08 + 0));
+                entry.ID                = BitConverter.ToInt32(array, i * 0x08 + 4);
                 Characters.Add(entry);
             }
             array = Instructions[5].GetArgument<byte[]>(1);
             for (int i = 0; i < array.Length / 0x08; ++i)
             {
                 var entry = new Unknown2Entry();
-                entry.Unknown1 = BitConverter.ToInt32(array, i * 0x08 + 0);
-                entry.Unknown2 = BitConverter.ToInt32(array, i * 0x08 + 4);
+                entry.Unknown1          = BitConverter.ToInt32(array, i * 0x08 + 0);
+                entry.Unknown2          = BitConverter.ToInt32(array, i * 0x08 + 4);
                 Unknown2.Add(entry);
             }
             array = Instructions[6].GetArgument<byte[]>(1);
             for (int i = 0; i < array.Length / 0x06; ++i)
             {
                 var entry = new Unknown3Entry();
-                entry.ID = BitConverter.ToInt16(array, i * 0x06 + 0);
-                entry.Unknown2 = BitConverter.ToInt32(array, i * 0x06 + 2);
+                entry.ID                = BitConverter.ToInt16(array, i * 0x06 + 0);
+                entry.Unknown2          = BitConverter.ToInt32(array, i * 0x06 + 2);
                 Unknown3.Add(entry);
             }
             array = Instructions[7].GetArgument<byte[]>(1);
             for (int i = 0; i < array.Length / 0x10; ++i)
             {
                 var entry = new VoiceEntry();
-                entry.UnknownName = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 0));
-                entry.KnownName = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 4));
-                entry.PreferedName = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 8));
+                entry.UnknownName       = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 0));
+                entry.KnownName         = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 4));
+                entry.PreferedName      = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x10 + 8));
                 entry.ID = BitConverter.ToInt32(array, i * 0x10 + 12);
                 Voices.Add(entry);
             }
@@ -157,8 +157,8 @@ namespace ScriptDatabaseEditor
             for (int i = 0; i < array.Length / 0x06; ++i)
             {
                 var entry = new Unknown4Entry();
-                entry.Unknown1 = BitConverter.ToInt16(array, i * 0x06 + 0);
-                entry.Unknown2 = BitConverter.ToInt32(array, i * 0x06 + 2);
+                entry.Unknown1          = BitConverter.ToInt16(array, i * 0x06 + 0);
+                entry.Unknown2          = BitConverter.ToInt32(array, i * 0x06 + 2);
                 Unknown4.Add(entry);
             }
             array = Instructions[9].GetArgument<byte[]>(1);
@@ -177,15 +177,15 @@ namespace ScriptDatabaseEditor
             for (int i = 0; i < array.Length / 0x1C; ++i)
             {
                 var entry = new DramaCDEntry();
-                entry.FileName = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x1C + 0));
-                entry.FriendlyName = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x1C + 4));
-                entry.SourceAlbum = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x1C + 8));
-                entry.InternalName = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x1C + 12));
-                entry.ID = BitConverter.ToInt16(array, i * 0x1C + 16);
-                entry.Game = (GameID)BitConverter.ToInt16(array, i * 0x1C + 18);
-                entry.Unknown7 = BitConverter.ToInt16(array, i * 0x1C + 20);
-                entry.SourceTrackID = BitConverter.ToInt16(array, i * 0x1C + 22);
-                entry.Unknown9 = BitConverter.ToInt16(array, i * 0x1C + 24);
+                entry.FileName          = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x1C + 0));
+                entry.FriendlyName      = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x1C + 4));
+                entry.SourceAlbum       = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x1C + 8));
+                entry.InternalName      = reader.ReadStringElsewhere(BitConverter.ToInt32(array, i * 0x1C + 12));
+                entry.ID                = BitConverter.ToInt16(array, i * 0x1C + 16);
+                entry.Game              = (GameID)BitConverter.ToInt16(array, i * 0x1C + 18);
+                entry.Unknown7          = BitConverter.ToInt16(array, i * 0x1C + 20);
+                entry.SourceTrackID     = BitConverter.ToInt16(array, i * 0x1C + 22);
+                entry.Unknown9          = BitConverter.ToInt16(array, i * 0x1C + 24);
                 DramaCDs.Add(entry);
             }
 

@@ -52,7 +52,7 @@ namespace DALLib.File
             {
                 byte opcode = reader.ReadByte();
 
-                if (opcode >= 0x90)
+                if (opcode >= 0x94)
                 {
                     Console.WriteLine("Error: Attempted to disassemble Instruction at {1:X} but got {0:X2}.", opcode, (int)reader.BaseStream.Position - 1);
                     Console.WriteLine("This usually means the Script is corrupt or one or more STSCFile's definitions are incorrect.");

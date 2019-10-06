@@ -1,4 +1,5 @@
 ﻿using DALLib.IO;
+using DALLib.Misc;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScriptDatabaseEditor
+namespace DALLib.File
 {
     // Reader class for STSCFileDatabase
     public partial class STSCFileDatabase

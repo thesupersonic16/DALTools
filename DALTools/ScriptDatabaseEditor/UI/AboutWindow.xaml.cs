@@ -13,7 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace ScriptDatabaseEditor
+namespace ScriptDatabaseEditor.UI
 {
     /// <summary>
     /// Interaction logic for AboutWindow.xaml
