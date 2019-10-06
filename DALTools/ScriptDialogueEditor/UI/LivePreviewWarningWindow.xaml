@@ -1,0 +1,42 @@
+﻿<Window x:Class="ScriptDialogueEditor.UI.LivePreviewWarningWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ScriptDialogueEditor.UI"
+        Title="DATE A LIVE: Rio Reincarnation Live Preview Warning!" Height="369.333" Width="554.667"  Background="#FF2D2D30"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Style="{StaticResource HedgeWindow}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <Label Content="WARNING" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Width="Auto" FontSize="30" Margin="10,0,10,0"/>
+        <Grid Grid.Row="1" Margin="10,5,10,10">
+            <Label HorizontalAlignment="Center" >
+                <TextBlock TextWrapping="Wrap">
+                    DATE A LIVE: Rio Reincarnation Live Preview is a Just For Fun experiment to see if an external 
+                    program is able to inject newly modified scripts into the game during runtime and to beable
+                    to move around in the current script.
+                    <LineBreak/>
+                    <LineBreak/>
+                    When using this experiment, You must aware that enabling this can increase the chance of
+                    your save getting corrupted and to expect the possibility of the game crashing to be much
+                    higher.
+                    <LineBreak/>
+                    <LineBreak/>
+                    Please only enable this under your own risk, Don't blame any of the authors of this editor for
+                    any damages to the game.
+                    <LineBreak/>
+                    <LineBreak/>
+                    Are you sure you want to enable the live preview experment?
+                </TextBlock>
+            </Label>
+        </Grid>
+        <Grid Grid.Row="2" Background="#323235">
+            <Button Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="92" Margin="0,0,10,10" Height="20" Click="CancelButton_Click"/>
+            <Button Content="Enable" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="92" Margin="0,0,107,10" Height="20" Click="EnableButton_Click"/>
+        </Grid>
+    </Grid>
+</Window>

@@ -169,6 +169,8 @@ namespace DALLib.File
                 _internalReader.JumpTo(entry.DataPosition);
                 entry.Data = _internalReader.ReadBytes(entry.DataLength);
             }
+            _internalReader?.Dispose();
+            _internalReader = null;
         }
 
         /// <summary>
@@ -191,7 +193,6 @@ namespace DALLib.File
             return _internalReader.ReadBytes(entry.DataLength);
         }
 
-        // TODO: add Virtual Stream
         /// <summary>
         /// Sets the position of the main stream to the found file
         /// </summary>
@@ -204,8 +205,11 @@ namespace DALLib.File
                 t => t.FileName.ToLowerInvariant() == name.ToLowerInvariant());
             if (entry == null)
                 return null;
+            // Return a memory stream if the reader is closed, assuming all files are loaded into memory
+            if (_internalReader == null)
+                return new MemoryStream(entry.Data);
             _internalReader.JumpTo(entry.DataPosition);
-            return _internalReader.BaseStream;
+            return new VirtualStream(_internalReader.BaseStream, entry.DataPosition, entry.DataLength, true);
         }
 
         /// <summary>
@@ -308,10 +312,15 @@ namespace DALLib.File
 
         public class FileEntry
         {
-            public string FileName;
-            public int DataPosition;
-            public int DataLength;
-            public byte[] Data;
+            public string FileName  { get; set; }
+            public int DataPosition { get; set; }
+            public int DataLength   { get; set; }
+            public byte[] Data      { get; set; }
+
+            public override string ToString()
+            {
+                return FileName;
+            }
         }
 
 

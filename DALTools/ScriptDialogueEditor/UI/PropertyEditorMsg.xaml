@@ -1,0 +1,32 @@
+﻿<Window x:Class="ScriptDialogueEditor.UI.PropertyEditorMsg"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ScriptDialogueEditor.UI"
+        mc:Ignorable="d" WindowStartupLocation="CenterScreen"
+        Title="Message Property Editor" Height="264.667" Width="640" Style="{StaticResource HedgeWindow}" Loaded="Window_Loaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <GroupBox Header="Properties" HorizontalAlignment="Stretch" Height="171" VerticalAlignment="Top" Margin="5,10,5,0">
+            <StackPanel>
+                <Grid Margin="8,8,8,4">
+                    <Label Content="New Message: "/>
+                    <TextBox x:Name="MessageTextBox" Text="{Binding NewMessage}" Height="56" VerticalAlignment="Top" Margin="93,0,0,0" AcceptsReturn="True" FontSize="14"/>
+                </Grid>
+                <Grid Margin="8,8,8,4">
+                    <Label Content="Prev Message: "/>
+                    <TextBox Text="{Binding OldMessage}" Height="56" VerticalAlignment="Top" IsEnabled="False" Margin="93,0,0,0" AcceptsReturn="True" FontSize="14"/>
+                </Grid>
+            </StackPanel>
+        </GroupBox>
+        <Grid Background="#323235" Grid.Row="1">
+            <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,10,10" Height="20" Click="ButtonSave_Click"/>
+            <Button Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,90,10" Height="20" Click="ButtonCancel_Click"/>
+        </Grid>
+
+    </Grid>
+</Window>

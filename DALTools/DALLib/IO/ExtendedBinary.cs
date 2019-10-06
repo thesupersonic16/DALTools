@@ -420,6 +420,21 @@ namespace DALLib.IO
         }
 
         // Methods
+        public void JumpTo(long position, bool absolute = true)
+        {
+            OutStream.Position = (absolute) ? position : position + Offset;
+        }
+
+        public void JumpAhead(long amount = 1)
+        {
+            OutStream.Position += amount;
+        }
+
+        public void JumpBehind(long amount = 1)
+        {
+            OutStream.Position -= amount;
+        }
+
         public void SetEndian(bool isBigEndian)
         {
             IsBigEndian = isBigEndian;
