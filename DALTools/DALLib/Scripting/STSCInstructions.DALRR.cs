@@ -102,7 +102,7 @@ namespace DALLib.Scripting
             new Instruction("SetChoice", new []{ AT_CodePointer, AT_String, AT_Int16 }),
             new Instruction("ShowChoices", new []{ AT_Bool }),
             new Instruction("SetFontSize", new []{ AT_Byte }),
-            new Instruction("MapPlace", new []{ AT_Int16, AT_Int32, AT_CodePointer }),
+            new Instruction("MapPlace", new []{ AT_Int16, AT_String, AT_CodePointer }),
             new Instruction("MapChara", new []{ AT_Int16, AT_Int16, AT_Byte }),
             new Instruction("MapBg", new []{ AT_Byte }), // mapBg{}.tex
             new Instruction("MapCoord", new []{ AT_Int16, AT_Byte, AT_Bool, AT_Int16, AT_Int16 }),
