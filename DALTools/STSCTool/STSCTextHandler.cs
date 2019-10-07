@@ -114,9 +114,11 @@ namespace STSCTool
             for (int i = 0; i < text.Length; ++i)
             {
                 string line = text[i];
-                if (string.IsNullOrEmpty(line))
+                if (string.IsNullOrEmpty(line.Replace(" ", "")))
                     continue;
-                if (line[0] == '#')
+                // Gets the first character of the line excluding spaces
+                char c = line.Replace(" ", "")[0];
+                if (c == '#')
                 {
                     if (line.StartsWith("#label"))
                         labels.Add(line.Substring(7), address);
@@ -126,9 +128,9 @@ namespace STSCTool
                         file.ScriptName = line.Substring(12);
                     continue;
                 }
-                if (line[0] == '{')
+                if (c == '{')
                     continue;
-                if (line[0] == '}')
+                if (c == '}')
                 {
                     labels.Add(scopes.Last().ToString(), address);
                     scopes.RemoveAt(scopes.Count - 1);
