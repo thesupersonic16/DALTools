@@ -82,6 +82,6 @@ ScriptDialogueEditor also features:
  
 [scriptdatabaseeditor_screenshot_00]: ./Images/ScriptDatabaseEditor_Screenshot_00.png
 [scriptdialogueeditor_screenshot_00]: ./Images/ScriptDialogueEditor_Screenshot_00.png
-[scriptdialogueeditor_info_url]: #scriptdatabaseeditor---date-a-live-rio-reincarnation-script-dialogue-editor
+[scriptdialogueeditor_info_url]: #scriptdialogueeditor---date-a-live-rio-reincarnation-script-dialogue-editor
 [functions_url]: ./FUNCTIONS.md
 [releases_url]: ../../releases

@@ -15,7 +15,7 @@ namespace DALLib.ImportExport
 
         protected string _buffer = "";
 
-        public override string TypeName => "GNU gettext File";
+        public override string TypeName => "GNU gettext";
 
         public override string TypeExtension => ".po";
 

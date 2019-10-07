@@ -440,7 +440,7 @@ namespace ScriptDialogueEditor
                 {
                     if (!string.IsNullOrEmpty(filter))
                         filter += '|';
-                    filter += $"{STSCIE[i].TypeName} Files (*{STSCIE[i].TypeExtension})|*{STSCIE[i].TypeExtension}";
+                    filter += $"{STSCIE[i].TypeName} File (*{STSCIE[i].TypeExtension})|*{STSCIE[i].TypeExtension}";
                 }
             }
             return filter;
