@@ -42,7 +42,7 @@ namespace ScriptDialogueEditor
 
         public bool ScriptEdited = false;
 
-        public STSCImportExportBase[] STSCIE = new[] { new STSCTSVFile() };
+        public STSCImportExportBase[] STSCIE = new STSCImportExportBase[] { new STSCTSVFile(), new GetTextFile() };
 
         public MainWindow()
         {
@@ -368,7 +368,13 @@ namespace ScriptDialogueEditor
             if (ofd.ShowDialog() == true)
             {
                 // Gets the STSCIE
-                var ie = STSCIE[ofd.FilterIndex - 1];
+                var ie = STSCIE.FirstOrDefault(t => ofd.FileName.Contains(t.TypeExtension));
+                // if importer is not found
+                if (ie == null)
+                {
+                    MessageBox.Show("Could not detect the file type!", "Import Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
                 // Import translation
                 ie.Import(ScriptFile, ScriptDB, File.ReadAllText(ofd.FileName));
                 // Save the script back into the archive
