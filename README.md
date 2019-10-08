@@ -74,7 +74,7 @@ A GUI tool made to help simplify the process of editing the text within the scri
 ScriptDialogueEditor also features:
  - Loads/Saves scripts in memory so you won't need to keep rebuilding the .bin file and the .pck file manually
  - Most of the confusing/unnecessary code has been filtered out, only showing the information needed for most people.
- - Text Exporting and Importing (currently only .tsv is supported)
+ - Text Exporting and Importing (currently only .tsv and .po are supported)
  - An experimental/buggy live preview
  
 ![Screenshot of ScriptDialogueEditor][scriptdialogueeditor_screenshot_00]
