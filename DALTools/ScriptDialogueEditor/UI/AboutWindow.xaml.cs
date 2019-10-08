@@ -35,5 +35,10 @@ namespace ScriptDialogueEditor.UI
         {
             Process.Start("https://github.com/thesupersonic16/DALTools");
         }
+
+        private void ButtonReportIssue_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("https://github.com/thesupersonic16/DALTools/issues/new?title=[ScriptDialogueEditor]");
+        }
     }
 }

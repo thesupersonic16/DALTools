@@ -49,6 +49,9 @@ namespace ScriptDialogueEditor
                     case "Opt":
                         inst.Arguments[1] = code.Text;
                         break;
+                    case "Map":
+                        inst.Arguments[1] = code.Text;
+                        break;
                     default:
                         continue;
                 }
@@ -99,6 +102,12 @@ namespace ScriptDialogueEditor
                         code.ID = inst.GetArgument<string>(0);
                         code.Text = inst.GetArgument<string>(1);
                         code.Brush = new SolidColorBrush(Color.FromArgb(0x30, 0x80, 0x80, 0x00));
+                        break;
+                    case "MapPlace":
+                        code.Type = "Map";
+                        code.ID = inst.GetArgument<string>(0);
+                        code.Text = inst.GetArgument<string>(1);
+                        code.Brush = new SolidColorBrush(Color.FromArgb(0x30, 0x80, 0x80, 0x80));
                         break;
                     default:
                         continue;

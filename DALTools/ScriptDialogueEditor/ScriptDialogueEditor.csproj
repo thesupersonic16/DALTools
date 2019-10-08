@@ -77,6 +77,9 @@
     <Compile Include="UI\PropertyEditorChoice.xaml.cs">
       <DependentUpon>PropertyEditorChoice.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\PropertyEditorMapPlace.xaml.cs">
+      <DependentUpon>PropertyEditorMapPlace.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\PropertyEditorMsg.xaml.cs">
       <DependentUpon>PropertyEditorMsg.xaml</DependentUpon>
     </Compile>
@@ -109,6 +112,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\PropertyEditorChoice.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\PropertyEditorMapPlace.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -42,6 +42,9 @@ namespace DALLib.ImportExport
                     case "SetChoice":
                         AddEntry("Choice", instruction.GetArgument<string>(1));
                         break;
+                    case "MapPlace":
+                        AddEntry("MapMarker", instruction.GetArgument<string>(1));
+                        break;
                     default:
                         continue;
                 }
@@ -82,6 +85,11 @@ namespace DALLib.ImportExport
                                     instruction.Arguments[4] = str;
                                 break;
                             case "SetChoice":
+                                // Check if the key matches the current text
+                                if (instruction.GetArgument<string>(1) == id)
+                                    instruction.Arguments[1] = str;
+                                break;
+                            case "MapPlace":
                                 // Check if the key matches the current text
                                 if (instruction.GetArgument<string>(1) == id)
                                     instruction.Arguments[1] = str;

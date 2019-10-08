@@ -183,6 +183,8 @@ namespace ScriptDialogueEditor
                 if (ScriptArchiveFiles[list.SelectedIndex].FileName.Contains(scriptName))
                 {
                     LoadScript(ScriptArchiveFiles[list.SelectedIndex].FileName);
+                    if (ScriptListView.Items.Count > 0)
+                        ScriptListView.ScrollIntoView(ScriptListView.Items[0]);
                     return;
                 }
                 // Scipt that user is trying to load is not the right script
@@ -197,7 +199,8 @@ namespace ScriptDialogueEditor
                 }
             }
             LoadScript(ScriptArchiveFiles[list.SelectedIndex].FileName);
-
+            if (ScriptListView.Items.Count > 0)
+                ScriptListView.ScrollIntoView(ScriptListView.Items[0]);
         }
 
         private void CodeListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -243,6 +246,11 @@ namespace ScriptDialogueEditor
                     else
                         ScriptListBox.SelectedIndex = ScriptArchiveFiles.FindIndex(t => t.FileName.Contains(code.ID));
                     break;
+                case "Map":
+                    // Open Editor
+                    if (new PropertyEditorMapPlace(code).ShowDialog() == true)
+                        ScriptEdited = true; // Mark script as edited
+                    break;
                 case "Opt":
 
                     // Check if the choice links to a FileJump
@@ -269,19 +277,14 @@ namespace ScriptDialogueEditor
                 default:
                     break;
             }
+            // Update the title so we can tell the user that the file has been edited
+            UpdateTitle();
         }
 
         private void ListView_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
                 CodeListView_MouseDoubleClick(sender, null);
-        }
-
-        private void CodeListView_TargetUpdated(object sender, DataTransferEventArgs e)
-        {
-            var list = sender as ListBox;
-            if (list.Items.Count != 0)
-                list.ScrollIntoView(list.Items[0]);
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -405,6 +408,74 @@ namespace ScriptDialogueEditor
                 using (var stream = ScriptArchive.GetFileStream(file.FileName))
                     script.Load(stream);
                 File.WriteAllText(sfd.FileName, ie.Export(script, ScriptDB));
+            }
+        }
+
+        private void BatchImportTranslationMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+            var sfd = new SaveFileDialog
+            {
+                Filter = GenerateFilters(false),
+                FileName = "Select a file type and the folder which contains the translation files (the folder containing the 1st, 2nd and 3rd folder) and press Save",
+                Title = "Batch Import"
+            };
+            if (sfd.ShowDialog() == true)
+            {
+                // Path to the directory which contains all the translation files
+                string dir = Path.GetDirectoryName(sfd.FileName);
+                // Gets the STSCIE
+                var ie = STSCIE[sfd.FilterIndex - 1];
+                foreach (var entry in ScriptArchive.FileEntries)
+                {
+                    var script = new STSCFile();
+                    using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                        script.Load(stream);
+                    // Path to the script file
+                    string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName), ie.TypeExtension);
+                    // Skip script if file does not exist
+                    if (!File.Exists(filepath))
+                        continue;
+                    // Import translation
+                    ie.Import(script, ScriptDB, File.ReadAllText(filepath));
+                    // Save the script back into the archive
+                    using (var stream = new MemoryStream())
+                    {
+                        script.Save(stream);
+                        ScriptArchive.ReplaceFile(entry.FileName, stream.ToArray());
+                    }
+                }
+            }
+            // Reload the current script
+            if (ScriptListBox.SelectedIndex == -1)
+                return;
+            LoadScript(ScriptArchive.FileEntries[ScriptListBox.SelectedIndex].FileName);
+        }
+
+        private void BatchExportTranslationMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var sfd = new SaveFileDialog
+            {
+                Filter = GenerateFilters(false),
+                FileName = "Select a file type and folder to store all the text files and press Save",
+                Title = "Batch Export"
+            };
+            if (sfd.ShowDialog() == true)
+            {
+                // Path to the directory which will contain all the translation files
+                string dir = Path.GetDirectoryName(sfd.FileName);
+                // Gets the STSCIE
+                var ie = STSCIE[sfd.FilterIndex - 1];
+                foreach (var entry in ScriptArchive.FileEntries)
+                {
+                    var script = new STSCFile();
+                    using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                        script.Load(stream);
+                    string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName), ie.TypeExtension);
+                    // Create the directory
+                    Directory.CreateDirectory(Path.GetDirectoryName(filepath));
+                    File.WriteAllText(filepath, ie.Export(script, ScriptDB));
+                }
             }
         }
 

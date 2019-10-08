@@ -21,6 +21,8 @@
                                 <ContextMenu x:Key="ScriptListBoxContextMenu">
                                     <MenuItem Header="Import Translation" Click="ImportTranslationMenuItem_Click"/>
                                     <MenuItem Header="Export Translation" Click="ExportTranslationMenuItem_Click"/>
+                                    <MenuItem Header="Batch Import Translation" Click="BatchImportTranslationMenuItem_Click"/>
+                                    <MenuItem Header="Batch Export Translation" Click="BatchExportTranslationMenuItem_Click"/>
                                 </ContextMenu>
                                 <Style TargetType="{x:Type ListBoxItem}">
                                     <Setter Property="ContextMenu" Value="{StaticResource ScriptListBoxContextMenu}"/>
@@ -30,10 +32,9 @@
                     </GroupBox>
                     <GroupBox Header="Script" Grid.Column="1" Margin="5,5,5,5">
                         <Grid>
-                            <ListView Foreground="White" FontSize="16" 
+                            <ListView x:Name="ScriptListView" Foreground="White" FontSize="16" 
                                       MouseDoubleClick="CodeListView_MouseDoubleClick" KeyDown="ListView_KeyDown"
-                                      ItemsSource="{Binding ScriptFile.DialogueCodes, NotifyOnTargetUpdated=True}"
-                                      TargetUpdated="CodeListView_TargetUpdated">
+                                      ItemsSource="{Binding ScriptFile.DialogueCodes}">
                                 <ListView.View>
                                     <GridView AllowsColumnReorder="True">
                                         <GridViewColumn Header="Type" Width="60"  DisplayMemberBinding="{Binding Type}"/>
@@ -77,9 +78,8 @@
             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="40" Background="#323235">
                 <Button Content="Save"                HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,8,10,0"  Height="23" Width="65" Click="SaveButton_Click"  />
                 <Button Content="Load"                HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,8,80,0"  Height="23" Width="65" Click="LoadButton_Click"  />
-                <Button Content="Options"             HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,8,150,0" Height="23" Width="65"  />
-                <Button Content="Enable Live Preview" HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,8,220,0" Height="23" Width="124" Click="LivePreviewButton_Click" />
-                <Button Content="About"               HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,8,349,0" Height="23" Width="65"  Click="AboutButton_Click"  />
+                <Button Content="Enable Live Preview" HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,8,150,0" Height="23" Width="124" Click="LivePreviewButton_Click" />
+                <Button Content="About"               HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,8,279,0" Height="23" Width="65"  Click="AboutButton_Click"  />
             </Grid>
         </Grid>
     </Border>

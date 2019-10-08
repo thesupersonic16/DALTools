@@ -34,7 +34,8 @@
         </GroupBox>
         <Grid Grid.Row="2" Background="#323235">
             <Button Content="Close" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,10,10" Height="20" Click="ButtonClose_Click"/>
-            <Button Content="DALTools Github" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="108" Margin="0,0,90,10" Height="20" Click="ButtonGithub_Click"/>
+            <Button Content="DALTools GitHub" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="108" Margin="0,0,90,10" Height="20" Click="ButtonGithub_Click"/>
+            <Button Content="Request Feature / Report Issue" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="186" Margin="0,0,203,10" Height="20" Click="ButtonReportIssue_Click"/>
         </Grid>
     </Grid>
 </Window>
