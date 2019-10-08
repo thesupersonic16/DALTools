@@ -107,7 +107,7 @@ namespace DALLib.File
             foreach (var entry in FileEntries)
             {
                 // Writes an absolute address to the array of file name pointers
-                writer.FillInOffset(entry.FileName, (uint)(writer.BaseStream.Position - sectionPosition));
+                writer.FillInOffset(entry.FileName, (uint)(writer.BaseStream.Position - (UseSmallSig ? 0xC : 0x18)));
                 // Writes the file name and adds a null byte to terminate the string
                 writer.WriteNullTerminatedString(entry.FileName);
             }
@@ -136,7 +136,7 @@ namespace DALLib.File
             }
 
             // Finalises the Pack section by writing the length of the section
-            writer.FillInOffset("SectionSize", (uint)(writer.BaseStream.Position - sectionPosition));
+            writer.FillInOffset("SectionSize", (uint)(writer.BaseStream.Position - (UseSmallSig ? 0xC : 0x18)));
             // Pads the file to a divisible of 0x08 for DAL: RR or 0x04 for others 
             writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
 

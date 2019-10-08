@@ -116,6 +116,9 @@ namespace DALLib.File
             // Decompress/Process Image based on format
             TEXConverter.Decode(this, format, reader);
 
+            // Fix Alignment
+            reader.FixPadding();
+
             // Parts
             sigSize = reader.CheckDALSignature("Parts");
             if (sigSize < 4)
