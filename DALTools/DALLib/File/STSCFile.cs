@@ -37,11 +37,6 @@ namespace DALLib.File
                 throw new SignatureMismatchException("STSC", sig);
             uint headerSize = reader.ReadUInt32();
             uint version = reader.ReadUInt32();
-            if (version != 7)
-            {
-                Console.WriteLine("WARNING: Script version is not supported! Got {0}, expected {1}. Continuing with the wrong version will almost always fail.", version, 7);
-                Console.ReadKey(true);
-            }
             ScriptName = reader.ReadNullTerminatedString();
             reader.JumpAhead((uint)(0x20 - (ScriptName.Length + 1)));
             reader.JumpAhead(12);
@@ -54,37 +49,21 @@ namespace DALLib.File
 
                 if (opcode >= 0x94)
                 {
-                    Console.WriteLine("Error: Attempted to disassemble Instruction at {1:X} but got {0:X2}.", opcode, (int)reader.BaseStream.Position - 1);
-                    Console.WriteLine("This usually means the Script is corrupt or one or more STSCFile's definitions are incorrect.");
-                    Console.WriteLine("Disassembler must abort now!");
-                    Console.ReadKey(true);
-                    return;
+                    throw new STSCDisassembleException(this, 
+                        $"Got opcode 0x{opcode:X2} at 0x{reader.BaseStream.Position - 1:X8} in \"{ScriptName}\"" +
+                        " There is no opcodes larger than 0x93!");
                 }
 
                 // Check if its a known instruction
                 if (STSCInstructions.DALRRInstructions[opcode] == null)
                 {
-                    Console.WriteLine("Error: Instruction {0:X2} at {1:X} is unknown!", opcode, (int)reader.BaseStream.Position - 1);
-                    Console.WriteLine("This usually means STSCFile does not yet know the parameters on the instruction.");
-                    Console.WriteLine("Disassembler must abort now!");
-                    Console.ReadKey(true);
-                    return;
+                    throw new STSCDisassembleException(this,
+                        $"Got opcode 0x{opcode:X2} at 0x{reader.BaseStream.Position - 1:X8} in \"{ScriptName}\"" +
+                        " This opcode is unknown!");
                 }
 
-                try
-                {
-                    var instruction = STSCInstructions.DALRRInstructions[opcode].Read(reader);
-                    Instructions.Add(instruction);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Error: Failed to Read instruction {0:X2} at {1:X}!", opcode, (int)reader.BaseStream.Position - 1);
-                    Console.WriteLine("This usually means the Script is corrupt or one or more STSCFile's definitions are incorrect.");
-                    Console.WriteLine("Please check the output file for finding out what instruction went wrong.");
-                    Console.WriteLine("Disassembler must abort now! Exception: {0}", e);
-                    Console.ReadKey(true);
-                    return;
-                }
+                var instruction = STSCInstructions.DALRRInstructions[opcode].Read(reader);
+                Instructions.Add(instruction);
                 if (reader.BaseStream.Position >= reader.Offset)
                     break;
             }

@@ -1,4 +1,5 @@
-﻿using DALLib.File;
+﻿using DALLib.Exceptions;
+using DALLib.File;
 using DALLib.Scripting;
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,18 @@ namespace STSCTool
                 var file = new STSCFile();
                 if (Path.GetExtension(args[i]) == ".bin")
                 {
-                    file.Load(args[i]);
+                    try
+                    {
+                        file.Load(args[i]);
+                    }catch (STSCDisassembleException e)
+                    {
+                        Console.WriteLine("Error: {0}.", e.Message);
+                        Console.WriteLine("This usually means the Script is corrupt or one or more STSCFile's definitions are incorrect.");
+                        Console.WriteLine("or the opcode being read is not yet implemented");
+                        Console.WriteLine("Please check the output file for finding out what instruction went wrong.");
+                        Console.WriteLine("Disassembler must abort now!");
+                        Console.ReadKey(true);
+                    }
                     File.WriteAllLines(Path.ChangeExtension(args[i], ".txt"), STSCTextHandler.ConvertToText(file));
                 }
                 else
