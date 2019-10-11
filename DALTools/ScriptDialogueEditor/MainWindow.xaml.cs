@@ -37,6 +37,7 @@ namespace ScriptDialogueEditor
         public STSCFileDatabase ScriptDB { get; set; }
 
         public List<PCKFile.FileEntry> ScriptArchiveFiles => ScriptArchive.FileEntries;
+        public Config Config => _config;
 
         public DALRRLivePreview Preview = null;
 
@@ -103,10 +104,25 @@ namespace ScriptDialogueEditor
                 // Searches for DATE A LIVE: Rio Reincarnation
                 games = Steam.SearchForGames("DATE A LIVE: Rio Reincarnation");
                 if (games.Count != 0)
-                    return Path.Combine(games[0].RootDirectory, "Data/ENG/Script/Script.pck");
+                    return Path.Combine(games[0].RootDirectory, $"Data/{GetLangDirectoryName(_config.DefaultGameLanguage)}/Script/Script.pck");
             }
             catch { }
             return "";
+        }
+
+        public static string GetLangDirectoryName(GameLanguage lang)
+        {
+            switch (lang)
+            {
+                case GameLanguage.English:
+                    return "ENG";
+                case GameLanguage.Japanese:
+                    return "JPN";
+                case GameLanguage.Chinese:
+                    return "CHN";
+                default:
+                    return "Data";
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -320,7 +336,7 @@ namespace ScriptDialogueEditor
                 }
                 // Load Script Archive
                 ScriptArchive = new PCKFile();
-                ScriptArchive.Load(ofd.FileName, true);
+                ScriptArchive.Load(App.ScriptPath = ofd.FileName, true);
                 // Load all the files into memory instead of streaming them
                 ScriptArchive.Preload();
                 // Load script from config or use default

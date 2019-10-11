@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace ScriptDialogueEditor
     public partial class App : Application
     {
         public static string StartDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        public static string VersionString = "1.0.0";
+        public static string VersionString = "1.0.1";
         public static string ProgramName = "DATE A LIVE: Rio Reincarnation Script Dialogue Editor";
 
         public static string ScriptPath = "";
@@ -34,6 +35,9 @@ namespace ScriptDialogueEditor
         {
             // For Debugging
             Args = args;
+            // Language
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
+            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 #if !DEBUG
             // Enable our Crash Window if Compiled in Release
             AppDomain.CurrentDomain.UnhandledException += (sender, e) =>

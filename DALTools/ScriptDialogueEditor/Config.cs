@@ -10,12 +10,14 @@ namespace ScriptDialogueEditor
     public class Config
     {
 
+        public GameLanguage DefaultGameLanguage { get; set; }
         public string LastOpenedScript { get; set; }
 
         public void LoadConfig()
         {
             // Open Subkey
             var key = Registry.CurrentUser.CreateSubKey("Software\\DALTools\\ScriptDialogueEditor");
+            DefaultGameLanguage = (GameLanguage)GetRegistryInt(key, "DefaultGameLanguage", 0);
             LastOpenedScript = GetRegistryString(key, "LastOpenedScript");
             // Close Subkey
             key.Close();
@@ -25,6 +27,7 @@ namespace ScriptDialogueEditor
         {
             // Open Subkey
             var key = Registry.CurrentUser.CreateSubKey("Software\\DALTools\\ScriptDialogueEditor");
+            SetRegistryInt(key, "DefaultGameLanguage", (int)DefaultGameLanguage);
             SetRegistryString(key, "LastOpenedScript", LastOpenedScript);
             // Close Subkey
             key.Close();

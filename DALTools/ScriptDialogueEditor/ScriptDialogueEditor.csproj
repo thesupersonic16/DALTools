@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="DALRRLivePreview.cs" />
+    <Compile Include="GameLanguage.cs" />
     <Compile Include="ProcessMemory.cs" />
     <Compile Include="Steam.cs" />
     <Compile Include="STSCFileDialogue.cs" />

@@ -3,9 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:ScriptDialogueEditor"
         mc:Ignorable="d" Loaded="Window_Loaded" Closing="Window_Closing"
         Title="DATE A LIVE: Rio Reincarnation Script Dialogue Editor" Height="600" Width="1000" WindowStartupLocation="CenterScreen" Style="{StaticResource HedgeWindow}">
+    <Window.Resources>
+        <ObjectDataProvider x:Key="LangEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="local:GameLanguage"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
     <Border>
         <Grid>
             <Grid>
@@ -76,10 +84,12 @@
                 </Grid>
             </Grid>
             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="40" Background="#323235">
-                <Button Content="Save"                HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,8,10,0"  Height="23" Width="65" Click="SaveButton_Click"  />
-                <Button Content="Load"                HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,8,80,0"  Height="23" Width="65" Click="LoadButton_Click"  />
-                <Button Content="Enable Live Preview" HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,8,150,0" Height="23" Width="124" Click="LivePreviewButton_Click" />
-                <Button Content="About"               HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,8,279,0" Height="23" Width="65"  Click="AboutButton_Click"  />
+                <Button Content="Save"                      HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,10,0"  Height="23" Width="65"  Click="SaveButton_Click"  />
+                <Button Content="Load"                      HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,80,0"  Height="23" Width="65"  Click="LoadButton_Click"  />
+                <Button Content="Enable Live Preview"       HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,150,0" Height="23" Width="124" Click="LivePreviewButton_Click" />
+                <Button Content="About"                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,279,0" Height="23" Width="65"  Click="AboutButton_Click"  />
+                <Label Content="Default Script Language: "  HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="10,6,0,0"                           ToolTip="Language used when loading ScriptDialogueEditor without a script"/>
+                <ComboBox                                   HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="159,8,0,0" Height="23" Width="101"  SelectedItem="{Binding Config.DefaultGameLanguage, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource LangEnum}}"/>
             </Grid>
         </Grid>
     </Border>
