@@ -4,13 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ScriptDatabaseEditor"
+        xmlns:dallibmisc="clr-namespace:DALLib.Misc;assembly=DALLib"
         xmlns:System="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         Title="Memory Property Editor" Height="348.991" Width="450" Style="{StaticResource HedgeWindow}">
     <Window.Resources>
         <ObjectDataProvider x:Key="GamesEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
             <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="local:GameID"/>
+                <x:Type TypeName="dallibmisc:GameID"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
     </Window.Resources>

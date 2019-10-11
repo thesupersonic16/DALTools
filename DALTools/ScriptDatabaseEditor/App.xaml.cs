@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
@@ -37,6 +38,9 @@ namespace ScriptDatabaseEditor
         {
             // For Debugging
             Args = args;
+            // Language
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
+            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 #if !DEBUG
             // Enable our crash window if compiled in Release
             AppDomain.CurrentDomain.UnhandledException += (sender, e) =>

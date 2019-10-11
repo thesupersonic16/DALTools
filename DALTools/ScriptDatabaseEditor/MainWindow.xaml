@@ -160,9 +160,9 @@
                                     <GridView AllowsColumnReorder="True">
                                         <GridViewColumn Header="ID"            Width="60"  DisplayMemberBinding="{Binding ID}"/>
                                         <GridViewColumn Header="Game"          Width="120" DisplayMemberBinding="{Binding Game}"/>
-                                        <GridViewColumn Header="Internal Name" Width="95" DisplayMemberBinding="{Binding InternalName}"/>
+                                        <GridViewColumn Header="Internal Name" Width="95"  DisplayMemberBinding="{Binding InternalName}"/>
                                         <GridViewColumn Header="File Name"     Width="100" DisplayMemberBinding="{Binding FileName}"/>
-                                        <GridViewColumn Header="Track"         Width="45" DisplayMemberBinding="{Binding SourceTrackID}"/>
+                                        <GridViewColumn Header="Track"         Width="45"  DisplayMemberBinding="{Binding SourceTrackID}"/>
                                         <GridViewColumn Header="Name"          Width="350" DisplayMemberBinding="{Binding FriendlyName}"/>
                                         <GridViewColumn Header="Album"         Width="200" DisplayMemberBinding="{Binding SourceAlbum}"/>
                                     </GridView>

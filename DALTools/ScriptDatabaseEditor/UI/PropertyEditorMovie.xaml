@@ -4,13 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:System="clr-namespace:System;assembly=mscorlib"
+        xmlns:dallibmisc="clr-namespace:DALLib.Misc;assembly=DALLib"
         xmlns:local="clr-namespace:ScriptDatabaseEditor"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded"
         Title="Movie Property Editor" Height="550" Width="450" Style="{StaticResource HedgeWindow}">
     <Window.Resources>
         <ObjectDataProvider x:Key="GamesEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
             <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="local:GameID"/>
+                <x:Type TypeName="dallibmisc:GameID"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
     </Window.Resources>
