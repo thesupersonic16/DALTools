@@ -198,37 +198,38 @@ namespace DALLib.File
             /* 0x0004 */ public int ID              { get; set; }
             /* 0x0008 */ public int CGID            { get; set; }
             /* 0x000C */ public int CGID2           { get; set; }
-            /* 0x0010 */ public uint Unknown5;
-            /* 0x0014 */ public ushort Unknown6;
+            /* 0x0010 */ public uint Unknown5       { get; set; }
+            /* 0x0014 */ public ushort Unknown6     { get; set; }
             /* 0x0016 */ public short TextureWidth  { get; set; }
             /* 0x0016 */ public short TextureHeight { get; set; }
-            /* 0x001A */ public ushort Unknown7;
-            /* 0x001C */ public byte Unknown81;
-            /* 0x001C */ public byte Unknown82;
-            /* 0x001C */ public byte Unknown83;
+            /* 0x001A */ public ushort Unknown7     { get; set; }
+            /* 0x001C */ public byte Unknown81      { get; set; }
+            /* 0x001C */ public byte Unknown82      { get; set; }
+            /* 0x001C */ public byte Unknown83      { get; set; }
             /* 0x001C */ public byte Page           { get; set; }
             /* 0x0020 */ public byte FrameCount     { get; set; }
+                         [DataSize(1)]
             /* 0x0021 */ public GameID GameID       { get; set; }
-            /* 0x0022 */ public byte Unknown93;
-            /* 0x0023 */ public byte Unknown94;
-            /* 0x0024 */ public uint Unknown10;
-            /* 0x0028 */ public uint Unknown11;
-            /* 0x002C */ public uint Unknown12;
-            /* 0x0030 */ public uint Unknown13;
-            /* 0x0034 */ public uint Unknown14;
-            /* 0x0038 */ public uint Unknown15;
-            /* 0x003C */ public uint Unknown16;
-            /* 0x0040 */ public uint Unknown17;
-            /* 0x0044 */ public uint Unknown18;
-            /* 0x0048 */ public uint Unknown19;
-            /* 0x004C */ public uint Unknown20;
-            /* 0x0050 */ public uint Unknown21;
-            /* 0x0054 */ public uint Unknown22;
-            /* 0x0058 */ public uint Unknown23;
-            /* 0x005C */ public uint Unknown24;
-            /* 0x0060 */ public uint Unknown25;
-            /* 0x0064 */ public uint Unknown26;
-            /* 0x0068 */ public uint Unknown27;
+            /* 0x0022 */ public byte Unknown93      { get; set; }
+            /* 0x0023 */ public byte Unknown94      { get; set; }
+            /* 0x0024 */ public uint Unknown10      { get; set; }
+            /* 0x0028 */ public uint Unknown11      { get; set; }
+            /* 0x002C */ public uint Unknown12      { get; set; }
+            /* 0x0030 */ public uint Unknown13      { get; set; }
+            /* 0x0034 */ public uint Unknown14      { get; set; }
+            /* 0x0038 */ public uint Unknown15      { get; set; }
+            /* 0x003C */ public uint Unknown16      { get; set; }
+            /* 0x0040 */ public uint Unknown17      { get; set; }
+            /* 0x0044 */ public uint Unknown18      { get; set; }
+            /* 0x0048 */ public uint Unknown19      { get; set; }
+            /* 0x004C */ public uint Unknown20      { get; set; }
+            /* 0x0050 */ public uint Unknown21      { get; set; }
+            /* 0x0054 */ public uint Unknown22      { get; set; }
+            /* 0x0058 */ public uint Unknown23      { get; set; }
+            /* 0x005C */ public uint Unknown24      { get; set; }
+            /* 0x0060 */ public uint Unknown25      { get; set; }
+            /* 0x0064 */ public uint Unknown26      { get; set; }
+            /* 0x0068 */ public uint Unknown27      { get; set; }
 
             public event PropertyChangedEventHandler PropertyChanged;
 
@@ -244,6 +245,7 @@ namespace DALLib.File
             public string FilePath                  { get; set; }
             public int ID                           { get; set; }
             public byte Unknown4                    { get; set; }
+            [DataSize(1)]
             public GameID GameID                    { get; set; }
             public short Unknown5                   { get; set; }
 
@@ -269,11 +271,14 @@ namespace DALLib.File
             /// <summary>
             /// The ID of the game within the game files
             /// </summary>
+            [DataSize(1)]
             public GameID GameID                    { get; set; }
             /// <summary>
             /// The game category the memory belongs in
             /// </summary>
+            [DataSize(1)]
             public MemoryGame Game                  { get; set; }
+            public short Unknown14                  { get; set; }
 
             public event PropertyChangedEventHandler PropertyChanged;
 
@@ -333,20 +338,20 @@ namespace DALLib.File
 
         public class Unknown2Entry
         {
-            /* 0x0000 */ public int Unknown1;
-            /* 0x0004 */ public int Unknown2;
+            /* 0x0000 */ public int Unknown1        { get; set; }
+            /* 0x0004 */ public int Unknown2        { get; set; }
         }
 
         public class Unknown3Entry
         {
-            /* 0x0000 */ public short ID;
-            /* 0x0002 */ public int Unknown2;
-        }
+            /* 0x0000 */ public short ID            { get; set; }
+            /* 0x0002 */ public int Unknown2        { get; set; }
+}
 
         public class Unknown4Entry
         {
-            /* 0x0000 */ public short Unknown1;
-            /* 0x0002 */ public int Unknown2;
+            /* 0x0000 */ public short Unknown1      { get; set; }
+            /* 0x0002 */ public int Unknown2        { get; set; }
         }
 
         public class ArtBookPageEntry
@@ -370,6 +375,7 @@ namespace DALLib.File
             /// <summary>
             /// ID to show which game the page belongs in
             /// </summary>
+            [DataSize(2)]
             public GameID GameID                    { get; set; }
             /// <summary>
             /// The page number
@@ -390,10 +396,11 @@ namespace DALLib.File
             /* 0x0008 */ public string SourceAlbum  { get; set; }
             /* 0x000C */ public string InternalName { get; set; }
             /* 0x0010 */ public short ID            { get; set; }
+                         [DataSize(2)]
             /* 0x0012 */ public GameID Game         { get; set; }
             /* 0x0014 */ public short Unknown7      { get; set; }
             /* 0x0016 */ public short SourceTrackID { get; set; }
-            /* 0x0018 */ public int Unknown9        { get; set; }
+            /* 0x0018 */ public int   Unknown9      { get; set; }
 
             public event PropertyChangedEventHandler PropertyChanged;
 

@@ -29,18 +29,30 @@ namespace DALLib.File
         /// Count of manual offsets ready
         /// </summary>
         public int ManualCount = 0;
+        /// <summary>
+        /// If the script should use the smaller headers
+        /// </summary>
+        public bool UseSmallHeader = false;
 
         public override void Load(ExtendedBinaryReader reader)
         {
+            // Check if file has a signature
             string sig = reader.ReadSignature();
-            if (sig != "STSC")
-                throw new SignatureMismatchException("STSC", sig);
-            uint headerSize = reader.ReadUInt32();
-            uint version = reader.ReadUInt32();
-            ScriptName = reader.ReadNullTerminatedString();
-            reader.JumpAhead((uint)(0x20 - (ScriptName.Length + 1)));
-            reader.JumpAhead(12);
-            ScriptID = reader.ReadUInt32();
+            if (sig == "STSC")
+            { // Newer script format
+                uint headerSize = reader.ReadUInt32();
+                uint version = reader.ReadUInt32();
+                ScriptName = reader.ReadNullTerminatedString();
+                reader.JumpAhead((uint)(0x20 - (ScriptName.Length + 1)));
+                reader.JumpAhead(12);
+                ScriptID = reader.ReadUInt32();
+            }
+            else
+            { // Older script format
+                // Jump back as older scripts have much smaller headers
+                reader.JumpBehind(4);
+                ScriptID = reader.ReadUInt16();
+            }
             // Stupid workaround to find the end of the code segment
             reader.Offset = (uint)reader.BaseStream.Length;
             while (true)

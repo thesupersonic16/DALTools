@@ -74,6 +74,7 @@
     <Compile Include="File\TEXFile.cs" />
     <Compile Include="Imaging\ImageTools.cs" />
     <Compile Include="IO\ExtendedBinary.cs" />
+    <Compile Include="IO\DataSizeAttribute.cs" />
     <Compile Include="IO\VirtualStream.cs" />
     <Compile Include="Misc\GameID.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

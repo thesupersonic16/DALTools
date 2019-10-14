@@ -18,212 +18,86 @@ namespace DALLib.File
             // Read STSC
             base.Load(fileReader);
 
+            StreamBlock block;
 
             // System text
-            using (var reader = CreateReader(0))
-            {
-                while (!EOF(reader))
-                {
-                    SystemText.Add(fileReader.ReadStringElsewhere(reader.ReadInt32()));
-                }
-            }
+            block = GetStreamBlockAndJump(0, fileReader);
+            while (!EndOfBlock(fileReader, block))
+                SystemText.Add(fileReader.ReadStringElsewhere());
 
             // CGs
-            using (var reader = CreateReader(1))
-            {
-                while (!EOF(reader))
-                {
-                    var entry = new CGEntry();
-                    entry.Name          = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.ID            = reader.ReadInt32();
-                    entry.CGID          = reader.ReadInt32();
-                    entry.CGID2         = reader.ReadInt32();
-                    entry.Unknown5      = reader.ReadUInt32();
-                    entry.Unknown6      = reader.ReadUInt16();
-                    entry.TextureWidth  = reader.ReadInt16();
-                    entry.TextureHeight = reader.ReadInt16();
-                    entry.Unknown7      = reader.ReadUInt16();
-                    entry.Unknown81     = reader.ReadByte();
-                    entry.Unknown82     = reader.ReadByte();
-                    entry.Unknown83     = reader.ReadByte();
-                    entry.Page          = reader.ReadByte();
-                    entry.FrameCount    = reader.ReadByte();
-                    entry.GameID        = (GameID)reader.ReadByte();
-                    entry.Unknown93     = reader.ReadByte();
-                    entry.Unknown94     = reader.ReadByte();
-                    entry.Unknown10     = reader.ReadUInt32();
-                    entry.Unknown11     = reader.ReadUInt32();
-                    entry.Unknown12     = reader.ReadUInt32();
-                    entry.Unknown13     = reader.ReadUInt32();
-                    entry.Unknown14     = reader.ReadUInt32();
-                    entry.Unknown15     = reader.ReadUInt32();
-                    entry.Unknown16     = reader.ReadUInt32();
-                    entry.Unknown17     = reader.ReadUInt32();
-                    entry.Unknown18     = reader.ReadUInt32();
-                    entry.Unknown19     = reader.ReadUInt32();
-                    entry.Unknown20     = reader.ReadUInt32();
-                    entry.Unknown21     = reader.ReadUInt32();
-                    entry.Unknown22     = reader.ReadUInt32();
-                    entry.Unknown23     = reader.ReadUInt32();
-                    entry.Unknown24     = reader.ReadUInt32();
-                    entry.Unknown25     = reader.ReadUInt32();
-                    entry.Unknown26     = reader.ReadUInt32();
-                    entry.Unknown27     = reader.ReadUInt32();
-                    CGs.Add(entry);
-                }
-            }
+            block = GetStreamBlockAndJump(1, fileReader);
+            while (!EndOfBlock(fileReader, block))
+                CGs.Add(fileReader.ReadStruct<CGEntry>());
 
             // Movies
-            using (var reader = CreateReader(2))
-            {
-                while (!EOF(reader))
-                {
-                    var entry = new MovieEntry();
-                    entry.FriendlyName  = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.FilePath      = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.ID            = reader.ReadInt32();
-                    entry.Unknown4      = reader.ReadByte();
-                    entry.GameID        = (GameID)reader.ReadByte();
-                    entry.Unknown5      = reader.ReadInt16();
-                    Movies.Add(entry);
-                }
-            }
+            block = GetStreamBlockAndJump(2, fileReader);
+            while (!EndOfBlock(fileReader, block))
+                Movies.Add(fileReader.ReadStruct<MovieEntry>());
 
             // Memories
-            using (var reader = CreateReader(3))
-            {
-                while (!EOF(reader))
-                {
-                    var entry = new MemoryEntry();
-                    entry.Name          = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.Description   = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.ID            = reader.ReadInt32();
-                    entry.GameID        = (GameID)reader.ReadByte();
-                    entry.Game          = (MemoryEntry.MemoryGame)reader.ReadByte();
-                    Memories.Add(entry);
-                    reader.JumpAhead(2);
-                }
-            }
+            block = GetStreamBlockAndJump(3, fileReader);
+            while (!EndOfBlock(fileReader, block))
+                Memories.Add(fileReader.ReadStruct<MemoryEntry>());
 
             // Characters
-            using (var reader = CreateReader(4))
-            {
-                while (!EOF(reader))
-                {
-                    var entry = new CharacterEntry();
-                    entry.FriendlyName  = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.ID            = reader.ReadInt32();
-                    Characters.Add(entry);
-                }
-            }
+            block = GetStreamBlockAndJump(4, fileReader);
+            while (!EndOfBlock(fileReader, block))
+                Characters.Add(fileReader.ReadStruct<CharacterEntry>());
 
             // Unknown2
-            using (var reader = CreateReader(5))
-            {
-                while (!EOF(reader))
-                {
-                    var entry = new Unknown2Entry();
-                    entry.Unknown1      = reader.ReadInt32();
-                    entry.Unknown2      = reader.ReadInt32();
-                    Unknown2.Add(entry);
-                }
-            }
+            block = GetStreamBlockAndJump(5, fileReader);
+            while (!EndOfBlock(fileReader, block))
+                Unknown2.Add(fileReader.ReadStruct<Unknown2Entry>());
 
             // Unknown3
-            using (var reader = CreateReader(6))
-            {
-                while (!EOF(reader))
-                {
-                    var entry = new Unknown3Entry();
-                    entry.ID            = reader.ReadInt16();
-                    entry.Unknown2      = reader.ReadInt32();
-                    Unknown3.Add(entry);
-                }
-            }
+            block = GetStreamBlockAndJump(6, fileReader);
+            while (!EndOfBlock(fileReader, block))
+                Unknown3.Add(fileReader.ReadStruct<Unknown3Entry>());
 
             // Voices
-            using (var reader = CreateReader(7))
-            {
-                while (!EOF(reader))
-                {
-                    var entry = new VoiceEntry();
-                    entry.UnknownName   = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.KnownName     = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.PreferedName  = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.ID            = reader.ReadInt32();
-                    Voices.Add(entry);
-                }
-            }
+            block = GetStreamBlockAndJump(7, fileReader);
+            while (!EndOfBlock(fileReader, block))
+                Voices.Add(fileReader.ReadStruct<VoiceEntry>());
 
             // Unknown4
-            using (var reader = CreateReader(8))
-            {
-                while (!EOF(reader))
-                {
-                    var entry = new Unknown4Entry();
-                    entry.Unknown1      = reader.ReadInt16();
-                    entry.Unknown2      = reader.ReadInt32();
-                    Unknown4.Add(entry);
-                }
-            }
+            block = GetStreamBlockAndJump(8, fileReader);
+            while (!EndOfBlock(fileReader, block))
+                Unknown4.Add(fileReader.ReadStruct<Unknown4Entry>());
 
             // Art Book Page
-            using (var reader = CreateReader(9))
-            {
-                while (!EOF(reader))
-                {
-                    var entry = new ArtBookPageEntry();
-                    entry.PagePathThumbnail = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.PagePathData  = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.Name          = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.ID            = reader.ReadInt32();
-                    entry.GameID        = (GameID)reader.ReadInt16();
-                    entry.Page          = reader.ReadInt16();
-                    ArtBookPages.Add(entry);
-                }
-            }
+            block = GetStreamBlockAndJump(9, fileReader);
+            while (!EndOfBlock(fileReader, block))
+                ArtBookPages.Add(fileReader.ReadStruct<ArtBookPageEntry>());
 
             // DramaCDs
-            using (var reader = CreateReader(10))
-            {
-                while (!EOF(reader))
-                {
-                    var entry = new DramaCDEntry();
-                    entry.FileName      = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.FriendlyName  = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.SourceAlbum   = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.InternalName  = fileReader.ReadStringElsewhere(reader.ReadInt32());
-                    entry.ID            = reader.ReadInt16();
-                    entry.Game          = (GameID)reader.ReadInt16();
-                    entry.Unknown7      = reader.ReadInt16();
-                    entry.SourceTrackID = reader.ReadInt16();
-                    entry.Unknown9      = reader.ReadInt16();
-                    DramaCDs.Add(entry);
-                    reader.JumpAhead(2);
-                }
-            }
+            block = GetStreamBlockAndJump(10, fileReader);
+            while (!EndOfBlock(fileReader, block))
+                DramaCDs.Add(fileReader.ReadStruct<DramaCDEntry>());
+
         }
 
         /// <summary>
-        /// Creates a Reader for a database param
+        /// Gets the StreamBlock from instruction and jumps to it
         /// </summary>
         /// <param name="index">Database Param Index</param>
-        /// <returns>a reader attached to the array of thae param</returns>
-        public ExtendedBinaryReader CreateReader(int index)
+        /// <param name="reader">The reader used to jump to the block</param>
+        /// <returns>a StreamBlock containing the range of data to access</returns>
+        public StreamBlock GetStreamBlockAndJump(int index, ExtendedBinaryReader reader)
         {
-            var stream = new MemoryStream(Instructions[index].GetArgument<byte[]>(1));
-            var reader = new ExtendedBinaryReader(stream, Encoding.UTF8);
-            return reader;
+            var streamBlock = Instructions[index].GetArgument<StreamBlock>(1);
+            reader.JumpTo(streamBlock);
+            return streamBlock;
         }
 
         /// <summary>
-        /// Helper for checking if we are at the end of the stream
+        /// Helper for checking if we are at the end of the stream block
         /// </summary>
         /// <param name="reader"></param>
         /// <returns></returns>
-        public bool EOF(BinaryReader reader)
+        public static bool EndOfBlock(ExtendedBinaryReader reader, StreamBlock streamBlock)
         {
-            return reader.BaseStream.Position >= reader.BaseStream.Length;
+            return reader.BaseStream.Position >= streamBlock.Length;
         }
 
     }

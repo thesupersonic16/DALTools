@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DALLib.IO
 {
-    // Based off HedgeLib's ExtendedBinaryReader modified to better suit working with DAL 
+    // Based off HedgeLib's ExtendedBinary modified to better suit working with DAL
     public class ExtendedBinaryReader : BinaryReader
     {
         public uint Offset = 0;
@@ -64,6 +64,11 @@ namespace DALLib.IO
         public void JumpTo(long position, bool absolute = true)
         {
             stream.Position = (absolute) ? position : position + Offset;
+        }
+
+        public void JumpTo(StreamBlock block, bool absolute = true)
+        {
+            stream.Position = (absolute) ? block.Position : block.Position + Offset;
         }
 
         public void JumpAhead(long amount = 1)
@@ -158,6 +163,103 @@ namespace DALLib.IO
                 JumpTo(oldPos);
                 return "";
             }
+        }
+
+        public object ReadByType(Type type)
+        {
+            if (type == typeof(bool))
+                return ReadBoolean();
+            else if (type == typeof(byte))
+                return ReadByte();
+            else if (type == typeof(sbyte))
+                return ReadSByte();
+            else if (type == typeof(char))
+                return ReadChar();
+            else if (type == typeof(short))
+                return ReadInt16();
+            else if (type == typeof(ushort))
+                return ReadUInt16();
+            else if (type == typeof(int))
+                return ReadInt32();
+            else if (type == typeof(uint))
+                return ReadUInt32();
+            else if (type == typeof(float))
+                return ReadSingle();
+            else if (type == typeof(long))
+                return ReadInt64();
+            else if (type == typeof(ulong))
+                return ReadUInt64();
+            else if (type == typeof(double))
+                return ReadDouble();
+            else if (type == typeof(string))
+                return ReadStringElsewhere();
+
+            return null;
+        }
+
+        public long ReadVariableSizeInt(int size)
+        {
+            switch (size)
+            {
+                case 1:
+                    return ReadByte();
+                case 2:
+                    return ReadUInt16();
+                case 3:
+                    return ReadInt24();
+                case 4:
+                    return ReadInt32();
+                default:
+                    return ReadUInt32();
+            }
+        }
+
+        public T ReadStruct<T>(Type LengthType = null)
+        {
+            return (T)ReadStruct(typeof(T), LengthType);
+        }
+
+        public object ReadStruct(Type type, Type LengthType = null)
+        {
+            if (LengthType == null)
+                LengthType = typeof(byte);
+            if (type == typeof(string))
+                return ReadStringElsewhere();
+            object structure = Activator.CreateInstance(type);
+            var fields = type.GetProperties();
+            foreach (var field in fields)
+            {
+                if (field.PropertyType.IsArray)
+                {
+                    var array = Array.CreateInstance(field.PropertyType.GetElementType(),
+                        (int)Convert.ChangeType(ReadByType(LengthType), typeof(int)));
+                    for (int i = 0; i < array.Length; ++i)
+                        array.SetValue(ReadStruct(field.PropertyType.GetElementType(), LengthType), i);
+                    field.SetValue(structure, array);
+                }
+                else
+                {
+                    object value = ReadByType(field.PropertyType);
+                    if (value != null)
+                    {
+                        field.SetValue(structure, value);
+                    }
+                    else
+                    {
+                        if (field.PropertyType.IsEnum)
+                        {
+                            int size = 4;
+                            var attb = field.GetCustomAttributes(true).FirstOrDefault(t => t.GetType() == typeof(DataSizeAttribute));
+                            if (attb is DataSizeAttribute dataSizeAttb)
+                                size = dataSizeAttb.Size;
+                            field.SetValue(structure, Enum.ToObject(field.PropertyType, ReadVariableSizeInt(size)));
+                        }
+                        else
+                            structure = ReadStruct(field.PropertyType, LengthType);
+                    }
+                }
+            }
+            return structure;
         }
 
         public byte[] ReadArrayRange(int start, int end)
@@ -699,6 +801,18 @@ namespace DALLib.IO
         public override unsafe void Write(double value)
         {
             Write(*((ulong*)&value));
+        }
+    }
+
+    public class StreamBlock
+    {
+        public long Position;
+        public long Length;
+
+        public StreamBlock(long position, long length)
+        {
+            Position = position;
+            Length = length;
         }
     }
 }

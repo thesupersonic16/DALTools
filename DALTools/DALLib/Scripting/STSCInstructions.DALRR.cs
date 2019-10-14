@@ -45,7 +45,7 @@ namespace DALLib.Scripting
             new InstructionSwitch("switch", null),
             null, // PrmRand
 
-            new Instruction("DataBaseParam", new []{ AT_Byte, AT_ManualBinary }),
+            new Instruction("DataBaseParam", new []{ AT_Byte, AT_DataBlock }),
             new Instruction("NewGameOpen", null),
             new Instruction("EventStartMes", new []{ AT_String }),
             new Instruction("Dummy23", null),

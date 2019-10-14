@@ -13,7 +13,7 @@ namespace DALLib.Scripting
 
         public enum ArgumentType
         {
-            AT_Bool, AT_Byte, AT_Int16, AT_Int32, AT_Float, AT_String, AT_StringPtr, AT_CodePointer, AT_DataReference, AT_PointerArray, AT_ManualBinary
+            AT_Bool, AT_Byte, AT_Int16, AT_Int32, AT_Float, AT_String, AT_StringPtr, AT_CodePointer, AT_DataReference, AT_PointerArray, AT_DataBlock
         }
 
         public class Instruction
@@ -92,7 +92,7 @@ namespace DALLib.Scripting
                         case AT_DataReference:
                         case AT_Float:
                         case AT_String:
-                        case AT_ManualBinary:
+                        case AT_DataBlock:
                             size += 4;
                             break;
                         case AT_PointerArray:
@@ -125,8 +125,12 @@ namespace DALLib.Scripting
                         return reader.ReadInt32();
                     case AT_DataReference:
                         return reader.ReadUInt32();
-                    case AT_ManualBinary:
-                        return reader.ReadArrayRange(reader.ReadInt32(), reader.ReadInt32());
+                    case AT_DataBlock:
+                        long position = reader.ReadUInt32();
+                        long length = reader.ReadUInt32();
+                        if (reader.Offset > position)
+                            reader.Offset = (uint)position;
+                        return new StreamBlock(position, length);
                     default:
                         return null;
                 }
@@ -169,7 +173,7 @@ namespace DALLib.Scripting
                     case AT_DataReference:
                         writer.Write((int)value);
                         break;
-                    case AT_ManualBinary:
+                    case AT_DataBlock:
                         writer.AddOffset($"Manual_Ptr_{manualCount}l");
                         writer.AddOffset($"Manual_Ptr_{manualCount}h");
                         ++manualCount;
