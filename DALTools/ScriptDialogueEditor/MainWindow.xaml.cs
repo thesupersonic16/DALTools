@@ -305,6 +305,8 @@ namespace ScriptDialogueEditor
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            // Save the current script
+            SaveScript();
             // Saves all the files onto disk
             ScriptArchive.Save(App.ScriptPath);
         }
