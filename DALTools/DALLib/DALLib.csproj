@@ -65,6 +65,7 @@
     <Compile Include="File\STSCFileDatabase.Writer.cs" />
     <Compile Include="ImportExport\GetTextFile.cs" />
     <Compile Include="ImportExport\STSCImportExportBase.cs" />
+    <Compile Include="ImportExport\CSVFile.cs" />
     <Compile Include="ImportExport\TSVFile.cs" />
     <Compile Include="IO\StreamTools.cs" />
     <Compile Include="Exceptions\SignatureMismatchException.cs" />

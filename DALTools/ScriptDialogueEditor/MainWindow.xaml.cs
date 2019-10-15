@@ -43,7 +43,7 @@ namespace ScriptDialogueEditor
 
         public bool ScriptEdited = false;
 
-        public STSCImportExportBase[] STSCIE = new STSCImportExportBase[] { new STSCTSVFile(), new GetTextFile() };
+        public STSCImportExportBase[] STSCIE = new STSCImportExportBase[] { new STSCTSVFile(), new STSCCSVFile(), new GetTextFile() };
 
         public MainWindow()
         {
@@ -423,7 +423,7 @@ namespace ScriptDialogueEditor
                 var script = new STSCFile();
                 using (var stream = ScriptArchive.GetFileStream(file.FileName))
                     script.Load(stream);
-                File.WriteAllText(sfd.FileName, ie.Export(script, ScriptDB));
+                File.WriteAllText(sfd.FileName, ie.Export(script, ScriptDB), new UTF8Encoding(true));
             }
         }
 
@@ -490,7 +490,7 @@ namespace ScriptDialogueEditor
                     string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName), ie.TypeExtension);
                     // Create the directory
                     Directory.CreateDirectory(Path.GetDirectoryName(filepath));
-                    File.WriteAllText(filepath, ie.Export(script, ScriptDB));
+                    File.WriteAllText(filepath, ie.Export(script, ScriptDB), new UTF8Encoding(true));
                 }
             }
         }
