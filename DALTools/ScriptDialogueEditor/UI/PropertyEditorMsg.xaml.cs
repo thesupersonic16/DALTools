@@ -28,9 +28,8 @@ namespace ScriptDialogueEditor.UI
         {
             InitializeComponent();
             _code = code;
-            // Converts "\n" to a carriage return and newline character
+            // Converts LF to escaped CRLF
             NewMessage = code.Text.Replace("\\n", "\r\n");
-            // Converts "\n" to a newline character
             OldMessage = code.Text;
             DataContext = this;
         }
@@ -45,7 +44,7 @@ namespace ScriptDialogueEditor.UI
 
         private void ButtonSave_Click(object sender, RoutedEventArgs e)
         {
-            // Convert newline characters to "\n"
+            // Converts CRLF to escaped LF
             _code.Text = NewMessage.Replace("\r\n", "\\n");
             DialogResult = true;
             Close();

@@ -12,7 +12,14 @@ namespace DALLib.ImportExport
     public class STSCCSVFile : STSCImportExportBase
     {
 
+        /// <summary>
+        /// By RFC 4180 Standards, All line breaks should contain a CRLF which is common with Microsoft's applications
+        /// </summary>
+        private readonly string LINEBREAK = "\r\n";
+
         protected string _buffer = "";
+
+        protected int _bufferIndex = 0;
 
         public override string TypeName => "Comma-Separated Values";
 
@@ -21,7 +28,7 @@ namespace DALLib.ImportExport
         public override string Export(STSCFile script, STSCFileDatabase database)
         {
             // Header
-            _buffer += " Operator , Title , Key , Translation \n";
+            AddRow("Operator", "Title", "Key", "Translation");
             // The ID of who is currently speaking
             byte titleID = 0xFF;
             // Loop through all the instructions
@@ -36,13 +43,13 @@ namespace DALLib.ImportExport
                         // Get name of the character from 
                         string name = titleID == 0xFF ? "None" : database.Characters.FirstOrDefault(t => t.ID == titleID)?.FriendlyName;
                         // Add Entry to file
-                        AddEntry("Message", name, instruction.GetArgument<string>(4));
+                        AddRow("Message", name, instruction.GetArgument<string>(4), "");
                         break;
                     case "SetChoice":
-                        AddEntry("Choice", "", instruction.GetArgument<string>(1));
+                        AddRow("Choice", "", instruction.GetArgument<string>(1), "");
                         break;
                     case "MapPlace":
-                        AddEntry("MapMarker", "", instruction.GetArgument<string>(1));
+                        AddRow("MapMarker", "", instruction.GetArgument<string>(1), "");
                         break;
                     default:
                         continue;
@@ -58,18 +65,19 @@ namespace DALLib.ImportExport
 
         public override void Import(STSCFile script, STSCFileDatabase database, string file)
         {
-            foreach (var line in file.Replace("\r", "").Split('\n'))
+            _buffer = file;
+            _bufferIndex = 0;
+            while (true)
             {
-                bool escape = false;
                 // Split line by tabs
-                string[] split = CSVSplit(line, ',');
-                // Ignore blank lines
-                if (line.Length == 0)
-                    continue;
+                string[] split = ReadCSVRow();
+                // End of file
+                if (split == null)
+                    break;
                 // Check if all the columns exist
-                if (split.Length < 3)
+                if (split.Length < 4)
                     throw new InvalidFileFormatException(
-                        "The TSV file being imported is missing columns. The expected columns are (Operator, Title, Key and Translation)");
+                        "The CSV file being imported is missing columns. The expected columns are (Operator, Title, Key and Translation)");
                 // Check if the entry has been translated
                 if (string.IsNullOrEmpty(split[3]))
                     continue;
@@ -108,47 +116,65 @@ namespace DALLib.ImportExport
             }
         }
 
-        public string[] CSVSplit(string src, char delimit)
+        public string[] ReadCSVRow()
         {
+            // Check if we are at the end of the file
+            if (_bufferIndex >= _buffer.Length)
+                return null;
             var splits = new List<string>();
             string buffer = "";
             bool escape = false;
-            for (int i = 0; i < src.Length; ++i)
+            for (; _bufferIndex < _buffer.Length; ++_bufferIndex)
             {
                 // Excel escaping
-                if (i + 1 < src.Length && 
-                    src[i + 0] == '"' && 
-                    src[i + 1] == '"')
+                if (_bufferIndex + 1 < _buffer.Length && 
+                    _buffer[_bufferIndex + 0] == '"' && 
+                    _buffer[_bufferIndex + 1] == '"')
                 {
                     buffer += '"';
-                    ++i;
+                    ++_bufferIndex;
                     continue;
                 }
                 // Quote escaping
-                if (src[i] == '"')
+                if (_buffer[_bufferIndex] == '"')
                 {
                     escape = !escape;
                     continue;
                 }
-                // Next row
-                if (!escape && src[i] == ',')
+                // Next column
+                if (!escape && _buffer[_bufferIndex] == ',')
                 {
-                    splits.Add(buffer);
+                    splits.Add(buffer.Replace("\n", "\\n"));
                     buffer = "";
                     continue;
                 }
+                // Ignore carriage returns
+                if (!escape && _buffer[_bufferIndex] == '\r')
+                    continue;
+                // Next row
+                if (!escape && _buffer[_bufferIndex] == '\n')
+                {
+                    _bufferIndex = _bufferIndex + 1;
+                    // Escape the LF and add the last column
+                    splits.Add(buffer.Replace("\n", "\\n"));
+                    break;
+                }
                 // Add char
-                buffer += src[i];
+                buffer += _buffer[_bufferIndex];
             }
-            // Add buffer if there is any data, usually is the last column
-            if (!string.IsNullOrEmpty(buffer))
-                splits.Add(buffer);
             return splits.ToArray();
         }
 
-        public void AddEntry(string op, string title, string key)
+        public void AddRow(params string[] fields)
         {
-            _buffer += $"\"{op}\",\"{title.Replace("\"", "\\\"")}\",\"{key.Replace("\"", "\\\"")}\",\n";
+            for (int i = 0; i < fields.Length; ++i)
+            {
+                // Add double-quotes if field contains an escaped line feed
+                if (fields[i].Length > 0 && fields[i][0] != '"' && fields[i].Contains("\\n"))
+                    fields[i] = $"\"{fields[i].Replace("\\n", LINEBREAK)}\"";
+            }
+            _buffer += string.Join(",", fields) + LINEBREAK;
         }
+
     }
 }
