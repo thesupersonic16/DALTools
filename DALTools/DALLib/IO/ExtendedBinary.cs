@@ -17,7 +17,9 @@ namespace DALLib.IO
         protected byte[] buffer;
 
         protected const int MinBufferSize = 16;
-        
+
+        public override Stream BaseStream => stream;
+
         // Constructors
         public ExtendedBinaryReader(Stream input, bool isBigEndian = false) :
             this(input, Encoding.UTF8, isBigEndian)
@@ -39,12 +41,12 @@ namespace DALLib.IO
         // Methods
         public long GetLength()
         {
-            return BaseStream.Length;
+            return stream.Length;
         }
 
         public long GetPosition()
         {
-            return BaseStream.Position;
+            return stream.Position;
         }
 
         /// <summary>
@@ -346,11 +348,16 @@ namespace DALLib.IO
         }
 
         // 1-Byte Types
+        public override char ReadChar()
+        {
+            return (char)stream.ReadByte();
+        }
+
         public override bool ReadBoolean()
         {
             return (ReadByte() != 0);
         }
-        
+
         // 2-Byte Types
         public override unsafe short ReadInt16()
         {
