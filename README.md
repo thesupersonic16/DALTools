@@ -8,11 +8,15 @@ If you are here to just use the tools, You can grab the [lastest release from Gi
   
 **Building**: You will need Visual Studio 2019 (2017 might also work) installed with the .NET Framework 4.6 Targeting Pack installed. 
 
+## Issues / Requests
+If you have found any issues with any of the tools in the repository or would like to request a feature or etc., Please don't hesitate to [submit an issue][newIssue_url]. 
+When submitting an issue or a request, It is important to provide as much details as possible as it will help us to resolve your issue.
+
 ## PCKTool
 PCKTool is a CLI tool which is designed to unpack and repack .pck archive seen in the DATE A LIVE Visual Novels. 
-For PC/PS4 .pcks, you can unpack the archives by just dragging the archive file into PCKTool.exe. Repacking is the same process except you drag the archive folder into the executable. 
+For PC/PS4 .pck(s), you can unpack the archives by just dragging the archive file into PCKTool.exe. Repacking is the same process except you drag the archive folder into the executable. 
  
-For Big Endian .pck(s) like the ones seen on the PS3, You will need to add the -e switch before the file path in the command line like ``PCKTool.exe -e Script.pck``
+For Big Endian .pck(s) like the ones seen on the PS3, You will need to add the -e switch in the command line like ``PCKTool.exe -e Script.pck``
 
 Special thanks to Sajid for helping me with figuring out the missing fields.
 
@@ -32,6 +36,9 @@ You can get a list of options and examples by running TEXTool.exe without any ar
     -b {sheet.png} {frame.xml}     Build TEX using sheet and FrameXML
     -m {path}                      Build TEX using sheet and FrameXML (Search by name) (Recommended over -b)
     -e                             Read/Write in Big Endian (PS3) Default is Little Endian (PC/PS4)
+    -c                             Disable overwrite check
+    -o {path}                      Sets the output path
+    -z                             Output 0x08 padded signatures over the default 0x14 (DAL: RR uses 0x14)
   Examples:
     TEXTool -p title.tex           Extracts all frames
     TEXTool -s title.tex           Extracts sheet from TEX
@@ -73,9 +80,9 @@ A GUI tool made to help simplify the process of editing the text within the scri
  
 ScriptDialogueEditor also features:
  - Loads/Saves scripts in memory so you won't need to keep rebuilding the .bin file and the .pck file manually
- - Most of the confusing/unnecessary code has been filtered out, only showing the information needed for most people.
- - Text Exporting and Importing (currently only .tsv and .po are supported)
- - An experimental/buggy live preview
+ - Most of the confusing/unnecessary code has been filtered out, only showing the information needed by most people.
+ - Text Exporting and Importing (currently only .tsv, .csv and .po are supported currently)
+ - Experimental Live Preview, Allows for message testing (Just edit the text while the feature is active)
  
 ![Screenshot of ScriptDialogueEditor][scriptdialogueeditor_screenshot_00]
  
@@ -85,3 +92,4 @@ ScriptDialogueEditor also features:
 [scriptdialogueeditor_info_url]: #scriptdialogueeditor---date-a-live-rio-reincarnation-script-dialogue-editor
 [functions_url]: ./FUNCTIONS.md
 [releases_url]: ../../releases
+[newIssue_url]: ../../issues/new

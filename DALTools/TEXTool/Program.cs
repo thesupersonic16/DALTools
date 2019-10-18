@@ -15,49 +15,56 @@ using System.Xml.Serialization;
 
 namespace TEXTool
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+
+        public static bool CheckOverwrite = true;
+
+        public static void Main(string[] args)
         {
             var tex = new TEXFile();
 
             if (args.Length == 0)
             {
-                Console.WriteLine("Error: Not Enough Arguments!");
-                Console.WriteLine("  TEXTool [Switches] [-o {path}] {tex file}");
-                Console.WriteLine("  Switches: ");
-                Console.WriteLine("    -p                             Exports all frames");
-                Console.WriteLine("    -s                             Exports Sheet as PNG");
-                Console.WriteLine("    -i                             Exports frame information");
-                Console.WriteLine("    -f {id}                        Exports a single frame");
-                Console.WriteLine("    -b {sheet.png} {frame.xml}     Build TEX using sheet and FrameXML");
-                Console.WriteLine("    -m {path}                      Build TEX using sheet and FrameXML (Search by name) (Recommended over -b)");
-                Console.WriteLine("    -e                             Read/Write in Big Endian (PS3) Default is Little Endian (PC/PS4)");
-                Console.WriteLine("  Examples: ");
-                Console.WriteLine("    TEXTool -p title.tex           Extracts all frames");
-                Console.WriteLine("    TEXTool -s title.tex           Extracts sheet from TEX");
-                Console.WriteLine("    TEXTool -s -e title.tex        Extracts sheet from a BE TEX (PS3)");
-                Console.WriteLine("    TEXTool -i title.tex           Extracts frame information");
-                Console.WriteLine("    TEXTool -b title.png title.xml Builds TEX using sheet");
-                Console.WriteLine("    TEXTool -m title               Builds TEX using frames");
-                Console.WriteLine("    TEXTool -f 0 title             Extracts the first frame");
-                Console.WriteLine("    TEXTool -p -o frames title.tex Extracts all frames into a folder called frames");
-                Console.ReadKey(true);
+                ShowHelp("Not Enough Arguments!");
                 return;
             }
 
+            // Preprocess
             if (args.Length > 1)
             {
                 string path = "";
+                for (int i = 0; i < args.Length; ++i)
+                {
+                    if (args[i].StartsWith("-") && args[i].Length > 1)
+                    {
+                        switch (args[i][1])
+                        {
+                            case 'z':
+                                tex.UseSmallSig = true;
+                                break;
+                            case 'e':
+                                tex.UseBigEndian = true;
+                                break;
+                            case 'c':
+                                CheckOverwrite = false;
+                                break;
+                            case 'o':
+                                path = args[i + 1];
+                                break;
+                            default:
+                                break;
+                        }
+                        continue;
+                    }
+                }
+                // Actions
                 for (int i = args.Length - 1; i >= 0; --i)
                 {
                     if (args[i].StartsWith("-") && args[i].Length > 1)
                     {
                         switch (args[i][1])
                         {
-                            case 'o':
-                                path = args[i + 1];
-                                break;
                             case 'p':
                                 tex.Load(args[args.Length - 1]);
                                 if (string.IsNullOrEmpty(path))
@@ -70,7 +77,7 @@ namespace TEXTool
                                 tex.Load(args[args.Length - 1]);
                                 if (string.IsNullOrEmpty(path))
                                     path = Path.ChangeExtension(args[args.Length - 1], ".png");
-                                if (CheckForOverWrite(path))
+                                if (CheckForOverwrite(path))
                                     tex.SaveSheetImage(path);
                                 break;
                             case 'i':
@@ -81,25 +88,22 @@ namespace TEXTool
                                 break;
                             case 'f':
                                 tex.Load(args[args.Length - 1]);
-                                if (CheckForOverWrite(path))
+                                if (CheckForOverwrite(path))
                                     SaveFrame(tex, int.Parse(args[i + 1]), path);
                                 break;
                             case 'b':
                                 BuildTEX(ref tex, args[i + 1], args[i + 2]);
                                 if (string.IsNullOrEmpty(path))
                                     path = Path.ChangeExtension(args[args.Length - 1], ".tex");
-                                if (CheckForOverWrite(path))
+                                if (CheckForOverwrite(path))
                                     tex.Save(path);
                                 break;
                             case 'm':
                                 BuildTEX(ref tex, args[i + 1]);
                                 if (string.IsNullOrEmpty(path))
                                     path = Path.ChangeExtension(args[args.Length - 1], ".tex");
-                                if (CheckForOverWrite(path))
+                                if (CheckForOverwrite(path))
                                     tex.Save(path);
-                                break;
-                            case 'e':
-                                tex.UseBigEndian = true;
                                 break;
                         }
                     }
@@ -112,7 +116,7 @@ namespace TEXTool
                     Console.WriteLine("Building Files detected, Building...");
                     BuildTEX(ref tex, args[0]);
                     string path = Path.ChangeExtension(args[0], ".tex");
-                    if (CheckForOverWrite(path))
+                    if (CheckForOverwrite(path))
                         tex.Save(path);
                 }
                 else
@@ -124,8 +128,39 @@ namespace TEXTool
             }
         }
 
-        public static bool CheckForOverWrite(string path)
+        public static void ShowHelp(string error = "")
         {
+            if (!string.IsNullOrEmpty(error))
+                Console.WriteLine("Error: {0}", error);
+            Console.WriteLine("  TEXTool [Switches] {tex file}");
+            Console.WriteLine("  Switches: ");
+            Console.WriteLine("    -p                             Exports all frames");
+            Console.WriteLine("    -s                             Exports Sheet as PNG");
+            Console.WriteLine("    -i                             Exports frame information");
+            Console.WriteLine("    -f {id}                        Exports a single frame");
+            Console.WriteLine("    -b {sheet.png} {frame.xml}     Build TEX using sheet and FrameXML");
+            Console.WriteLine("    -m {path}                      Build TEX using sheet and FrameXML (Search by name) (Recommended over -b)");
+            Console.WriteLine("    -e                             Read/Write in Big Endian (PS3) Default is Little Endian (PC/PS4)");
+            Console.WriteLine("    -c                             Disable overwrite check");
+            Console.WriteLine("    -o {path}                      Sets the output path");
+            Console.WriteLine("    -z                             Output 0x08 padded signatures over the default 0x14 (DAL: RR uses 0x14)");
+            Console.WriteLine("  Examples: ");
+            Console.WriteLine("    TEXTool -p title.tex           Extracts all frames");
+            Console.WriteLine("    TEXTool -s title.tex           Extracts sheet from TEX");
+            Console.WriteLine("    TEXTool -s -e title.tex        Extracts sheet from a BE TEX (PS3)");
+            Console.WriteLine("    TEXTool -i title.tex           Extracts frame information");
+            Console.WriteLine("    TEXTool -b title.png title.xml Builds TEX using sheet");
+            Console.WriteLine("    TEXTool -m title               Builds TEX using frames");
+            Console.WriteLine("    TEXTool -f 0 title             Extracts the first frame");
+            Console.WriteLine("    TEXTool -p -o frames title.tex Extracts all frames into a folder called frames");
+            Console.ReadKey(true);
+        }
+
+        public static bool CheckForOverwrite(string path)
+        {
+            // Skip overwrite check if asked too
+            if (!CheckOverwrite)
+                return true;
             if (File.Exists(path))
             {
                 Console.Write("WARNING: You are about to overwrite a file. Continue? [Y/A] ");
