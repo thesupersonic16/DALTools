@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -42,8 +43,6 @@ namespace ScriptDialogueEditor
         public DALRRLivePreview Preview = null;
 
         public bool ScriptEdited = false;
-
-        public STSCImportExportBase[] STSCIE = new STSCImportExportBase[] { new STSCTSVFile(), new STSCCSVFile(), new GetTextFile() };
 
         public MainWindow()
         {
@@ -255,6 +254,8 @@ namespace ScriptDialogueEditor
                             Preview.SetInstructionPointerMessage(addr);
                         }
                     }
+                    //code.Text = TranslateWithGoogle(code.Text);
+                    //ScriptEdited = true; // Mark script as edited
                     break;
                 case "Script":
                     if (Preview != null)
@@ -388,16 +389,17 @@ namespace ScriptDialogueEditor
             };
             if (ofd.ShowDialog() == true)
             {
-                // Gets the STSCIE
-                var ie = STSCIE.FirstOrDefault(t => ofd.FileName.Contains(t.TypeExtension));
+                // Gets the index of the filetype
+                int index = TranslationSTSCHandler.FileTypes.ToList().FindIndex(t => ofd.FileName.Contains(t.TypeExtension));
                 // if importer is not found
-                if (ie == null)
+                if (index == -1)
                 {
                     MessageBox.Show("Could not detect the file type!", "Import Error!", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
+                // TODO: Add key option
                 // Import translation
-                ie.Import(ScriptFile, ScriptDB, File.ReadAllText(ofd.FileName));
+                TranslationSTSCHandler.ImportTranslation(index, ScriptFile, File.ReadAllText(ofd.FileName));
                 // Save the script back into the archive
                 using (var stream = new MemoryStream())
                 {
@@ -420,12 +422,12 @@ namespace ScriptDialogueEditor
             };
             if (sfd.ShowDialog() == true)
             {
-                // Gets the STSCIE
-                var ie = STSCIE[sfd.FilterIndex - 1];
+                // Gets the index of the filetype
+                int index = TranslationSTSCHandler.FileTypes.ToList().FindIndex(t => sfd.FileName.Contains(t.TypeExtension));
                 var script = new STSCFile();
                 using (var stream = ScriptArchive.GetFileStream(file.FileName))
                     script.Load(stream);
-                File.WriteAllText(sfd.FileName, ie.Export(script, ScriptDB), new UTF8Encoding(true));
+                File.WriteAllText(sfd.FileName, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB), new UTF8Encoding(true));
             }
         }
 
@@ -442,20 +444,21 @@ namespace ScriptDialogueEditor
             {
                 // Path to the directory which contains all the translation files
                 string dir = Path.GetDirectoryName(sfd.FileName);
-                // Gets the STSCIE
-                var ie = STSCIE[sfd.FilterIndex - 1];
+                // Gets the index of the filetype
+                int index = sfd.FilterIndex - 1;
                 foreach (var entry in ScriptArchive.FileEntries)
                 {
                     var script = new STSCFile();
                     using (var stream = ScriptArchive.GetFileStream(entry.FileName))
                         script.Load(stream);
                     // Path to the script file
-                    string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName), ie.TypeExtension);
+                    string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName), TranslationSTSCHandler.FileTypes[index].TypeExtension);
                     // Skip script if file does not exist
                     if (!File.Exists(filepath))
                         continue;
+                    // TODO: Add key option
                     // Import translation
-                    ie.Import(script, ScriptDB, File.ReadAllText(filepath));
+                    TranslationSTSCHandler.ImportTranslation(index, script, File.ReadAllText(filepath));
                     // Save the script back into the archive
                     using (var stream = new MemoryStream())
                     {
@@ -482,17 +485,18 @@ namespace ScriptDialogueEditor
             {
                 // Path to the directory which will contain all the translation files
                 string dir = Path.GetDirectoryName(sfd.FileName);
-                // Gets the STSCIE
-                var ie = STSCIE[sfd.FilterIndex - 1];
+                // Gets the index of the filetype
+                var index = sfd.FilterIndex - 1;
                 foreach (var entry in ScriptArchive.FileEntries)
                 {
                     var script = new STSCFile();
                     using (var stream = ScriptArchive.GetFileStream(entry.FileName))
                         script.Load(stream);
-                    string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName), ie.TypeExtension);
+                    string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName),
+                        TranslationSTSCHandler.FileTypes[index].TypeExtension);
                     // Create the directory
                     Directory.CreateDirectory(Path.GetDirectoryName(filepath));
-                    File.WriteAllText(filepath, ie.Export(script, ScriptDB), new UTF8Encoding(true));
+                    File.WriteAllText(filepath, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB), new UTF8Encoding(true));
                 }
             }
         }
@@ -500,36 +504,37 @@ namespace ScriptDialogueEditor
         private string GenerateFilters(bool openfiledialog)
         {
             string filter = "";
+            var filetypes = TranslationSTSCHandler.FileTypes;
             if (openfiledialog)
             {
                 // Add filter for all supported files
                 filter = "Supported STSCImportExport Files (";
                 // Loop through all the supported STSCIE types
-                for (int i = 0; i < STSCIE.Length; ++i)
+                for (int i = 0; i < filetypes.Length; ++i)
                 {
                     if (i != 0)
                         filter += ';';
-                    filter += $"*{STSCIE[i].TypeExtension}";
+                    filter += $"*{filetypes[i].TypeExtension}";
                 }
                 filter += ")|";
-                for (int i = 0; i < STSCIE.Length; ++i)
+                for (int i = 0; i < filetypes.Length; ++i)
                 {
                     if (i != 0)
                         filter += ';';
-                    filter += $"*{STSCIE[i].TypeExtension}";
+                    filter += $"*{filetypes[i].TypeExtension}";
                 }
                 // Add each STSCIE to its own filter
-                for (int i = 0; i < STSCIE.Length; ++i)
-                    filter += $"|{STSCIE[i].TypeName} Files (*{STSCIE[i].TypeExtension})|*{STSCIE[i].TypeExtension}";
+                for (int i = 0; i < filetypes.Length; ++i)
+                    filter += $"|{filetypes[i].TypeName} Files (*{filetypes[i].TypeExtension})|*{filetypes[i].TypeExtension}";
             }
             else
             {
                 // Add each STSCIE to its own filter
-                for (int i = 0; i < STSCIE.Length; ++i)
+                for (int i = 0; i < filetypes.Length; ++i)
                 {
                     if (!string.IsNullOrEmpty(filter))
                         filter += '|';
-                    filter += $"{STSCIE[i].TypeName} File (*{STSCIE[i].TypeExtension})|*{STSCIE[i].TypeExtension}";
+                    filter += $"{filetypes[i].TypeName} File (*{filetypes[i].TypeExtension})|*{filetypes[i].TypeExtension}";
                 }
             }
             return filter;

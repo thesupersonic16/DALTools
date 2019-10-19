@@ -63,10 +63,11 @@
     <Compile Include="File\STSCFileDatabase.cs" />
     <Compile Include="File\STSCFileDatabase.Reader.cs" />
     <Compile Include="File\STSCFileDatabase.Writer.cs" />
-    <Compile Include="ImportExport\GetTextFile.cs" />
-    <Compile Include="ImportExport\STSCImportExportBase.cs" />
-    <Compile Include="ImportExport\CSVFile.cs" />
-    <Compile Include="ImportExport\TSVFile.cs" />
+    <Compile Include="ImportExport\TranslationPOFile.cs" />
+    <Compile Include="ImportExport\TranslationBase.cs" />
+    <Compile Include="ImportExport\TranslationCSVFile.cs" />
+    <Compile Include="ImportExport\TranslationSTSCHandler.cs" />
+    <Compile Include="ImportExport\TranslationTSVFile.cs" />
     <Compile Include="IO\StreamTools.cs" />
     <Compile Include="Exceptions\SignatureMismatchException.cs" />
     <Compile Include="File\FileBase.cs" />
