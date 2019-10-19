@@ -99,6 +99,7 @@ namespace ScriptDatabaseEditor
         /// <param name="path">Path to the database file</param>
         public void ChangeDatabase(string path)
         {
+            // Load Database
             (_stscDatabase = new STSCFileDatabase()).Load(App.DataBasePath = path);
 
             // Rebind

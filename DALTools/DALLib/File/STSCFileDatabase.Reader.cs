@@ -34,42 +34,42 @@ namespace DALLib.File
             block = GetStreamBlockAndJump(2, fileReader);
             while (!EndOfBlock(fileReader, block))
                 Movies.Add(fileReader.ReadStruct<MovieEntry>());
-
+            
             // Memories
             block = GetStreamBlockAndJump(3, fileReader);
             while (!EndOfBlock(fileReader, block))
                 Memories.Add(fileReader.ReadStruct<MemoryEntry>());
-
+            
             // Characters
             block = GetStreamBlockAndJump(4, fileReader);
             while (!EndOfBlock(fileReader, block))
                 Characters.Add(fileReader.ReadStruct<CharacterEntry>());
-
+            
             // Unknown2
             block = GetStreamBlockAndJump(5, fileReader);
             while (!EndOfBlock(fileReader, block))
                 Unknown2.Add(fileReader.ReadStruct<Unknown2Entry>());
-
+            
             // Unknown3
             block = GetStreamBlockAndJump(6, fileReader);
             while (!EndOfBlock(fileReader, block))
                 Unknown3.Add(fileReader.ReadStruct<Unknown3Entry>());
-
+            
             // Voices
             block = GetStreamBlockAndJump(7, fileReader);
             while (!EndOfBlock(fileReader, block))
                 Voices.Add(fileReader.ReadStruct<VoiceEntry>());
-
+            
             // Unknown4
             block = GetStreamBlockAndJump(8, fileReader);
             while (!EndOfBlock(fileReader, block))
                 Unknown4.Add(fileReader.ReadStruct<Unknown4Entry>());
-
+            
             // Art Book Page
             block = GetStreamBlockAndJump(9, fileReader);
             while (!EndOfBlock(fileReader, block))
                 ArtBookPages.Add(fileReader.ReadStruct<ArtBookPageEntry>());
-
+            
             // DramaCDs
             block = GetStreamBlockAndJump(10, fileReader);
             while (!EndOfBlock(fileReader, block))

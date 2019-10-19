@@ -15,6 +15,9 @@ namespace DALLib.IO
 
         protected Stream stream;
         protected byte[] buffer;
+        protected byte[] bufferChar;
+        protected char[] bufferSingleChar;
+        protected Decoder decoder;
 
         protected const int MinBufferSize = 16;
 
@@ -36,6 +39,9 @@ namespace DALLib.IO
                 bufferSize = MinBufferSize;
 
             buffer = new byte[bufferSize];
+            bufferChar = new byte[encoding.GetMaxByteCount(1)];
+            bufferSingleChar = new char[1];
+            decoder = encoding.GetDecoder();
         }
 
         // Methods
@@ -228,7 +234,9 @@ namespace DALLib.IO
             if (type == typeof(string))
                 return ReadStringElsewhere();
             object structure = Activator.CreateInstance(type);
-            var fields = type.GetProperties();
+            var fields = from prop in type.GetProperties()
+                         orderby prop.MetadataToken ascending
+                         select prop;
             foreach (var field in fields)
             {
                 if (field.PropertyType.IsArray)
@@ -244,7 +252,7 @@ namespace DALLib.IO
                     object value = ReadByType(field.PropertyType);
                     if (value != null)
                     {
-                        field.SetValue(structure, value);
+                        field.SetMethod?.Invoke(structure, new [] { value });
                     }
                     else
                     {
@@ -254,7 +262,7 @@ namespace DALLib.IO
                             var attb = field.GetCustomAttributes(true).FirstOrDefault(t => t.GetType() == typeof(DataSizeAttribute));
                             if (attb is DataSizeAttribute dataSizeAttb)
                                 size = dataSizeAttb.Size;
-                            field.SetValue(structure, Enum.ToObject(field.PropertyType, ReadVariableSizeInt(size)));
+                            field.SetMethod?.Invoke(structure, new[] { Enum.ToObject(field.PropertyType, ReadVariableSizeInt(size)) });
                         }
                         else
                             structure = ReadStruct(field.PropertyType, LengthType);
@@ -350,7 +358,7 @@ namespace DALLib.IO
         // 1-Byte Types
         public override char ReadChar()
         {
-            return (char)stream.ReadByte();
+            return (char)InternalReadOneChar();
         }
 
         public override bool ReadBoolean()
@@ -359,7 +367,7 @@ namespace DALLib.IO
         }
 
         // 2-Byte Types
-        public override unsafe short ReadInt16()
+        public override short ReadInt16()
         {
             FillBuffer(sizeof(short));
             return (IsBigEndian) ?
@@ -501,6 +509,29 @@ namespace DALLib.IO
             stream = null;
             buffer = null;
         }
+
+        private int InternalReadOneChar()
+        {
+            int charsRead = 0;
+            decoder.Reset();
+            while (charsRead == 0)
+            {
+
+                int r = stream.ReadByte();
+                bufferChar[0] = (byte)r;
+                try
+                {
+                    charsRead = decoder.GetChars(bufferChar, 0, 1, bufferSingleChar, 0);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return (char)bufferChar[0];
+                }
+            }
+            return bufferSingleChar[0];
+        }
+
     }
 
     public class ExtendedBinaryWriter : BinaryWriter
@@ -809,6 +840,7 @@ namespace DALLib.IO
         {
             Write(*((ulong*)&value));
         }
+
     }
 
     public class StreamBlock
