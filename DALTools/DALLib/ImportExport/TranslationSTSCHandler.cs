@@ -1,4 +1,5 @@
 ﻿using DALLib.File;
+using DALLib.Scripting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,45 +54,76 @@ namespace DALLib.ImportExport
         {
             var fileType = FileTypes[fileTypeIndex];
             var lines = fileType.ImportTranslation(data);
-            for (int i = 0; i < lines.Length; ++i)
+            if (useKey)
             {
-                // Skip untranslated lines
-                if (string.IsNullOrEmpty(lines[i].Translation))
-                    continue;
-
-                foreach (var instruction in script.Instructions)
+                for (int i = 0; i < lines.Length; ++i)
                 {
-                    switch (instruction.Name)
+                    // Skip untranslated lines
+                    if (string.IsNullOrEmpty(lines[i].Translation))
+                        continue;
+
+                    foreach (var instruction in script.Instructions)
+                        setSTSCLine(lines[i], instruction, false);
+                }
+            }
+            else
+            {
+                int lastInstIndex = 0;
+                for (int i = 0; i < lines.Length; ++i)
+                {
+                    for (int instIndex = lastInstIndex; instIndex < script.Instructions.Count; ++instIndex)
                     {
-                        case "Mes":
-                            // Check if the entry is a Message translation
-                            if (lines[i].Operator != "Message")
-                                break;
-                            // Check if the key matches the current text
-                            if (instruction.GetArgument<string>(4) == lines[i].Key || !useKey)
-                                instruction.Arguments[4] = lines[i].Translation;
+                        if (setSTSCLine(lines[i], script.Instructions[instIndex], true))
+                        {
+                            lastInstIndex = instIndex + 1;
                             break;
-                        case "SetChoice":
-                            // Check if the entry is a Choice translation
-                            if (lines[i].Operator != "Choice")
-                                break;
-                            // Check if the key matches the current text
-                            if (instruction.GetArgument<string>(1) == lines[i].Key || !useKey)
-                                instruction.Arguments[1] = lines[i].Translation;
-                            break;
-                        case "MapPlace":
-                            // Check if the entry is a MapPlace translation
-                            if (lines[i].Operator != "MapMarker")
-                                break;
-                            // Check if the key matches the current text
-                            if (instruction.GetArgument<string>(1) == lines[i].Key || !useKey)
-                                instruction.Arguments[1] = lines[i].Translation;
-                            break;
-                        default:
-                            continue;
+                        }
                     }
                 }
             }
+        }
+
+        private static bool setSTSCLine(TranslationLine line, STSCInstructions.Instruction inst, bool ignoreKey)
+        {
+            switch (inst.Name)
+            {
+                case "Mes":
+                    // Check if the entry is a Message translation
+                    if (line.Operator != "Message")
+                        break;
+                    // Check if the key matches the current text
+                    if (inst.GetArgument<string>(4) == line.Key || ignoreKey)
+                    {
+                        inst.Arguments[4] = line.Translation;
+                        return true;
+                    }
+                    break;
+                case "SetChoice":
+                    // Check if the entry is a Choice translation
+                    if (line.Operator != "Choice")
+                        break;
+                    // Check if the key matches the current text
+                    if (inst.GetArgument<string>(1) == line.Key || ignoreKey)
+                    {
+                        inst.Arguments[1] = line.Translation;
+                        return true;
+                    }
+                    break;
+                case "MapPlace":
+                    // Check if the entry is a MapPlace translation
+                    if (line.Operator != "MapMarker")
+                        break;
+                    // Check if the key matches the current text
+                    if (inst.GetArgument<string>(1) == line.Key || ignoreKey)
+                    {
+                        inst.Arguments[1] = line.Translation;
+                        return true;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return false;
         }
     }
 }

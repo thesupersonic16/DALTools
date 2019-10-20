@@ -27,10 +27,12 @@
                                  ItemsSource="{Binding ScriptArchiveFiles}" SelectionChanged="ScriptListBox_SelectionChanged">
                             <ListBox.Resources>
                                 <ContextMenu x:Key="ScriptListBoxContextMenu">
-                                    <MenuItem Header="Import Translation" Click="ImportTranslationMenuItem_Click"/>
-                                    <MenuItem Header="Export Translation" Click="ExportTranslationMenuItem_Click"/>
-                                    <MenuItem Header="Batch Import Translation" Click="BatchImportTranslationMenuItem_Click"/>
-                                    <MenuItem Header="Batch Export Translation" Click="BatchExportTranslationMenuItem_Click"/>
+                                    <MenuItem Header="Import Translation"                       Tag=""      Click="ImportTranslationMenuItem_Click"/>
+                                    <MenuItem Header="Import Translation (Without Key)"         Tag="nokey" Click="ImportTranslationMenuItem_Click"/>
+                                    <MenuItem Header="Export Translation"                       Tag=""      Click="ExportTranslationMenuItem_Click"/>
+                                    <MenuItem Header="Batch Import Translation"                 Tag=""      Click="BatchImportTranslationMenuItem_Click"/>
+                                    <MenuItem Header="Batch Import Translation (Without Key)"   Tag="nokey" Click="BatchImportTranslationMenuItem_Click"/>
+                                    <MenuItem Header="Batch Export Translation"                 Tag=""      Click="BatchExportTranslationMenuItem_Click"/>
                                 </ContextMenu>
                                 <Style TargetType="{x:Type ListBoxItem}">
                                     <Setter Property="ContextMenu" Value="{StaticResource ScriptListBoxContextMenu}"/>

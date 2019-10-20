@@ -24,7 +24,7 @@ namespace ScriptDialogueEditor
             _database = database;
         }
 
-        public override void Load(ExtendedBinaryReader reader)
+        public override void Load(ExtendedBinaryReader reader, bool keepOpen = false)
         {
             base.Load(reader);
             ConvertToDialogueCode();

@@ -380,6 +380,7 @@ namespace ScriptDialogueEditor
 
         private void ImportTranslationMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            string tag = ((MenuItem)sender)?.Tag as string;
             if (ScriptListBox.SelectedIndex == -1)
                 return;
             var file = ScriptArchive.FileEntries[ScriptListBox.SelectedIndex];
@@ -399,7 +400,7 @@ namespace ScriptDialogueEditor
                 }
                 // TODO: Add key option
                 // Import translation
-                TranslationSTSCHandler.ImportTranslation(index, ScriptFile, File.ReadAllText(ofd.FileName));
+                TranslationSTSCHandler.ImportTranslation(index, ScriptFile, File.ReadAllText(ofd.FileName), !tag.Contains("nokey"));
                 // Save the script back into the archive
                 using (var stream = new MemoryStream())
                 {
@@ -433,7 +434,7 @@ namespace ScriptDialogueEditor
 
         private void BatchImportTranslationMenuItem_Click(object sender, RoutedEventArgs e)
         {
-
+            string tag = ((MenuItem)sender)?.Tag as string;
             var sfd = new SaveFileDialog
             {
                 Filter = GenerateFilters(false),
@@ -456,9 +457,8 @@ namespace ScriptDialogueEditor
                     // Skip script if file does not exist
                     if (!File.Exists(filepath))
                         continue;
-                    // TODO: Add key option
                     // Import translation
-                    TranslationSTSCHandler.ImportTranslation(index, script, File.ReadAllText(filepath));
+                    TranslationSTSCHandler.ImportTranslation(index, script, File.ReadAllText(filepath), !tag.Contains("nokey"));
                     // Save the script back into the archive
                     using (var stream = new MemoryStream())
                     {

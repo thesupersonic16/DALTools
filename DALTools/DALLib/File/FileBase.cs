@@ -30,6 +30,7 @@ namespace DALLib.File
         public virtual void Load(string path, bool keepOpen = false)
         {
             if (keepOpen)
+                Load(System.IO.File.OpenRead(path), true, keepOpen);
             else
             {
                 using (var stream = System.IO.File.OpenRead(path))
