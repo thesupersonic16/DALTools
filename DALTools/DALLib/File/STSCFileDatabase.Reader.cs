@@ -13,7 +13,7 @@ namespace DALLib.File
     public partial class STSCFileDatabase
     {
 
-        public override void Load(ExtendedBinaryReader fileReader)
+        public override void Load(ExtendedBinaryReader fileReader, bool keepOpen = false)
         {
             // Read STSC
             base.Load(fileReader);

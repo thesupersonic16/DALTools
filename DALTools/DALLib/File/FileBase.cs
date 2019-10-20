@@ -30,12 +30,11 @@ namespace DALLib.File
         public virtual void Load(string path, bool keepOpen = false)
         {
             if (keepOpen)
-                Load(System.IO.File.OpenRead(path));
             else
             {
                 using (var stream = System.IO.File.OpenRead(path))
                 {
-                    Load(stream);
+                    Load(stream, true, keepOpen);
                 }
             }
         }
@@ -45,7 +44,8 @@ namespace DALLib.File
         /// </summary>
         /// <param name="stream">The stream to read data from</param>
         /// <param name="autoDecompress">Automatically check for full file compression</param>
-        public virtual void Load(Stream stream, bool autoDecompress = true)
+        /// <param name="keepOpen">Should the stream be kept open?</param>
+        public virtual void Load(Stream stream, bool autoDecompress = true, bool keepOpen = false)
         {
             var reader = new ExtendedBinaryReader(stream);
             if (autoDecompress)
@@ -68,14 +68,15 @@ namespace DALLib.File
             // Set Endianness of the reader
             reader.SetEndian(UseBigEndian);
             // Parse File
-            Load(reader);
+            Load(reader, keepOpen);
         }
 
         /// <summary>
         /// Load file using an ExtendedBinaryReader
         /// </summary>
         /// <param name="reader">The reader the parser is to use</param>
-        public virtual void Load(ExtendedBinaryReader reader)
+        /// <param name="keepOpen">Is the stream in the reader planning to close?</param>
+        public virtual void Load(ExtendedBinaryReader reader, bool keepOpen = false)
         {
         }
 

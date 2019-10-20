@@ -34,7 +34,7 @@ namespace DALLib.File
         /// </summary>
         public bool UseSmallHeader = false;
 
-        public override void Load(ExtendedBinaryReader reader)
+        public override void Load(ExtendedBinaryReader reader, bool keepOpen = false)
         {
             // Check if file has a signature
             string sig = reader.ReadSignature();

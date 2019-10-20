@@ -27,7 +27,7 @@ namespace DALLib.File
         /// </summary>
         public List<FontEntry> Characters = new List<FontEntry>();
 
-        public override void Load(ExtendedBinaryReader reader)
+        public override void Load(ExtendedBinaryReader reader, bool keepOpen = false)
         {
             // Height of the character in pixels
             CharacterHeight     = reader.ReadInt32();

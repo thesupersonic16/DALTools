@@ -74,7 +74,7 @@ namespace DALLib.File
         /// Loads and parses file from stream into memory
         /// </summary>
         /// <param name="reader">Reader of the file</param>
-        public override void Load(ExtendedBinaryReader reader)
+        public override void Load(ExtendedBinaryReader reader, bool keepOpen = false)
         {
             // Read Signature to guess the type of TEX
             int sigSize = reader.CheckDALSignature("Texture");

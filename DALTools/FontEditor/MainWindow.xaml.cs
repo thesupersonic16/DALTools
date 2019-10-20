@@ -150,7 +150,7 @@ namespace FontEditor
         {
             FilePath = path;
             PCKFontArchive = new PCKFile();
-            PCKFontArchive.Load(path, true);
+            PCKFontArchive.Load(path);
 
             var textureFilePath = PCKFontArchive.SearchForFile(".tex");
             var fontCodeFilePath = PCKFontArchive.SearchForFile(".code");

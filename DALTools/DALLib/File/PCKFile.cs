@@ -26,7 +26,7 @@ namespace DALLib.File
 
         public List<FileEntry> FileEntries = new List<FileEntry>();
 
-        public override void Load(ExtendedBinaryReader reader)
+        public override void Load(ExtendedBinaryReader reader, bool keepOpen = false)
         {
             // Store the current reader so we can stream files
             _internalReader = reader;
@@ -81,6 +81,11 @@ namespace DALLib.File
                 int position = reader.ReadInt32() + (oldPCK ? 0xC : 0x18);
                 FileEntries[i].FileName = reader.ReadStringElsewhere(position);
             }
+
+            // Load all data into memory if the loader plans to close the stream
+            if (!keepOpen)
+                Preload();
+
         }
 
         public override void Save(ExtendedBinaryWriter writer)
