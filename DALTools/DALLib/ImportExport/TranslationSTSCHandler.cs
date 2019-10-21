@@ -89,7 +89,7 @@ namespace DALLib.ImportExport
             {
                 case "Mes":
                     // Check if the entry is a Message translation
-                    if (line.Operator != "Message")
+                    if (!string.IsNullOrEmpty(line.Operator) && line.Operator != "Message")
                         break;
                     // Check if the key matches the current text
                     if (inst.GetArgument<string>(4) == line.Key || ignoreKey)
@@ -100,7 +100,7 @@ namespace DALLib.ImportExport
                     break;
                 case "SetChoice":
                     // Check if the entry is a Choice translation
-                    if (line.Operator != "Choice")
+                    if (!string.IsNullOrEmpty(line.Operator) && line.Operator != "Choice")
                         break;
                     // Check if the key matches the current text
                     if (inst.GetArgument<string>(1) == line.Key || ignoreKey)
@@ -111,7 +111,7 @@ namespace DALLib.ImportExport
                     break;
                 case "MapPlace":
                     // Check if the entry is a MapPlace translation
-                    if (line.Operator != "MapMarker")
+                    if (!string.IsNullOrEmpty(line.Operator) && line.Operator != "MapMarker")
                         break;
                     // Check if the key matches the current text
                     if (inst.GetArgument<string>(1) == line.Key || ignoreKey)

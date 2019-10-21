@@ -57,11 +57,7 @@ namespace DALLib.ImportExport
             foreach (var translation in lines)
                 data += AddRow(translation.Operator, translation.Comment, translation.Key, translation.Translation);
 
-            // Move the buffer onto the stack and clear the main one for next use
-            string buffer = _buffer;
-            _buffer = null;
-
-            return buffer;
+            return data;
         }
 
         public string[] ReadTSVRow()
@@ -92,7 +88,7 @@ namespace DALLib.ImportExport
                 // Next column
                 if (!escape && _buffer[_bufferIndex] == '\t')
                 {
-                    splits.Add(buffer.Replace("\n", "\\n"));
+                    splits.Add(buffer.Replace("\r", "").Replace("\n", "\\n"));
                     buffer = "";
                     continue;
                 }
@@ -104,7 +100,7 @@ namespace DALLib.ImportExport
                 {
                     _bufferIndex = _bufferIndex + 1;
                     // Escape the LF and add the last column
-                    splits.Add(buffer.Replace("\n", "\\n"));
+                    splits.Add(buffer.Replace("\r", "").Replace("\n", "\\n"));
                     break;
                 }
                 // Add char

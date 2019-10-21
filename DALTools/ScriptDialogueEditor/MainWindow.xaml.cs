@@ -508,8 +508,8 @@ namespace ScriptDialogueEditor
             if (openfiledialog)
             {
                 // Add filter for all supported files
-                filter = "Supported STSCImportExport Files (";
-                // Loop through all the supported STSCIE types
+                filter = "Supported Translation Table Files (";
+                // Loop through all the supported file types
                 for (int i = 0; i < filetypes.Length; ++i)
                 {
                     if (i != 0)
@@ -523,13 +523,13 @@ namespace ScriptDialogueEditor
                         filter += ';';
                     filter += $"*{filetypes[i].TypeExtension}";
                 }
-                // Add each STSCIE to its own filter
+                // Add each file type to its own filter
                 for (int i = 0; i < filetypes.Length; ++i)
                     filter += $"|{filetypes[i].TypeName} Files (*{filetypes[i].TypeExtension})|*{filetypes[i].TypeExtension}";
             }
             else
             {
-                // Add each STSCIE to its own filter
+                // Add each file type to its own filter
                 for (int i = 0; i < filetypes.Length; ++i)
                 {
                     if (!string.IsNullOrEmpty(filter))

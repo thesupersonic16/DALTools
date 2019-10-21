@@ -33,9 +33,10 @@ namespace DALLib.ImportExport
                 if (line.StartsWith("msgid"))
                     id = line.Substring(7, line.Length - 8).Replace("\\\"", "\"");
                 if (line.StartsWith("msgstr"))
-                   str = line.Substring(8, line.Length - 9).Replace("\\\"", "\"");
-
-                lines.Add(new TranslationLine("", "", id, str));
+                {
+                    str = line.Substring(8, line.Length - 9).Replace("\\\"", "\"");
+                    lines.Add(new TranslationLine("", "", id, str));
+                }
             }
             return lines.ToArray();
         }
