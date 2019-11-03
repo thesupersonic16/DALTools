@@ -13,6 +13,9 @@ namespace DALLib.File
 {
     public class PCKFile : FileBase, IDisposable
     {
+        /// <summary>
+        /// An internal reader for streaming files from the archive
+        /// </summary>
         protected ExtendedBinaryReader _internalReader;
 
         // Options
@@ -28,16 +31,16 @@ namespace DALLib.File
 
         public override void Load(ExtendedBinaryReader reader, bool keepOpen = false)
         {
-            // Store the current reader so we can stream files
+            // Store the current reader
             _internalReader = reader;
 
             // Filename Section
-            //  This section contains an array of addresses to each of the file's name and the strings itself
-            //   this section is only used for finding file indices from within game
-            //
-            //  Workaround for reading different versions of PCK files
-            //  Older PCK files seem to have smaller padding (0x08 for Signatures, 0x04 for Padding)
-            //  While DAL: RR has larger padding (0x14 for Signatures, 0x08 for Padding)
+            //  This section contains an array of addresses to each of the file's name and the strings
+            //   itself right after, this section is only used for finding file indices from within game
+
+            //  This is a workaround for reading different versions of PCK files as some files seem to
+            //   have smaller padding (0x08 for Signatures, 0x04 for Padding)
+            //   while DAL: RR has larger padding (0x14 for Signatures, 0x08 for Padding)
             //  This workaround works by checking the padding in the signature to determine the version
             int sigSize = reader.CheckDALSignature("Filename");
             bool oldPCK = false;
@@ -45,36 +48,39 @@ namespace DALLib.File
                 oldPCK = true;
 
             // The length of the Filename section
-            int filenameSectionSize = reader.ReadInt32();
-
-            // The address to the Filename section
+            int fileNameSectionSize = reader.ReadInt32();
+            // Address to the list of filenames
             int fileNameSectionAddress = (int)reader.BaseStream.Position;
-            // Jump to the next section, which should be Pack
-            reader.JumpTo(filenameSectionSize);
+            
+            // Jump to the Pack section
+            reader.JumpTo(fileNameSectionSize);
+
+            // Makes sure the reader is aligned
+            reader.FixPadding(oldPCK ? 0x04u : 0x08u);
 
             // Pack Section
-            //  This section contains an array of all the file's data
-            reader.FixPadding(oldPCK ? 0x04u : 0x08u);
+            //  This section contains an array of file information and then all of it's data
+            
             // Check Signature
             string packSig = reader.ReadDALSignature("Pack");
-            // Check if signature is valid
             if (packSig != "Pack" && packSig.Length <= 4)
                 throw new SignatureMismatchException("Pack", packSig);
 
             // The length of the Pack section
             int packSectionSize = reader.ReadInt32();
-            // The amount of files that is currently stored in the archive
             int fileCount = reader.ReadInt32();
+            
             // Read file entries
             for (int i = 0; i < fileCount; ++i)
             {
                 FileEntries.Add(new FileEntry());
                 FileEntries[i].DataPosition = reader.ReadInt32();
-                FileEntries[i].DataLength = reader.ReadInt32();
+                FileEntries[i].DataLength   = reader.ReadInt32();
             }
 
-            // Jump back to the Filename section so we can name all the files
+            // Jump back to the Filename section so we can get all of the file names
             reader.JumpTo(fileNameSectionAddress);
+            
             // Reads all the file names
             for (int i = 0; i < fileCount; ++i)
             {
@@ -85,12 +91,12 @@ namespace DALLib.File
             // Load all data into memory if the loader plans to close the stream
             if (!keepOpen)
                 Preload();
-
         }
 
         public override void Save(ExtendedBinaryWriter writer)
         {
-            // Preload all files, This is needed as we can not edit archives while writing streams safely yet
+            // Loads all files into memory if not already
+            //  This is needed to ensure the reading stream is closed
             Preload();
 
             // ZLIB Compression
@@ -99,36 +105,32 @@ namespace DALLib.File
                 mainStream = writer.StartDeflateEncapsulation();
 
             // Filename Section
-            // Address to the start of the Filename section, This is used as a base address
+            // Address of the Filename section
             long sectionPosition = writer.BaseStream.Position;
-            // Writes the signature for the section
             writer.WriteDALSignature("Filename", UseSmallSig);
-            // Allocates 4 bytes for the section size
             writer.AddOffset("SectionSize");
+            
             // Allocates space for all the file name pointers
             foreach (var entry in FileEntries)
                 writer.AddOffset(entry.FileName);
+            
             // Fills in all the file names
             foreach (var entry in FileEntries)
             {
-                // Writes an absolute address to the array of file name pointers
+                // Fill in the address and write the file name (including paths)
                 writer.FillInOffset(entry.FileName, (uint)(writer.BaseStream.Position - (UseSmallSig ? 0xC : 0x18)));
-                // Writes the file name and adds a null byte to terminate the string
                 writer.WriteNullTerminatedString(entry.FileName);
             }
-            // Finalises the Filename section by writing the length of the section
+            // Fills in the size of the Filename section
             writer.FillInOffset("SectionSize");
-            // Pads the file to a divisible of 0x08 for DAL: RR or 0x04 for others 
+            // Realigns the writer 
             writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
 
             // Pack Section
-            // Address to the start of the Pack section, This is used as a base address
+            // Address to the Pack section
             sectionPosition = writer.BaseStream.Position;
-            // Writes the signature for the section
             writer.WriteDALSignature("Pack", UseSmallSig);
-            // Allocates 4 bytes for the section size
             writer.AddOffset("SectionSize");
-            // Writes the file count
             writer.Write(FileEntries.Count);
 
             // Writes file data entries
@@ -140,19 +142,17 @@ namespace DALLib.File
                 writer.Write(FileEntries[i].Data.Length);
             }
 
-            // Finalises the Pack section by writing the length of the section
+            // Fills in the size of the Pack section
             writer.FillInOffset("SectionSize", (uint)(writer.BaseStream.Position - (UseSmallSig ? 0xC : 0x18)));
-            // Pads the file to a divisible of 0x08 for DAL: RR or 0x04 for others 
+            // Realigns the writer
             writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
 
             // Data
             for (int i = 0; i < FileEntries.Count; ++i)
             {
-                // Writes the absolute address of where we are currently at which will contain the file contents
                 writer.FillInOffset($"DataPtr{i}");
-                // Write the file contents
                 writer.Write(FileEntries[i].Data);
-                // Pads the file to a divisible of 0x08 for DAL: RR or 0x04 for others 
+                // Realigns the writer 
                 writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
             }
 
@@ -162,13 +162,14 @@ namespace DALLib.File
         }
 
         /// <summary>
-        /// Preloads all files into memory
+        /// <para>Loads all files into memory then closes the stream</para>
+        /// <para>This should be used if you would like to keep all the data in memory</para>
         /// </summary>
         public void Preload()
         {
             foreach (var entry in FileEntries)
             {
-                // Check if file is already preloaded
+                // Check if file is already loaded into memory
                 if (entry.Data != null)
                     continue;
                 _internalReader.JumpTo(entry.DataPosition);
