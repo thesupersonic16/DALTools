@@ -247,12 +247,12 @@ namespace DALLib.File
             foreach (string dirPath in Directory.EnumerateDirectories(path, "*", SearchOption.AllDirectories).Concat(new [] { path }))
             {
                 foreach (string filePath in Directory.EnumerateFiles(dirPath, "*")
-                    .Select(x => x.Substring(dirPath.Length + 1).Replace('\\', '/')).OrderBy(x => char.IsUpper(x[0]) ? -1 : 1))
+                    .Select(x => x.Substring(path.Length + 1).Replace('\\', '/')).OrderBy(x => char.IsUpper(x[0]) ? -1 : 1))
                 {
                     FileEntry entry = new FileEntry
                     {
                         FileName = filePath,
-                        Data = System.IO.File.ReadAllBytes(Path.Combine(dirPath, filePath))
+                        Data = System.IO.File.ReadAllBytes(Path.Combine(path, filePath))
                     };
                     entry.DataLength = entry.Data.Length;
                     FileEntries.Add(entry);
