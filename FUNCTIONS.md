@@ -97,15 +97,16 @@ Example:
 SeStop(126, 0)
 ```
 
-## Mes(Byte: positionX, Bool: centerX, Byte: positionY, Bool: centerY, String: text, Int16: messageID)
-Writes `text` at the position of `positionX` and `positionY` and is centered if `centerX` or `centerY` is set to true  
+## Mes(Int16: positionX, Int16: positionY, String: text, Int16: messageID)
+Writes `text` at the position of `positionX` and `positionY` and the message is tracked using `messageID`
+Note: The unit for both position is half a pixel on a 1920x1080 screen e.g. 960 is 1920 pixels
 Note: This does not include waiting for user input, That job is for MesWait()  
-Note: `messageID` is used for tracking if a message has been read in a script   
 Note: You can use MesDel() instead if you only want to clear the textbox without waiting.
 Example:  
 ```csharp
-// Writes "I choose... both of you!" to the top of the textbox
-Mes(80, false, 167, true, "I choose... both of you!", 17)
+// Writes "Y-You can't come... If you're with me,
+          even you will..." to the textbox
+Mes(80, 423, "Y-You can't come... If you're with me,\neven you will...", 18)
 ```
 
 ## MesWait()

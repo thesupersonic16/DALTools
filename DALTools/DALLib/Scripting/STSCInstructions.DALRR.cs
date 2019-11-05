@@ -96,7 +96,7 @@ namespace DALLib.Scripting
             new Instruction("Dummy4E", null),
             new Instruction("Wait2", new []{ AT_Int32 }),
 
-            new Instruction("Mes", new []{ AT_Byte, AT_Bool, AT_Byte, AT_Bool, AT_String, AT_Int16 }),
+            new Instruction("Mes", new []{ AT_Int16, AT_Int16, AT_String, AT_Int16 }),
             new Instruction("MesWait", null),
             new Instruction("MesTitle", new []{ AT_Byte }),
             new Instruction("SetChoice", new []{ AT_CodePointer, AT_String, AT_Int16 }),

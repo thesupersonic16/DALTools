@@ -92,9 +92,9 @@ namespace DALLib.ImportExport
                     if (!string.IsNullOrEmpty(line.Operator) && line.Operator != "Message")
                         break;
                     // Check if the key matches the current text
-                    if (inst.GetArgument<string>(4) == line.Key || ignoreKey)
+                    if (inst.GetArgument<string>(2) == line.Key || ignoreKey)
                     {
-                        inst.Arguments[4] = line.Translation;
+                        inst.Arguments[2] = line.Translation;
                         return true;
                     }
                     break;

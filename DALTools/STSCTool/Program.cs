@@ -3,6 +3,7 @@ using DALLib.File;
 using DALLib.Scripting;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -16,6 +17,9 @@ namespace STSCTool
     {
         static void Main(string[] args)
         {
+            // Language
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
+            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
             if (args.Length == 0)
             {
                 Console.WriteLine("Error: Not Enough Arguments!");
@@ -41,11 +45,11 @@ namespace STSCTool
                         Console.WriteLine("Disassembler must abort now!");
                         Console.ReadKey(true);
                     }
-                    File.WriteAllLines(Path.ChangeExtension(args[i], ".txt"), STSCTextHandler.ConvertToText(file));
+                    File.WriteAllLines(Path.ChangeExtension(args[i], ".txt"), STSCTextHandler.ConvertToText(file), Encoding.UTF8);
                 }
                 else
                 {
-                    STSCTextHandler.ConvertToObject(file, File.ReadAllLines(args[i]));
+                    STSCTextHandler.ConvertToObject(file, File.ReadAllLines(args[i], Encoding.UTF8));
                     file.Save(Path.ChangeExtension(args[i], ".bin"));
                 }
             }
