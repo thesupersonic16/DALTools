@@ -354,7 +354,7 @@ namespace DALLib.File
             /* 0x0002 */ public int Unknown2        { get; set; }
         }
 
-        public class ArtBookPageEntry
+        public class ArtBookPageEntry : INotifyPropertyChanged
         {
             /// <summary>
             /// Path relative of the NovThumb.pck archive to the texture without extension
@@ -381,6 +381,8 @@ namespace DALLib.File
             /// The page number
             /// </summary>
             public short Page                       { get; set; }
+
+            public event PropertyChangedEventHandler PropertyChanged;
 
             public override string ToString()
             {

@@ -28,11 +28,12 @@ namespace ScriptDatabaseEditor
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
 
-        private STSCFileDatabase _stscDatabase      = new STSCFileDatabase();
-        private PCKFile _nameTextureArchive         = new PCKFile();
-        private PCKFile _movieTextureArchive        = new PCKFile();
-        private PCKFile _CGThumbnailTextureArchive  = new PCKFile();
-        private PCKFile _novelTextureArchive        = new PCKFile();
+        private STSCFileDatabase _stscDatabase        = new STSCFileDatabase();
+        private PCKFile _nameTextureArchive           = new PCKFile();
+        private PCKFile _movieTextureArchive          = new PCKFile();
+        private PCKFile _CGThumbnailTextureArchive    = new PCKFile();
+        private PCKFile _novelTextureArchive          = new PCKFile();
+        private PCKFile _novelthumbnailTextureArchive = new PCKFile();
 
         private TEXFile _optionTexture              = new TEXFile();
 
@@ -78,6 +79,7 @@ namespace ScriptDatabaseEditor
                 _movieTextureArchive.Load(Path.Combine(_game.LangPath, "Extra\\mov\\movieThumb.pck"), true);
                 _CGThumbnailTextureArchive.Load(Path.Combine(_game.GamePath, "Data\\Data\\Extra\\gal\\GalThumb.pck"), true);
                 _novelTextureArchive.Load(Path.Combine(_game.LangPath, "Extra\\nov\\NovData.pck"), true);
+                _novelthumbnailTextureArchive.Load(Path.Combine(_game.LangPath, "Extra\\nov\\NovThumb.pck"), true);
                 (_optionTexture = new TEXFile()).Load(Path.Combine(_game.LangPath, "Init\\option.tex"), true);
 
                 // Create and Set ImageSource
@@ -327,5 +329,31 @@ namespace ScriptDatabaseEditor
             new PropertyEditorVoiceName(_stscDatabase.Voices[list.SelectedIndex], this).ShowDialog();
         }
 
+        private void AB_ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var list = sender as ListBox;
+            if (list.SelectedIndex == -1)
+                return; // Return if no item is selected
+            new PropertyEditorArtBook(_stscDatabase.ArtBookPages[list.SelectedIndex], _novelthumbnailTextureArchive, _novelTextureArchive).ShowDialog();
+        }
+
+        private void AB_AddEntryButton_Click(object sender, RoutedEventArgs e)
+        {
+            var page = new STSCFileDatabase.ArtBookPageEntry();
+            page.ID = _stscDatabase.ArtBookPages.Count;
+            if (new PropertyEditorArtBook(page, _novelthumbnailTextureArchive, _novelTextureArchive).ShowDialog() == true)
+                _stscDatabase.ArtBookPages.Add(page);
+        }
+
+        private void AB_SortPagesButton_Click(object sender, RoutedEventArgs e)
+        {
+            var pages = _stscDatabase.ArtBookPages.OrderBy(t => t.GameID).ThenBy(t => t.Page).ToList();
+            _stscDatabase.ArtBookPages.Clear();
+            for (int i = 0; i < pages.Count; ++i)
+            {
+                pages[i].ID = i;
+                _stscDatabase.ArtBookPages.Add(pages[i]);
+            }
+        }
     }
 }

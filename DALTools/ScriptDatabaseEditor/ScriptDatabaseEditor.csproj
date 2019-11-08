@@ -80,6 +80,12 @@
     <Compile Include="UI\ExceptionWindow.xaml.cs">
       <DependentUpon>ExceptionWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\PCKFileSelectorWindow.xaml.cs">
+      <DependentUpon>PCKFileSelectorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\PropertyEditorArtBook.xaml.cs">
+      <DependentUpon>PropertyEditorArtBook.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\NumericUpDown.xaml.cs">
       <DependentUpon>NumericUpDown.xaml</DependentUpon>
     </Compile>
@@ -128,6 +134,14 @@
     <Page Include="UI\ExceptionWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\PCKFileSelectorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\PropertyEditorArtBook.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\NumericUpDown.xaml">
       <SubType>Designer</SubType>

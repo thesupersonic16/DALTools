@@ -1,0 +1,60 @@
+﻿<Window x:Class="ScriptDatabaseEditor.UI.PropertyEditorArtBook"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:ScriptDatabaseEditor"
+        xmlns:dallibmisc="clr-namespace:DALLib.Misc;assembly=DALLib"
+        mc:Ignorable="d" WindowStartupLocation="CenterScreen"
+        Title="Art Book Page Property Editor" Height="318.571" Width="450" Style="{StaticResource HedgeWindow}">
+    <Window.Resources>
+        <ObjectDataProvider x:Key="GamesEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="dallibmisc:GameID"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="2" Background="#323235">
+            <Button Content="Save" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,10,10" Height="20" Click="ButtonSave_Click"/>
+            <Button Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="0,0,90,10" Height="20" Click="ButtonCancel_Click"/>
+        </Grid>
+        <GroupBox Header="Properties" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5,5,5,5">
+            <Grid>
+                <StackPanel>
+                    <Grid>
+                        <Label Content="Art Book Game: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                        <ComboBox HorizontalAlignment="Stretch" Height="23" SelectedItem="{Binding ArtBookPage.GameID, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource GamesEnum}}" VerticalAlignment="Top" Margin="133,8,5,0"/>
+                    </Grid>
+                    <Grid>
+                        <Label Content="Art Book Page ID: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                        <local:NumericUpDown HorizontalAlignment="Stretch" Height="23" Value="{Binding ArtBookPage.ID, Mode=TwoWay}" VerticalAlignment="Top" Margin="133,8,5,0"/>
+                    </Grid>
+                    <Grid>
+                        <Label Content="Art Book Page No: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                        <local:NumericUpDown HorizontalAlignment="Stretch" Height="23" Value="{Binding ArtBookPage.Page, Mode=TwoWay}" VerticalAlignment="Top" Margin="133,8,5,0"/>
+                    </Grid>
+                    <Grid>
+                        <Label Content="ArtBook Page Name: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                        <TextBox HorizontalAlignment="Stretch" Height="23" Text="{Binding ArtBookPage.Name, Mode=TwoWay}" VerticalAlignment="Top" Margin="133,8,5,0"/>
+                    </Grid>
+                    <Grid>
+                        <Label Content="Page Thumb Path: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                        <TextBox HorizontalAlignment="Stretch" Height="23" Text="{Binding ArtBookPage.PagePathThumbnail, Mode=TwoWay}" VerticalAlignment="Top" Margin="133,8,40,0"/>
+                        <Button HorizontalAlignment="Right" Content="..." Margin="387,8,5,0" Click="ButtonThumbSelect_Click"/>
+                    </Grid>
+                    <Grid>
+                        <Label Content="Page Data Path: " HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
+                        <TextBox HorizontalAlignment="Stretch" Height="23" Text="{Binding ArtBookPage.PagePathData, Mode=TwoWay}" VerticalAlignment="Top" Margin="133,8,40,0"/>
+                        <Button HorizontalAlignment="Right" Content="..." Margin="387,8,5,0" Click="ButtonDataSelect_Click"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</Window>

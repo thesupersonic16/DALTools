@@ -134,7 +134,7 @@
                             </Grid.ColumnDefinitions>
                             <ListView HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Foreground="White" 
                                       Margin="5,5,5,5" AllowDrop="True" ItemsSource="{Binding STSCDatabase.ArtBookPages}"
-                                      SelectionChanged="AB_SelectionChanged">
+                                      SelectionChanged="AB_SelectionChanged" MouseDoubleClick="AB_ListView_MouseDoubleClick">
                                 <ListView.View>
                                     <GridView AllowsColumnReorder="True">
                                         <GridViewColumn Header="ID"             Width="40"  DisplayMemberBinding="{Binding ID}"/>
@@ -145,6 +145,12 @@
                                         <GridViewColumn Header="Data Path"      Width="80"  DisplayMemberBinding="{Binding PagePathData}"/>
                                     </GridView>
                                 </ListView.View>
+                                <ListView.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Add new page" Click="AB_AddEntryButton_Click"/>
+                                        <MenuItem Header="Sort Pages" Click="AB_SortPagesButton_Click"/>
+                                    </ContextMenu>
+                                </ListView.ContextMenu>
                             </ListView>
                             <GroupBox Header="Page Preview" Margin="5,5,5,5" Grid.Column="1">
                                 <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,2,2,2" Source="{Binding AB_PG}"></Image>
