@@ -42,7 +42,7 @@ namespace ScriptDialogueEditor
                     case "Voice":
                         break;
                     case "Msg":
-                        inst.Arguments[4] = code.Text;
+                        inst.Arguments[2] = code.Text;
                         break;
                     case "Script":
                         break;
@@ -87,8 +87,8 @@ namespace ScriptDialogueEditor
                         break;
                     case "Mes":
                         code.Type = "Msg";
-                        code.ID = inst.GetArgument<short>(5).ToString();
-                        code.Text = inst.GetArgument<string>(4);
+                        code.ID = inst.GetArgument<short>(3).ToString();
+                        code.Text = inst.GetArgument<string>(2);
                         code.Brush = new SolidColorBrush(Color.FromArgb(0x30, 0x00, 0x80, 0x00));
                         break;
                     case "FileJump":
