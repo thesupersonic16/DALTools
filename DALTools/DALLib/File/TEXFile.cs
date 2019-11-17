@@ -117,7 +117,7 @@ namespace DALLib.File
             TEXConverter.Decode(this, format, reader);
 
             // Fix Alignment
-            reader.FixPadding();
+            reader.FixPadding(UseSmallSig ? 0x04u : 0x08u);
 
             // Parts
             sigSize = reader.CheckDALSignature("Parts");
