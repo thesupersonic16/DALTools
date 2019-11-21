@@ -6,7 +6,7 @@ If you are here to just use the tools, You can grab the [lastest release from Gi
 
 **Releases**: You will need .NET Framework 4.6 or newer installed for them to run.
   
-**Building**: You will need Visual Studio 2019 (2017 might also work) installed with the .NET Framework 4.6 Targeting Pack installed. 
+**Building**: You will need Visual Studio 2019 installed with the .NET Framework 4.6 Targeting Pack installed. 
 
 ## Issues / Requests
 If you have found any issues with any of the tools in the repository or would like to request a feature or etc., Please don't hesitate to [submit an issue][newIssue_url]. 
