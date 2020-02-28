@@ -7,7 +7,7 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ScriptDatabaseEditor")]
+[assembly: AssemblyTitle("ScriptDatabaseEditor v1.11.0")]
 [assembly: AssemblyDescription("database.bin Editor For DATE A LIVE: Rio Reincarnation")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]

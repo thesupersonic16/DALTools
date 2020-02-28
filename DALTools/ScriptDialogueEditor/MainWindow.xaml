@@ -47,7 +47,7 @@
                                       ItemsSource="{Binding ScriptFile.DialogueCodes}">
                                 <ListView.View>
                                     <GridView AllowsColumnReorder="True">
-                                        <GridViewColumn Header="Type" Width="60"  DisplayMemberBinding="{Binding Type}"/>
+                                        <GridViewColumn Header="Type" Width="100"  DisplayMemberBinding="{Binding Type}"/>
                                         <GridViewColumn Header="Text" Width="650" DisplayMemberBinding="{Binding Text}"/>
                                     </GridView>
                                 </ListView.View>

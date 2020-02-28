@@ -22,7 +22,7 @@ namespace ScriptDatabaseEditor
     {
 
         public static string StartDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        public static string VersionString = "1.0.1";
+        public static string VersionString = "1.12.0";
         
         public static string DataBasePath = "";
         public static string[] Args;

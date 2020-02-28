@@ -98,7 +98,7 @@ namespace ScriptDialogueEditor
                         code.Brush = new SolidColorBrush(Color.FromArgb(0x30, 0x80, 0x00, 0x00));
                         break;
                     case "SetChoice":
-                        code.Type = "Opt";
+                        code.Type = "Choice";
                         code.ID = inst.GetArgument<string>(0);
                         code.Text = inst.GetArgument<string>(1);
                         code.Brush = new SolidColorBrush(Color.FromArgb(0x30, 0x80, 0x80, 0x00));
@@ -108,6 +108,19 @@ namespace ScriptDialogueEditor
                         code.ID = inst.GetArgument<string>(0);
                         code.Text = inst.GetArgument<string>(1);
                         code.Brush = new SolidColorBrush(Color.FromArgb(0x30, 0x80, 0x80, 0x80));
+                        break;
+                    case "EnableMonologue":
+                        byte mode = inst.GetArgument<byte>(0);
+                        code.Type = "Monologue";
+                        code.ID = inst.GetArgument<string>(0);
+                        code.Brush = new SolidColorBrush(Color.FromArgb(0x30, 0x80, 0x80, 0x40));
+                        switch (mode)
+                        {
+                            case 0: code.Text = "0: Hidden"; break;
+                            case 1: code.Text = "1: Show"; break;
+                            case 2: code.Text = "2: Unknown"; break;
+                            default: code.Text = mode + ": Unknown, Please report"; break;
+                        }
                         break;
                     default:
                         continue;

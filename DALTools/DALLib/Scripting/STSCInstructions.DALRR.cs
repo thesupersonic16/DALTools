@@ -11,6 +11,7 @@ namespace DALLib.Scripting
     {
         public static List<Instruction> DALRRInstructions = new List<Instruction>()
         {
+            // 0x00
             new Instruction("NOP", null),
             new Instruction("Exit", null),
             new Instruction("continue", null),
@@ -27,7 +28,7 @@ namespace DALLib.Scripting
             new Instruction("RandJump", new []{ AT_PointerArray }),
             new Instruction("Printf", new []{ AT_String }),
             new Instruction("FileJump", new []{ AT_String }),
-
+            // 0x10
             null, // FlgOnJump
             null, // FlgOffJump
             new Instruction("FlagSet", new []{ AT_Int16, AT_Int16, AT_Byte }),
@@ -44,7 +45,7 @@ namespace DALLib.Scripting
             new InstructionIf(),
             new InstructionSwitch("switch", null),
             null, // PrmRand
-
+            // 0x20
             new Instruction("DataBaseParam", new []{ AT_Byte, AT_DataBlock }),
             new Instruction("NewGameOpen", null),
             new Instruction("EventStartMes", new []{ AT_String }),
@@ -61,7 +62,7 @@ namespace DALLib.Scripting
             new Instruction("Dummy2D", null),
             new Instruction("Dummy2E", null),
             null, // SetEventNumber
-
+            // 0x30
             new Instruction("PlayMovie", new []{ AT_String, AT_Int16, AT_Byte }),
             new Instruction("BgmWait", new []{ AT_Byte, AT_Int16 }),
             new Instruction("BgmVolume", new []{ AT_Int32, AT_Int16 }),
@@ -78,7 +79,7 @@ namespace DALLib.Scripting
             new Instruction("Dummy3D", null),
             new Instruction("Dummy3E", null),
             new Instruction("Dummy3F", null),
-
+            // 0x40
             new Instruction("SetNowLoading", new []{ AT_Bool }),
             new Instruction("Fade", new []{ AT_Byte, AT_Int16, AT_Int16 }),
             new Instruction("PatternFade", new []{ AT_Int16, AT_Int16, AT_Int16 }),
@@ -95,7 +96,7 @@ namespace DALLib.Scripting
             new Instruction("Dummy4D", null),
             new Instruction("Dummy4E", null),
             new Instruction("Wait2", new []{ AT_Int32 }),
-
+            // 0x50
             new Instruction("Mes", new []{ AT_Int16, AT_Int16, AT_String, AT_Int16 }),
             new Instruction("MesWait", null),
             new Instruction("MesTitle", new []{ AT_Byte }),
@@ -112,7 +113,7 @@ namespace DALLib.Scripting
             new Instruction("BgOpen", new []{ AT_Int32, AT_Int32}), // MesWinOpen?
             new Instruction("BgClose", new []{ AT_Byte}),
             new Instruction("MaAnime", new []{ AT_Byte}),
-
+            // 0x60
             new Instruction("BgMove", new []{ AT_Byte, AT_Int32, AT_Int16}),
             new Instruction("BgScale", new []{ AT_Float, AT_Int16, AT_Byte, AT_Bool}),
             new Instruction("BustOpen", new []{ AT_Byte, AT_Int32, AT_Int32}),
@@ -129,7 +130,7 @@ namespace DALLib.Scripting
             new Instruction("Trophy", new []{ AT_Byte }),
             new Instruction("SetVibration", new []{ AT_Byte, AT_Float }), // NOTE: It's "Vibraiton" in-game, did they misspell vibration?
             new Instruction("BustQuake", new []{ AT_Byte, AT_Byte, AT_Int16}),
-
+            // 0x70
             new Instruction("BustFade", new []{ AT_Byte, AT_Float, AT_Float, AT_Int16}),
             new Instruction("BustCrossMove", null), // TODO
             new Instruction("BustTone", new []{ AT_Byte, AT_Byte}), // TODO
@@ -144,9 +145,9 @@ namespace DALLib.Scripting
             new Instruction("AmbiguousPowerFade", new []{ AT_Float, AT_Float, AT_Int16 }),
             new Instruction("SetBlur", new []{ AT_Int32, AT_Bool }),
             new Instruction("BlurPowerFade", new []{ AT_Float, AT_Float, AT_Int16}),
-            new Instruction("EnableMonologue", new [] { AT_Bool }), // TODO
+            new Instruction("EnableMonologue", new [] { AT_Byte }),
             new Instruction("SetMirage", new [] { AT_Float, AT_Bool }), // TODO
-            
+            // 0x80
             new Instruction("MiragePowerFade", new [] { AT_Int32, AT_Float, AT_Int16 }), // TODO
             new Instruction("MessageVoiceWait", new [] { AT_Byte }), // TODO
             new Instruction("SetRasterScroll", new [] { AT_Byte, AT_Float, AT_Int16, AT_Byte }),
@@ -162,7 +163,7 @@ namespace DALLib.Scripting
             new Instruction("DateRestNumber", new []{ AT_Byte }),
             new Instruction("MapTutorial", new []{ AT_Int16, AT_Int16 }),
             new Instruction("Ending", new []{ AT_Byte }),
-
+            // 0x90
             new Instruction("Set/Del+FixAuto", new []{ AT_Byte, AT_Byte, AT_Byte }),
             new Instruction("ExiLoopStop", new []{ AT_Int16, AT_Byte }),
             new Instruction("ExiEndWait", new []{ AT_Int16, AT_Byte }), // TODO
