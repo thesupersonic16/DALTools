@@ -405,14 +405,15 @@ namespace ScriptDatabaseEditor
                     var tex = new TEXFile();
                     using (var stream = new MemoryStream(data))
                     tex.Load(stream);
-                    try
-                    {
-                        tex.CreateBitmap(0, 0, width, height).Save(sfd.FileName, ImageFormat.Png);
-                    }
-                    catch
-                    {
+                    // TODO: Find out why the resoution in the config doesnt match with the game
+                    //try
+                    //{
+                    //    tex.CreateBitmap(0, 0, width, height).Save(sfd.FileName, ImageFormat.Png);
+                    //}
+                    //catch
+                    //{
                         tex.SaveSheetImage(sfd.FileName);
-                    }
+                    //}
                 }
                 pck.Dispose();
             }
