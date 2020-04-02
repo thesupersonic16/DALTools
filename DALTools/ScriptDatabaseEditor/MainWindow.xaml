@@ -43,6 +43,7 @@
                                 <StackPanel>
                                     <Image Margin="-10,-5,-10,0" VerticalAlignment="Top" Source="{Binding CG_IM}"></Image>
                                     <Button Margin="5,0,5,10" Content="Export Thumbnail Image" Click="CG_ExportThumbButton_Click"></Button>
+                                    <Button x:Name="CG_ExportImage" Margin="5,0,5,10" Content="Export Image" Click="CG_ExportImage_Click"></Button>
                                 </StackPanel>
                             </GroupBox>
                         </Grid>

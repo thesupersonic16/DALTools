@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -215,13 +216,14 @@ namespace ScriptDatabaseEditor
             var list = sender as ListView;
             if (list.SelectedIndex == -1)
                 return; // Return if no item is selected
-            
+
             // Check if files should not be loaded
             if (!_game.EnableResourceLoading)
                 return;
 
             int id = (list.SelectedItem as STSCFileDatabase.CGEntry).CGID;
             var game = (list.SelectedItem as STSCFileDatabase.CGEntry).GameID;
+            string filepath = Path.Combine(_game.GamePath, $"Data\\Data\\Ma\\{Consts.GAMEDIRNAME[(int)game]}\\MA{id:D6}.pck");
 
             if (_CGThumbnailTextureArchive.GetFileData($"{Consts.GAMEDIRNAME[(int)game]}/MA{id:D6}.tex") is byte[] data)
             {
@@ -232,6 +234,24 @@ namespace ScriptDatabaseEditor
 
                 CG_IM = ImageTools.ConvertToSource(tex.CreateBitmap());
             }
+            try
+            {
+                if (File.Exists(filepath))
+                {
+                    var pck = new PCKFile();
+                    pck.Load(filepath, true);
+                    CG_ExportImage.Visibility = pck.FileEntries.Where(t => t.FileName.EndsWith(".tex")).Count() == 1 ? Visibility.Visible : Visibility.Collapsed;
+                    pck.Dispose();
+                }
+                else
+                    CG_ExportImage.Visibility = Visibility.Collapsed;
+            }
+            catch
+            {
+                MessageBox.Show("Failed to open the CG archive. DAL: RR may also crash on this CG, Reinstalling the game is recommended!", "CG Load Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+                CG_ExportImage.Visibility = Visibility.Collapsed;
+            }
+
         }
 
         private void CG_ExportThumbButton_Click(object sender, RoutedEventArgs e)
@@ -353,6 +373,48 @@ namespace ScriptDatabaseEditor
             {
                 pages[i].ID = i;
                 _stscDatabase.ArtBookPages.Add(pages[i]);
+            }
+        }
+
+        private void CG_ExportImage_Click(object sender, RoutedEventArgs e)
+        {
+            // Show error if DAL: RR is not installed as its needed to export
+            if (!_game.EnableResourceLoading)
+            {
+                MessageBox.Show("Resource loading is currently disabled. Make sure DAL: RR is installed correctly", "Resource Loading Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var sfd = new SaveFileDialog();
+            sfd.Filter = "Portable Network Graphics (*.png)|*.png";
+            if (sfd.ShowDialog(this) == true)
+            {
+                if (CG_ListView.SelectedIndex == -1)
+                    return; // Return if no item is selected
+                int id = (CG_ListView.SelectedItem as STSCFileDatabase.CGEntry).CGID;
+                var game = (CG_ListView.SelectedItem as STSCFileDatabase.CGEntry).GameID;
+                var width = (CG_ListView.SelectedItem as STSCFileDatabase.CGEntry).TextureWidth;
+                var height = (CG_ListView.SelectedItem as STSCFileDatabase.CGEntry).TextureHeight;
+                string filepath = Path.Combine(_game.GamePath, $"Data\\Data\\Ma\\{Consts.GAMEDIRNAME[(int)game]}\\MA{id:D6}.pck");
+
+                var pck = new PCKFile();
+                pck.Load(filepath, true);
+
+                if (pck.GetFileData(pck.SearchForFile(".tex")) is byte[] data)
+                {
+                    var tex = new TEXFile();
+                    using (var stream = new MemoryStream(data))
+                    tex.Load(stream);
+                    try
+                    {
+                        tex.CreateBitmap(0, 0, width, height).Save(sfd.FileName, ImageFormat.Png);
+                    }
+                    catch
+                    {
+                        tex.SaveSheetImage(sfd.FileName);
+                    }
+                }
+                pck.Dispose();
             }
         }
     }
