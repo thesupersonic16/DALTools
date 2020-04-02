@@ -590,9 +590,16 @@ namespace DALLib.IO
             WriteNulls(offsetLength);
         }
 
+        public virtual bool HasOffset(string name)
+        {
+            return offsets.ContainsKey(name);
+        }
+
         public virtual void FillInOffset(string name,
             bool absolute = true, bool removeOffset = true)
         {
+            if (!HasOffset(name))
+                return;
             long curPos = OutStream.Position;
             WriteOffsetValueAtPos(offsets[name], (uint)curPos, absolute);
 
@@ -605,6 +612,8 @@ namespace DALLib.IO
         public virtual void FillInOffsetLong(string name,
             bool absolute = true, bool removeOffset = true)
         {
+            if (!HasOffset(name))
+                return;
             long curPos = OutStream.Position;
             WriteOffsetValueAtPos(offsets[name], (ulong)curPos, absolute);
 
@@ -617,6 +626,8 @@ namespace DALLib.IO
         public virtual void FillInOffset(string name, uint value,
             bool absolute = true, bool removeOffset = true)
         {
+            if (!HasOffset(name))
+                return;
             long curPos = OutStream.Position;
             WriteOffsetValueAtPos(offsets[name], value, absolute);
 
@@ -629,6 +640,8 @@ namespace DALLib.IO
         public virtual void FillInOffset(string name, ulong value,
             bool absolute = true, bool removeOffset = true)
         {
+            if (!HasOffset(name))
+                return;
             long curPos = OutStream.Position;
             WriteOffsetValueAtPos(offsets[name], value, absolute);
 

@@ -104,6 +104,8 @@ namespace DALLib.File
             // Write String Table
             for (int i = 0; i < strings.Count; ++i)
             {
+                if (!writer.HasOffset($"Strings_{i}"))
+                    continue;
                 writer.FillInOffset($"Strings_{i}");
                 writer.WriteNullTerminatedString(strings[i]);
             }

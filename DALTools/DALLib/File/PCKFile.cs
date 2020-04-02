@@ -258,6 +258,22 @@ namespace DALLib.File
                     FileEntries.Add(entry);
                 }
             }
+            SortFileList();
+        }
+
+        // TODO: Figure out how sorting works. 
+        public void SortFileList()
+        {
+            if (FileEntries.Any(t => t.FileName == "face.mpb"))
+            {
+                List<string> order = new List<string>() { ".mpb", ".tex", "layername.bin", "screen.txt", ".exl", ".uca.bin", "Config.txt", ".amb", "" };
+                FileEntries = FileEntries.OrderBy(t => order.FindIndex(tt => t.FileName.EndsWith(tt))).ToList();
+            }
+            if (FileEntries.Any(t => t.FileName.EndsWith(".MA")))
+            {
+                List<string> order = new List<string>() { ".MA", "" };
+                FileEntries = FileEntries.OrderBy(t => order.FindIndex(tt => t.FileName.EndsWith(tt))).ToList();
+            }
         }
 
         /// <summary>
