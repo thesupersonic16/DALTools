@@ -116,7 +116,7 @@ namespace DALLib.Scripting
             // 0x60
             new Instruction("BgMove", new []{ AT_Byte, AT_Int32, AT_Int16}),
             new Instruction("BgScale", new []{ AT_Float, AT_Int16, AT_Byte, AT_Bool}),
-            new Instruction("BustOpen", new []{ AT_Byte, AT_Int32, AT_Int32}),
+            new Instruction("BustOpen", new []{ AT_Byte, AT_Int32, AT_Byte, AT_Int16, AT_Byte}),
             new Instruction("BustClose", new []{ AT_Byte, AT_Int16}),
             new Instruction("BustMove", new []{ AT_Byte, AT_Int16, AT_Int16, AT_Int16, AT_Byte}),
             new Instruction("BustMoveAdd", new []{ AT_Byte, AT_Int16, AT_Int16, AT_Int16, AT_Byte}),
