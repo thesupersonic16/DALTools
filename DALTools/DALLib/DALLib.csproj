@@ -60,6 +60,7 @@
     <Compile Include="Exceptions\InvalidTextureFormatException.cs" />
     <Compile Include="Exceptions\STSCDisassembleException.cs" />
     <Compile Include="File\FontFile.cs" />
+    <Compile Include="File\MAFile.cs" />
     <Compile Include="File\STSCFileDatabase.cs" />
     <Compile Include="File\STSCFileDatabase.Reader.cs" />
     <Compile Include="File\STSCFileDatabase.Writer.cs" />

@@ -200,6 +200,22 @@ namespace DALLib.File
         }
 
         /// <summary>
+        /// Reads the found file into memory
+        /// </summary>
+        /// <param name="index">File index</param>
+        /// <returns>a byte array containing the file</returns>
+        public byte[] GetFileData(int index)
+        {
+            // Get File Entry
+            var entry = FileEntries[index];
+            // Check if preloaded
+            if (entry.Data != null)
+                return entry.Data;
+            _internalReader.JumpTo(entry.DataPosition);
+            return _internalReader.ReadBytes(entry.DataLength);
+        }
+
+        /// <summary>
         /// Sets the position of the main stream to the found file
         /// </summary>
         /// <param name="name">Name of the file</param>
@@ -211,6 +227,22 @@ namespace DALLib.File
                 t => t.FileName.ToLowerInvariant() == name.ToLowerInvariant());
             if (entry == null)
                 return null;
+            // Return a memory stream if the reader is closed, assuming all files are loaded into memory
+            if (_internalReader == null)
+                return new MemoryStream(entry.Data);
+            _internalReader.JumpTo(entry.DataPosition);
+            return new VirtualStream(_internalReader.BaseStream, entry.DataPosition, entry.DataLength, true);
+        }
+
+        /// <summary>
+        /// Sets the position of the main stream to the found file
+        /// </summary>
+        /// <param name="index">File index</param>
+        /// <returns>Stream to the file</returns>
+        public Stream GetFileStream(int index)
+        {
+            // Get File Entry
+            var entry = FileEntries[index];
             // Return a memory stream if the reader is closed, assuming all files are loaded into memory
             if (_internalReader == null)
                 return new MemoryStream(entry.Data);

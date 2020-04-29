@@ -234,24 +234,6 @@ namespace ScriptDatabaseEditor
 
                 CG_IM = ImageTools.ConvertToSource(tex.CreateBitmap());
             }
-            try
-            {
-                if (File.Exists(filepath))
-                {
-                    var pck = new PCKFile();
-                    pck.Load(filepath, true);
-                    CG_ExportImage.Visibility = pck.FileEntries.Where(t => t.FileName.EndsWith(".tex")).Count() == 1 ? Visibility.Visible : Visibility.Collapsed;
-                    pck.Dispose();
-                }
-                else
-                    CG_ExportImage.Visibility = Visibility.Collapsed;
-            }
-            catch
-            {
-                MessageBox.Show("Failed to open the CG archive. DAL: RR may also crash on this CG, Reinstalling the game is recommended!", "CG Load Error!", MessageBoxButton.OK, MessageBoxImage.Error);
-                CG_ExportImage.Visibility = Visibility.Collapsed;
-            }
-
         }
 
         private void CG_ExportThumbButton_Click(object sender, RoutedEventArgs e)
@@ -376,6 +358,7 @@ namespace ScriptDatabaseEditor
             }
         }
 
+        // TODO: Needs Rewriting
         private void CG_ExportImage_Click(object sender, RoutedEventArgs e)
         {
             // Show error if DAL: RR is not installed as its needed to export
@@ -385,37 +368,72 @@ namespace ScriptDatabaseEditor
                 return;
             }
 
+            if (CG_ListView.SelectedIndex == -1)
+                return; // Return if no item is selected
+            int id = (CG_ListView.SelectedItem as STSCFileDatabase.CGEntry).CGID;
+            var game = (CG_ListView.SelectedItem as STSCFileDatabase.CGEntry).GameID;
+
             var sfd = new SaveFileDialog();
+            sfd.FileName = $"{id}.png";
             sfd.Filter = "Portable Network Graphics (*.png)|*.png";
             if (sfd.ShowDialog(this) == true)
             {
-                if (CG_ListView.SelectedIndex == -1)
-                    return; // Return if no item is selected
-                int id = (CG_ListView.SelectedItem as STSCFileDatabase.CGEntry).CGID;
-                var game = (CG_ListView.SelectedItem as STSCFileDatabase.CGEntry).GameID;
-                var width = (CG_ListView.SelectedItem as STSCFileDatabase.CGEntry).TextureWidth;
-                var height = (CG_ListView.SelectedItem as STSCFileDatabase.CGEntry).TextureHeight;
-                string filepath = Path.Combine(_game.GamePath, $"Data\\Data\\Ma\\{Consts.GAMEDIRNAME[(int)game]}\\MA{id:D6}.pck");
-
-                var pck = new PCKFile();
-                pck.Load(filepath, true);
-
-                if (pck.GetFileData(pck.SearchForFile(".tex")) is byte[] data)
+                try
                 {
-                    var tex = new TEXFile();
-                    using (var stream = new MemoryStream(data))
-                    tex.Load(stream);
-                    // TODO: Find out why the resoution in the config doesnt match with the game
-                    //try
-                    //{
-                    //    tex.CreateBitmap(0, 0, width, height).Save(sfd.FileName, ImageFormat.Png);
-                    //}
-                    //catch
-                    //{
-                        tex.SaveSheetImage(sfd.FileName);
-                    //}
+                    string filepath = Path.Combine(_game.GamePath, $"Data\\Data\\Ma\\{Consts.GAMEDIRNAME[(int)game]}\\MA{id:D6}.pck");
+
+                    var pck = new PCKFile();
+                    var ma = new MAFile();
+                    pck.Load(filepath, true);
+                    using (var stream = new MemoryStream(pck.GetFileData(0)))
+                        ma.Load(stream);
+
+                    int width = (int)(ma.Layers[0].Verts[3].DestinX * ma.Layers[0].LayerWidth);
+                    int height = (int)(ma.Layers[0].Verts[3].DestinY * ma.Layers[0].LayerHeight);
+
+                    if (ma.Layers[0].Verts[3].DestinX == ma.Layers[0].LayerWidth)
+                    {
+                        width  = (int)ma.Layers[0].LayerWidth;
+                        height = (int)ma.Layers[0].LayerHeight;
+                    }
+
+                    var bytes = new byte[width * height * 4];
+                    for (int i = 0; i < ma.Layers.Count; ++i)
+                    {
+                        var layer = ma.Layers[i];
+                        var tex = new TEXFile();
+                        using (var stream = new MemoryStream(pck.GetFileData(layer.TextureID + 1)))
+                            tex.Load(stream);
+                        int sx = (int)(layer.Verts[0].SourceX * ma.Layers[i].LayerWidth);
+                        int dx = (int)(layer.Verts[0].DestinX * ma.Layers[i].LayerWidth + layer.LayerOffX);
+                        int sy = (int)(layer.Verts[0].SourceY * ma.Layers[i].LayerHeight);
+                        int dy = (int)(layer.Verts[0].DestinY * ma.Layers[i].LayerHeight + layer.LayerOffY);
+                        int sw = (int)(layer.Verts[3].SourceX * ma.Layers[i].LayerWidth);
+                        int sh = (int)(layer.Verts[3].SourceY * ma.Layers[i].LayerHeight);
+
+                        for (int y = 0; y < (sh - sy); ++y)
+                        {
+                            for (int x = 0; x < (sw - sx); ++x)
+                            {
+                                if ((y + sy) >= tex.SheetHeight || (x + sx) >= tex.SheetWidth)
+                                    break;
+                                int index = ((y + sy) * tex.SheetWidth + (x + sx)) * 4;
+                                if (tex.SheetData[index + 3] != 255)
+                                    continue;
+                                bytes[((y + dy) * width + x + dx) * 4 + 3] = tex.SheetData[index + 3];
+                                bytes[((y + dy) * width + x + dx) * 4 + 0] = tex.SheetData[index + 0];
+                                bytes[((y + dy) * width + x + dx) * 4 + 1] = tex.SheetData[index + 1];
+                                bytes[((y + dy) * width + x + dx) * 4 + 2] = tex.SheetData[index + 2];
+                            }
+                        }
+                        DALLib.Imaging.ImageTools.SaveImage(Path.Combine(Path.GetDirectoryName(sfd.FileName), Path.GetFileNameWithoutExtension(sfd.FileName) + $"_{i}.png"), width, height, bytes);
+                    }
+                    pck.Dispose();
                 }
-                pck.Dispose();
+                catch (Exception ex)
+                {
+                    new ExceptionWindow(ex, "Failed to export CG frames").ShowDialog();
+                }
             }
         }
     }
