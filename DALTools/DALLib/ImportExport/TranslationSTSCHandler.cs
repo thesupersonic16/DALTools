@@ -33,9 +33,9 @@ namespace DALLib.ImportExport
                         break;
                     case "Mes":
                         // Get name of the character from 
-                        string name = titleID == 0xFF ? "None" : database.Characters.FirstOrDefault(t => t.ID == titleID)?.FriendlyName;
+                        string name = titleID == 0xFF ? "None" : database?.Characters.FirstOrDefault(t => t.ID == titleID)?.FriendlyName;
                         // Add Entry to file
-                        lines.Add(new TranslationLine("Message", name, instruction.GetArgument<string>(4), ""));
+                        lines.Add(new TranslationLine("Message", name ?? $"Unknown [{titleID}]", instruction.GetArgument<string>(2), ""));
                         break;
                     case "SetChoice":
                         lines.Add(new TranslationLine("Choice", "", instruction.GetArgument<string>(1), ""));
