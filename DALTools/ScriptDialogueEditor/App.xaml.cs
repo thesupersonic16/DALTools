@@ -20,7 +20,7 @@ namespace ScriptDialogueEditor
     public partial class App : Application
     {
         public static string StartDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        public static string VersionString = "1.0.1";
+        public static string VersionString = "1.0.2";
         public static string ProgramName = "DATE A LIVE: Rio Reincarnation Script Dialogue Editor";
 
         public static string ScriptPath = "";
