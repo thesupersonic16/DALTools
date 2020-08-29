@@ -400,13 +400,24 @@ namespace ScriptDialogueEditor
                 }
                 // TODO: Add key option
                 // Import translation
-                TranslationSTSCHandler.ImportTranslation(index, ScriptFile, File.ReadAllText(ofd.FileName), !tag.Contains("nokey"));
-                // Save the script back into the archive
-                using (var stream = new MemoryStream())
+                try
                 {
-                    ScriptFile.ConvertToDialogueCode();
-                    ScriptFile.Save(stream);
-                    ScriptArchive.ReplaceFile(file.FileName, stream.ToArray());
+                    string data = "";
+                    using (var stream = File.Open(ofd.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (StreamReader reader = new StreamReader(stream))
+                        data = reader.ReadToEnd();
+                    TranslationSTSCHandler.ImportTranslation(index, ScriptFile, data, !tag.Contains("nokey"));
+                    // Save the script back into the archive
+                    using (var stream = new MemoryStream())
+                    {
+                        ScriptFile.ConvertToDialogueCode();
+                        ScriptFile.Save(stream);
+                        ScriptArchive.ReplaceFile(file.FileName, stream.ToArray());
+                    }
+                }
+                catch
+                {
+                    MessageBox.Show("Failed to open file! Possible another program is using it.", "Import Error!", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -458,12 +469,23 @@ namespace ScriptDialogueEditor
                     if (!File.Exists(filepath))
                         continue;
                     // Import translation
-                    TranslationSTSCHandler.ImportTranslation(index, script, File.ReadAllText(filepath), !tag.Contains("nokey"));
-                    // Save the script back into the archive
-                    using (var stream = new MemoryStream())
+                    try
                     {
-                        script.Save(stream);
-                        ScriptArchive.ReplaceFile(entry.FileName, stream.ToArray());
+                        string data = "";
+                        using (var stream = File.Open(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (StreamReader reader = new StreamReader(stream))
+                            data = reader.ReadToEnd();
+                        TranslationSTSCHandler.ImportTranslation(index, script, data, !tag.Contains("nokey"));
+                        // Save the script back into the archive
+                        using (var stream = new MemoryStream())
+                        {
+                            script.Save(stream);
+                            ScriptArchive.ReplaceFile(entry.FileName, stream.ToArray());
+                        }
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Failed to open file! Possible another program is using it.", "Import Error!", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }
