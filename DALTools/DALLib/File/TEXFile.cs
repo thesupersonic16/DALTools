@@ -34,7 +34,16 @@ namespace DALLib.File
             Unknown    = 0x0000_1000,
             Large      = 0x0000_2000,
             BGRA       = 0x0000_4000,
-            PNG        = 0x0001_0000
+            PNG        = 0x0001_0000  // TODO: Find out which file uses this
+        }
+
+        /// <summary>
+        /// Unknown. Used to flag loading PNGs
+        /// </summary>
+        public enum LoaderType
+        {
+            Default = 0x0000_0000,
+            PNG     = 0x0000_0001,
         }
 
         [Serializable]
@@ -86,6 +95,7 @@ namespace DALLib.File
                 reader.JumpBehind(11);
             uint buf = reader.ReadUInt32();
             Format format = (Format)(buf & 0xFFFFFF);
+            LoaderType loader = LoaderType.Default;
             byte unknown = (byte)(buf >> 24);
             int dataLength;
 
@@ -98,13 +108,15 @@ namespace DALLib.File
             }
             else
             {
-                int version = reader.ReadInt32();
+                loader = (LoaderType)reader.ReadInt16();
+                short version = reader.ReadInt16();
                 dataLength = reader.ReadInt32();
                 SheetWidth = reader.ReadInt16();
                 SheetHeight = reader.ReadInt16();
             }
 
-            bool useLZ77 = reader.PeekSignature() == "LZ77";
+            string dataSig = reader.PeekSignature();
+            bool useLZ77 = dataSig == "LZ77";
 
             // Read Image Data
             SheetData = reader.ReadBytes(dataLength);
@@ -114,7 +126,7 @@ namespace DALLib.File
                 SheetData = SheetData.DecompressLZ77();
 
             // Decompress/Process Image based on format
-            TEXConverter.Decode(this, format, reader);
+            TEXConverter.Decode(this, format, loader, reader);
 
             // Fix Alignment
             reader.FixPadding(UseSmallSig ? 0x04u : 0x08u);

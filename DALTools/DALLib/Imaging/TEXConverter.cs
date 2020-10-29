@@ -23,9 +23,31 @@ namespace DALLib.Imaging
     {
         public static void Decode(this TEXFile file, Format format, ExtendedBinaryReader reader)
         {
+            Decode(file, format, LoaderType.Default, reader);
+        }
+
+        public static void Decode(this TEXFile file, Format format, LoaderType loader, ExtendedBinaryReader reader)
+        {
             ImageBinary image;
             var endian = file.UseBigEndian ? Endian.BigEndian : Endian.LittleEndian;
-            if ((format & Format.DXT1) != 0)
+            
+            if ((format & Format.PNG) != 0 || (loader & LoaderType.PNG) != 0)
+            {
+                using (var endStream = new MemoryStream())
+                using (var stream = new MemoryStream(file.SheetData))
+                {
+                    var imagePNG = new Bitmap(Image.FromStream(stream));
+                    var bitmap = imagePNG.LockBits(new Rectangle(0, 0, file.SheetWidth, file.SheetHeight), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+                    file.SheetData = new byte[file.SheetWidth * file.SheetHeight * 4];
+                    Marshal.Copy(bitmap.Scan0, file.SheetData, 0, file.SheetWidth * file.SheetHeight * 4);
+                    // Flip Red and Blue channels as this converter does not support ARGB
+                    if (file.UseBigEndian || (loader & LoaderType.PNG) != 0)
+                        ImageTools.FlipColors(file.SheetData);
+                    imagePNG.UnlockBits(bitmap);
+                    imagePNG.Dispose();
+                }
+            }
+            else if ((format & Format.DXT1) != 0)
             {
                 image = new ImageBinary(file.SheetWidth, file.SheetHeight, PixelDataFormat.FormatDXT1Rgba,
                     endian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
@@ -67,22 +89,6 @@ namespace DALLib.Imaging
                     file.SheetData[i * 4 + 1] = colorpalette[indies[i] * 4 + 1];
                     file.SheetData[i * 4 + 2] = colorpalette[indies[i] * 4 + 2];
                     file.SheetData[i * 4 + 3] = colorpalette[indies[i] * 4 + 3];
-                }
-            }
-            else if ((format & Format.PNG) != 0)
-            {
-                using (var endStream = new MemoryStream())
-                using (var stream = new MemoryStream(file.SheetData))
-                {
-                    var imagePNG = new Bitmap(Image.FromStream(stream));
-                    var bitmap = imagePNG.LockBits(new Rectangle(0, 0, file.SheetWidth, file.SheetHeight), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-                    file.SheetData = new byte[file.SheetWidth * file.SheetHeight * 4];
-                    Marshal.Copy(bitmap.Scan0, file.SheetData, 0, file.SheetWidth * file.SheetHeight * 4);
-                    // Flip Red and Blue channels as this converter does not support ARGB
-                    if (file.UseBigEndian)
-                        ImageTools.FlipColors(file.SheetData);
-                    imagePNG.UnlockBits(bitmap);
-                    imagePNG.Dispose();
                 }
             }
             else if ((format & Format.BGRA) != 0)
