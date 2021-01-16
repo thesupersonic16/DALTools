@@ -43,9 +43,8 @@ namespace DALLib.File
             //   while DAL: RR has larger padding (0x14 for Signatures, 0x08 for Padding)
             //  This workaround works by checking the padding in the signature to determine the version
             int sigSize = reader.CheckDALSignature("Filename");
-            bool oldPCK = false;
             if (sigSize < 0x14)
-                oldPCK = true;
+                UseSmallSig = true;
 
             // The length of the Filename section
             int fileNameSectionSize = reader.ReadInt32();
@@ -56,7 +55,7 @@ namespace DALLib.File
             reader.JumpTo(fileNameSectionSize);
 
             // Makes sure the reader is aligned
-            reader.FixPadding(oldPCK ? 0x04u : 0x08u);
+            reader.FixPadding(UseSmallSig ? 0x04u : 0x08u);
 
             // Pack Section
             //  This section contains an array of file information and then all of it's data
@@ -84,7 +83,7 @@ namespace DALLib.File
             // Reads all the file names
             for (int i = 0; i < fileCount; ++i)
             {
-                int position = reader.ReadInt32() + (oldPCK ? 0xC : 0x18);
+                int position = reader.ReadInt32() + (UseSmallSig ? 0xC : 0x18);
                 FileEntries[i].FileName = reader.ReadStringElsewhere(position);
             }
 

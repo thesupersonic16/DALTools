@@ -19,15 +19,24 @@ namespace DALLib.File
             var strings = new List<string>();
             writer.WriteSignature("STSC");
             writer.AddOffset("EntryPosition");
-            writer.Write(0x07); // Version
-            writer.WriteSignature(ScriptName);
-            writer.WriteNulls((uint)(0x20 - ScriptName.Length)); // Pad Script Name
-            writer.Write(0x000607E3);
-            writer.Write((short)0x06);
-            writer.Write((short)0x0A);
-            writer.Write((short)0x06);
-            writer.Write((short)0x17);
-            writer.Write(ScriptID);
+            writer.Write(Version);
+            switch (Version)
+            {
+                case 4: // Date A Live: Twin Edition Rio Reincarnation (PSV)
+                    writer.Write((ushort)ScriptID);
+                    break;
+                case 7: // Date A Live: Rio Reincarnation (PC)
+                    writer.WriteSignature(ScriptName);
+                    writer.WriteNulls((uint)(0x20 - ScriptName.Length)); // Pad Script Name
+                    writer.Write(0x000607E3);
+                    writer.Write((short)0x06);
+                    writer.Write((short)0x0A);
+                    writer.Write((short)0x06);
+                    writer.Write((short)0x17);
+                    writer.Write(ScriptID);
+                    break;
+
+            }
             writer.FillInOffset("EntryPosition");
             foreach (var instruction in Instructions)
             {
@@ -50,8 +59,14 @@ namespace DALLib.File
             WriteStage7(writer);
             WriteStage8(writer);
             WriteStage9(writer);
-            WriteStage10(writer);
-            WriteStage11(writer);
+
+            // Older versions may not include art books and drama CDs
+            if (Version == 7)
+            {
+                WriteStage10(writer);
+                WriteStage11(writer);
+            }
+
             writer.FixPadding(0x10);
         }
 

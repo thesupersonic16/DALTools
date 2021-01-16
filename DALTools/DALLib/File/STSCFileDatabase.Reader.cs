@@ -64,16 +64,20 @@ namespace DALLib.File
             block = GetStreamBlockAndJump(8, fileReader);
             while (!EndOfBlock(fileReader, block))
                 Unknown4.Add(fileReader.ReadStruct<Unknown4Entry>());
-            
-            // Art Book Page
-            block = GetStreamBlockAndJump(9, fileReader);
-            while (!EndOfBlock(fileReader, block))
-                ArtBookPages.Add(fileReader.ReadStruct<ArtBookPageEntry>());
-            
-            // DramaCDs
-            block = GetStreamBlockAndJump(10, fileReader);
-            while (!EndOfBlock(fileReader, block))
-                DramaCDs.Add(fileReader.ReadStruct<DramaCDEntry>());
+
+            // Older versions may not include art books and drama CDs
+            if (Version == 7)
+            {
+                // Art Book Page
+                block = GetStreamBlockAndJump(9, fileReader);
+                while (!EndOfBlock(fileReader, block))
+                    ArtBookPages.Add(fileReader.ReadStruct<ArtBookPageEntry>());
+                
+                // DramaCDs
+                block = GetStreamBlockAndJump(10, fileReader);
+                while (!EndOfBlock(fileReader, block))
+                    DramaCDs.Add(fileReader.ReadStruct<DramaCDEntry>());
+            }
 
         }
 

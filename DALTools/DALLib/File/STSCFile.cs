@@ -33,6 +33,10 @@ namespace DALLib.File
         /// If the script should use the smaller headers
         /// </summary>
         public bool UseSmallHeader = false;
+        /// <summary>
+        /// The version of the script file (0x07 - Remake)
+        /// </summary>
+        public uint Version = 0x07;
 
         public override void Load(ExtendedBinaryReader reader, bool keepOpen = false)
         {
@@ -41,11 +45,19 @@ namespace DALLib.File
             if (sig == "STSC")
             { // Newer script format
                 uint headerSize = reader.ReadUInt32();
-                uint version = reader.ReadUInt32();
-                ScriptName = reader.ReadNullTerminatedString();
-                reader.JumpAhead((uint)(0x20 - (ScriptName.Length + 1)));
-                reader.JumpAhead(12);
-                ScriptID = reader.ReadUInt32();
+                Version = reader.ReadUInt32();
+                switch (Version)
+                {
+                    case 4: // Date A Live: Twin Edition Rio Reincarnation (PSV)
+                        ScriptID = reader.ReadUInt16();
+                        break;
+                    case 7: // Date A Live: Rio Reincarnation (PC)
+                        ScriptName = reader.ReadNullTerminatedString();
+                        reader.JumpAhead((uint)(0x20 - (ScriptName.Length + 1)));
+                        reader.JumpAhead(12);
+                        ScriptID = reader.ReadUInt32();
+                        break;
+                }
             }
             else
             { // Older script format
@@ -86,15 +98,24 @@ namespace DALLib.File
             var strings = new List<string>();
             writer.WriteSignature("STSC");
             writer.AddOffset("EntryPosition");
-            writer.Write(0x07); // Version
-            writer.WriteSignature(ScriptName);
-            writer.WriteNulls((uint) (0x20 - ScriptName.Length)); // Pad Script Name
-            writer.Write(0x000507E3);
-            writer.Write((short) 0x09);
-            writer.Write((short) 0x0D);
-            writer.Write((short) 0x19);
-            writer.Write((short) 0x0D);
-            writer.Write(ScriptID);
+            writer.Write(Version);
+            switch (Version)
+            {
+                case 4: // Date A Live: Twin Edition Rio Reincarnation (PSV)
+                    writer.Write((ushort)ScriptID);
+                    break;
+                case 7: // Date A Live: Rio Reincarnation (PC)
+                    writer.WriteSignature(ScriptName);
+                    writer.WriteNulls((uint)(0x20 - ScriptName.Length)); // Pad Script Name
+                    writer.Write(0x000507E3);
+                    writer.Write((short)0x09);
+                    writer.Write((short)0x0D);
+                    writer.Write((short)0x19);
+                    writer.Write((short)0x0D);
+                    writer.Write(ScriptID);
+                    break;
+            }
+
             writer.FillInOffset("EntryPosition");
             foreach (var instruction in Instructions)
             {
