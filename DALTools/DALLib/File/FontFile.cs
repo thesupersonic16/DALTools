@@ -23,6 +23,10 @@ namespace DALLib.File
         /// </summary>
         public float HeightScale = 0;
         /// <summary>
+        /// Set true if the font code supports non-monospace fonts
+        /// </summary>
+        public bool MonospaceOnly = false;
+        /// <summary>
         /// List of Characters defined in the font code
         /// </summary>
         public List<FontEntry> Characters = new List<FontEntry>();
@@ -44,9 +48,17 @@ namespace DALLib.File
                     Character = ReadReversedUTF8Char(reader),   // The read UTF8 character
                     XScale = reader.ReadSingle(),               // X position on the texture (Multiply by the textures width to get pixels)
                     YScale = reader.ReadSingle(),               // Y position on the texture (Multiply by the textures height to get pixels)
-                    Kerning = reader.ReadInt32(),               // -X offset for positioning when rendering
-                    Width = reader.ReadInt32()                  // The width of the character in pixels
                 };
+                if (!MonospaceOnly)
+                {
+                    fontEntry.Kerning = reader.ReadInt32();     // -X offset for positioning when rendering
+                    fontEntry.Width = reader.ReadInt32();       // The width of the character in pixels
+                }
+                else
+                {
+                    fontEntry.Width = CharacterHeight; // Force square character
+                }
+
                 Characters.Add(fontEntry);
             }
         }
@@ -63,17 +75,21 @@ namespace DALLib.File
             foreach (var entry in Characters)
             {
                 // Writes the character in UTF-8 in reverse byte order, Not sure why its like this
-                writer.Write(Encoding.UTF8.GetBytes(new[] { entry.Character }).Reverse().ToArray());
+                writer.Write(Encoding.UTF8.GetBytes(new[] {entry.Character}).Reverse().ToArray());
                 // Pads the character to be 4 bytes long
                 writer.FixPadding();
                 // X position on the texture
                 writer.Write(entry.XScale);
                 // Y position on the texture
                 writer.Write(entry.YScale);
-                // -X render offset
-                writer.Write(entry.Kerning);
-                // Width of the character in pixels
-                writer.Write(entry.Width);
+                // Write kerning and width if font code supports non-monospace fonts
+                if (!MonospaceOnly)
+                {
+                    // -X render offset
+                    writer.Write(entry.Kerning);
+                    // Width of the character in pixels
+                    writer.Write(entry.Width);
+                }
             }
         }
 

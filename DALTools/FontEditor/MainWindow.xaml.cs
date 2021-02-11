@@ -39,6 +39,8 @@ namespace FontEditor
         public int HoverIndex = 0;
 
         public bool Dragging = false;
+        public bool MonospaceOnly { get; set; } = false;
+
 
         public Point Anchor;
 
@@ -156,6 +158,7 @@ namespace FontEditor
             var fontCodeFilePath = PCKFontArchive.SearchForFile(".code");
             FontImageTexFile = new TEXFile();
             FontCodeFile = new FontFile();
+            FontCodeFile.MonospaceOnly = MonospaceOnly;
 
             // Load Font Code
             if (fontCodeFilePath != null)
@@ -208,6 +211,7 @@ namespace FontEditor
             // Recreate Objects
             FontImageTexFile = new TEXFile();
             FontCodeFile = new FontFile();
+            FontCodeFile.MonospaceOnly = MonospaceOnly;
 
             try
             {
@@ -534,5 +538,11 @@ namespace FontEditor
             UI_FontTest.Source = ImageTools.ConvertToSource(image);
         }
 
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            UI_WTextBox.IsEnabled = UI_KTextBox.IsEnabled = !MonospaceOnly;
+            UI_WTextBox.UpdateLayout();
+            UI_KTextBox.UpdateLayout();
+        }
     }
 }
