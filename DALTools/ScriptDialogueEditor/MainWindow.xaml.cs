@@ -120,8 +120,6 @@ namespace ScriptDialogueEditor
                     return "JPN";
                 case GameLanguage.Chinese:
                     return "CHN";
-                case GameLanguage.Korean:
-                    return "KOR";
                 default:
                     return "Data";
             }
