@@ -137,6 +137,14 @@ namespace DALLib.IO
                     JumpTo(ReadInt32(), absolute);
                 else
                     JumpTo(position, absolute);
+                if (stream.Position == (absolute ? 0 : Offset))
+                {
+                    if (position == 0)
+                        JumpTo(oldPos + 4);
+                    else
+                        JumpTo(oldPos);
+                    return null;
+                }
                 if (Offset > stream.Position)
                     Offset = (uint)stream.Position;
                 string s = ReadNullTerminatedString();

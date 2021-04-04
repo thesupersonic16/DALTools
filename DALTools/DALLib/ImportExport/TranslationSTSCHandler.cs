@@ -12,48 +12,83 @@ namespace DALLib.ImportExport
     public static class TranslationSTSCHandler
     {
         /// <summary>
-        /// List of all the valid file types for importing anmd exporting translations
+        /// List of all the valid file types for importing and exporting translations
         /// </summary>
-        public static TranslationBase[] FileTypes = new TranslationBase[] 
+        public static List<TranslationBase> FileTypes = new List<TranslationBase>
         { new TranslationTSVFile(), new TranslationCSVFile(), new TranslationPOFile() };
 
-        public static string ExportTranslation(int fileTypeIndex, STSCFile script, STSCFileDatabase database)
+        public static TranslationLine[] ExportTranslationLines(STSCFile script, STSCFileDatabase database, StringProcessor processor = null)
         {
+            if (processor == null)
+                processor = new StringProcessor();
             var lines = new List<TranslationLine>();
-            var fileType = FileTypes[fileTypeIndex];
-            // The ID of who is currently speaking
+            // The ID or name of the title, usually who is speaking
             byte titleID = 0xFF;
+            string titleName = null;
             // Loop through all the instructions
             foreach (var instruction in script.Instructions)
             {
                 switch (instruction.Name)
                 {
+                    case "Name":
+                        titleName = instruction.GetArgument<string>(0);
+                        if (titleName.Length == 0)
+                            titleName = null;
+                        break;
                     case "MesTitle":
                         titleID = instruction.GetArgument<byte>(0);
                         break;
+                    case "Message":
                     case "Mes":
                         // Get name of the character from 
-                        string name = titleID == 0xFF ? "None" : database?.Characters.FirstOrDefault(t => t.ID == titleID)?.FriendlyName;
+                        string name = titleName ?? (titleID == 0xFF ? "None" : database?.Characters.FirstOrDefault(t => t.ID == titleID)?.FriendlyName);
                         // Add Entry to file
-                        lines.Add(new TranslationLine("Message", name ?? $"Unknown [{titleID}]", instruction.GetArgument<string>(2), ""));
+                        lines.Add(new TranslationLine("Message", name ?? $"Unknown [{titleID}]", instruction.GetArgument<string>(2)));
                         break;
+                    case "Choice":
                     case "SetChoice":
-                        lines.Add(new TranslationLine("Choice", "", instruction.GetArgument<string>(1), ""));
+                        lines.Add(new TranslationLine("Choice", "", instruction.GetArgument<string>(1)));
                         break;
                     case "MapPlace":
-                        lines.Add(new TranslationLine("MapMarker", "", instruction.GetArgument<string>(1), ""));
+                        lines.Add(new TranslationLine("MapMarker", "", instruction.GetArgument<string>(1)));
                         break;
                     default:
                         continue;
                 }
             }
-            return fileType.ExportTranslation(lines.ToArray());
+            lines.ForEach(t =>
+            {
+                t.Comment = processor.Process(t.Comment);
+                t.Key = processor.Process(t.Key);
+            });
+            return lines.ToArray();
         }
 
-        public static void ImportTranslation(int fileTypeIndex, STSCFile script, string data, bool useKey = true)
+        public static string ExportTranslation(int fileTypeIndex, STSCFile script, STSCFileDatabase database, StringProcessor processor = null)
+        {
+            var fileType = FileTypes[fileTypeIndex];
+            return fileType.ExportTranslation(ExportTranslationLines(script, database, processor));
+        }
+
+        public static void ImportTranslation(int fileTypeIndex, STSCFile script, string data, bool useKey = true, StringProcessor processor = null)
         {
             var fileType = FileTypes[fileTypeIndex];
             var lines = fileType.ImportTranslation(data);
+            ImportTranslation(lines, script, useKey, processor);
+        }
+
+        public static void ImportTranslation(TranslationLine[] lines, STSCFile script, bool useKey = true, StringProcessor processor = null)
+        {
+            if (processor == null)
+                processor = new StringProcessor();
+
+            foreach (var line in lines)
+            {
+                line.Comment = processor.ProcessReverse(line.Comment);
+                line.Key = processor.ProcessReverse(line.Key);
+                line.Translation = processor.ProcessReverse(line.Translation);
+            }
+
             if (useKey)
             {
                 for (int i = 0; i < lines.Length; ++i)
@@ -62,8 +97,8 @@ namespace DALLib.ImportExport
                     if (string.IsNullOrEmpty(lines[i].Translation))
                         continue;
 
-                    foreach (var instruction in script.Instructions)
-                        setSTSCLine(lines[i], instruction, false);
+                    for (int ii = 0; ii < script.Instructions.Count; ++ii)
+                        SetSTSCLine(lines[i], script.Instructions, ii, false);
                 }
             }
             else
@@ -73,7 +108,7 @@ namespace DALLib.ImportExport
                 {
                     for (int instIndex = lastInstIndex; instIndex < script.Instructions.Count; ++instIndex)
                     {
-                        if (setSTSCLine(lines[i], script.Instructions[instIndex], true))
+                        if (SetSTSCLine(lines[i], script.Instructions, instIndex, true))
                         {
                             lastInstIndex = instIndex + 1;
                             break;
@@ -83,10 +118,12 @@ namespace DALLib.ImportExport
             }
         }
 
-        private static bool setSTSCLine(TranslationLine line, STSCInstructions.Instruction inst, bool ignoreKey)
+        private static bool SetSTSCLine(TranslationLine line, List<STSCInstructions.Instruction> instructions, int index, bool ignoreKey)
         {
+            var inst = instructions[index];
             switch (inst.Name)
             {
+                case "Message":
                 case "Mes":
                     // Check if the entry is a Message translation
                     if (!string.IsNullOrEmpty(line.Operator) && line.Operator != "Message")
@@ -95,9 +132,18 @@ namespace DALLib.ImportExport
                     if (inst.GetArgument<string>(2) == line.Key || ignoreKey)
                     {
                         inst.Arguments[2] = line.Translation;
+
+                        if (index <= 2) return true;
+                        for (int i = index; i > index - 3; --i)
+                            if (instructions[i].Name == "Name")
+                            {
+                                instructions[i].Arguments[0] = line.Comment;
+                                return true;
+                            }
                         return true;
                     }
                     break;
+                case "Choice":
                 case "SetChoice":
                     // Check if the entry is a Choice translation
                     if (!string.IsNullOrEmpty(line.Operator) && line.Operator != "Choice")

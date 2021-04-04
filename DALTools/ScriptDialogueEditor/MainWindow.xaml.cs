@@ -20,6 +20,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using NanoXLSX;
 using Path = System.IO.Path;
 
 namespace ScriptDialogueEditor
@@ -54,7 +55,7 @@ namespace ScriptDialogueEditor
             if (ScriptEdited && save)
                 SaveScript();
             // Load script file
-            ScriptFile = new STSCFileDialogue(ScriptDB);
+            ScriptFile = new STSCFileDialogue(ScriptDB, App.WorkingGame);
             ScriptFile.Load(ScriptArchive.GetFileStream(scriptName));
             // Write the script path to the config
             _config.LastOpenedScript = scriptName;
@@ -119,6 +120,8 @@ namespace ScriptDialogueEditor
                     return "JPN";
                 case GameLanguage.Chinese:
                     return "CHN";
+                case GameLanguage.Korean:
+                    return "KOR";
                 default:
                     return "Data";
             }
@@ -133,8 +136,8 @@ namespace ScriptDialogueEditor
             if (string.IsNullOrEmpty(App.ScriptPath))
                 App.ScriptPath = GetPathFromSteam();
 
-            // Load the database file if the script was found
-            if (!string.IsNullOrEmpty(App.ScriptPath))
+            // Load the database file if the script was found for DAL RR
+            if (!string.IsNullOrEmpty(App.ScriptPath) && App.WorkingGame == Game.DateALiveRioReincarnation)
             {
                 // Path to the database.bin file
                 string scriptDB = Path.Combine(Path.GetDirectoryName(App.ScriptPath), "database.bin");
@@ -157,9 +160,17 @@ namespace ScriptDialogueEditor
                 ScriptArchive.Load(App.ScriptPath, true);
                 // Load all the files into memory instead of streaming them
                 ScriptArchive.Preload();
+
+                // Load replacement table
+                string replacementTablePath = Path.Combine(Path.GetDirectoryName(App.ScriptPath), "replace.ini");
+                if (File.Exists(replacementTablePath))
+                    App.StringProcess.Load(File.ReadAllText(replacementTablePath, Encoding.UTF8));
+
                 // Load script from config or use default
-                LoadScript(string.IsNullOrEmpty(_config.LastOpenedScript) ? 
-                    ScriptArchive.FileEntries.First().FileName : _config.LastOpenedScript);
+                string fileName = string.IsNullOrEmpty(_config.LastOpenedScript) && ScriptArchive.FileEntries.Any(t =>
+                    t.FileName.ToLowerInvariant() == _config.LastOpenedScript.ToLowerInvariant())
+                    ? _config.LastOpenedScript : ScriptArchive.FileEntries.First().FileName;
+                LoadScript(fileName);
             }
             DataContext = null;
             DataContext = this;
@@ -254,8 +265,13 @@ namespace ScriptDialogueEditor
                             Preview.SetInstructionPointerMessage(addr);
                         }
                     }
-                    //code.Text = TranslateWithGoogle(code.Text);
-                    //ScriptEdited = true; // Mark script as edited
+                    break;
+                case "Name":
+                    if (new PropertyEditorMsg(code).ShowDialog() == true)
+                    {
+                        // Mark script as edited
+                        ScriptEdited = true;
+                    }
                     break;
                 case "Script":
                     if (Preview != null)
@@ -268,12 +284,12 @@ namespace ScriptDialogueEditor
                     if (new PropertyEditorMapPlace(code).ShowDialog() == true)
                         ScriptEdited = true; // Mark script as edited
                     break;
-                case "Opt":
+                case "Choice":
 
                     // Check if the choice links to a FileJump
                     int instIndex = ScriptFile.FindIndex(int.Parse(code.ID));
                     string scriptFile = "Not a FileJump Choice";
-                    for (int i = instIndex; i < instIndex + 5; ++i)
+                    for (int i = instIndex; i < instIndex + 30; ++i)
                         if (ScriptFile.Instructions[i].Name == "FileJump")
                         {
                             // Write the path to the script in which the choice will load
@@ -406,7 +422,7 @@ namespace ScriptDialogueEditor
                     using (var stream = File.Open(ofd.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     using (StreamReader reader = new StreamReader(stream))
                         data = reader.ReadToEnd();
-                    TranslationSTSCHandler.ImportTranslation(index, ScriptFile, data, !tag.Contains("nokey"));
+                    TranslationSTSCHandler.ImportTranslation(index, ScriptFile, data, !tag.Contains("nokey"), App.StringProcess);
                     // Save the script back into the archive
                     using (var stream = new MemoryStream())
                     {
@@ -414,6 +430,8 @@ namespace ScriptDialogueEditor
                         ScriptFile.Save(stream);
                         ScriptArchive.ReplaceFile(file.FileName, stream.ToArray());
                     }
+                    // Reload the current script
+                    LoadScript(ScriptArchive.FileEntries[ScriptListBox.SelectedIndex].FileName);
                 }
                 catch
                 {
@@ -439,7 +457,7 @@ namespace ScriptDialogueEditor
                 var script = new STSCFile();
                 using (var stream = ScriptArchive.GetFileStream(file.FileName))
                     script.Load(stream);
-                File.WriteAllText(sfd.FileName, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB), new UTF8Encoding(true));
+                File.WriteAllText(sfd.FileName, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB, App.StringProcess), new UTF8Encoding(true));
             }
         }
 
@@ -475,7 +493,7 @@ namespace ScriptDialogueEditor
                         using (var stream = File.Open(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         using (StreamReader reader = new StreamReader(stream))
                             data = reader.ReadToEnd();
-                        TranslationSTSCHandler.ImportTranslation(index, script, data, !tag.Contains("nokey"));
+                        TranslationSTSCHandler.ImportTranslation(index, script, data, !tag.Contains("nokey"), App.StringProcess);
                         // Save the script back into the archive
                         using (var stream = new MemoryStream())
                         {
@@ -518,8 +536,51 @@ namespace ScriptDialogueEditor
                         TranslationSTSCHandler.FileTypes[index].TypeExtension);
                     // Create the directory
                     Directory.CreateDirectory(Path.GetDirectoryName(filepath));
-                    File.WriteAllText(filepath, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB), new UTF8Encoding(true));
+                    File.WriteAllText(filepath, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB, App.StringProcess), new UTF8Encoding(true));
                 }
+            }
+        }
+
+        private void ImportTranslationWorkbookMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            string tag = ((MenuItem)sender)?.Tag as string;
+            var sfd = new OpenFileDialog
+            {
+                Filter = "Excel Workbook(*.xlsx)|*.xlsx",
+                FileName = "Script.xlsx",
+                Title = "Import Excel Workbook"
+            };
+            if (sfd.ShowDialog() == true)
+            {
+                var workbook = Workbook.Load(sfd.FileName);
+
+                foreach (var entry in ScriptArchive.FileEntries)
+                {
+                    var script = new STSCFile();
+                    using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                        script.Load(stream);
+
+                    try
+                    {
+                        var worksheet = workbook.Worksheets.FirstOrDefault(t => entry.FileName.Contains(t.SheetName));
+                        var lines = TranslationXLSXFile.ImportWorksheet(worksheet);
+                        TranslationSTSCHandler.ImportTranslation(lines, script, !tag.Contains("nokey"), App.StringProcess);
+                        // Save the script back into the archive
+                        using (var stream = new MemoryStream())
+                        {
+                            script.Save(stream);
+                            ScriptArchive.ReplaceFile(entry.FileName, stream.ToArray());
+                        }
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Failed to open file! Possible another program is using it.", "Import Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                // Reload the current script
+                if (ScriptListBox.SelectedIndex == -1)
+                    return;
+                LoadScript(ScriptArchive.FileEntries[ScriptListBox.SelectedIndex].FileName);
             }
         }
 
@@ -532,27 +593,27 @@ namespace ScriptDialogueEditor
                 // Add filter for all supported files
                 filter = "Supported Translation Table Files (";
                 // Loop through all the supported file types
-                for (int i = 0; i < filetypes.Length; ++i)
+                for (int i = 0; i < filetypes.Count; ++i)
                 {
                     if (i != 0)
                         filter += ';';
                     filter += $"*{filetypes[i].TypeExtension}";
                 }
                 filter += ")|";
-                for (int i = 0; i < filetypes.Length; ++i)
+                for (int i = 0; i < filetypes.Count; ++i)
                 {
                     if (i != 0)
                         filter += ';';
                     filter += $"*{filetypes[i].TypeExtension}";
                 }
                 // Add each file type to its own filter
-                for (int i = 0; i < filetypes.Length; ++i)
+                for (int i = 0; i < filetypes.Count; ++i)
                     filter += $"|{filetypes[i].TypeName} Files (*{filetypes[i].TypeExtension})|*{filetypes[i].TypeExtension}";
             }
             else
             {
                 // Add each file type to its own filter
-                for (int i = 0; i < filetypes.Length; ++i)
+                for (int i = 0; i < filetypes.Count; ++i)
                 {
                     if (!string.IsNullOrEmpty(filter))
                         filter += '|';

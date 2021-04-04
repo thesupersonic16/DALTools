@@ -239,7 +239,9 @@ namespace STSCTool
                     return $"{instruction.GetArgument<float>(index)}f";
                 case STSCInstructions.ArgumentType.AT_String:
                 case STSCInstructions.ArgumentType.AT_StringPtr:
-                    return $"\"{instruction.GetArgument<string>(index).Replace("\"", "\\\"")}\"";
+                    if (instruction.GetArgument<string>(index) != null)
+                        return $"\"{instruction.GetArgument<string>(index).Replace("\"", "\\\"")}\"";
+                    return "null";
             }
             return "";
         }

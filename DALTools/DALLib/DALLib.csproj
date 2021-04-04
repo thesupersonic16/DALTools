@@ -80,10 +80,12 @@
     <Compile Include="IO\DataSizeAttribute.cs" />
     <Compile Include="IO\VirtualStream.cs" />
     <Compile Include="Misc\GameID.cs" />
+    <Compile Include="Misc\StringProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Imaging\TEXConverter.cs" />
     <Compile Include="Scripting\STSCInstructions.cs" />
     <Compile Include="Scripting\STSCInstructions.DALRR.cs" />
+    <Compile Include="Scripting\STSCInstructions.PBB.cs" />
     <Compile Include="Scripting\STSCMacros.cs" />
   </ItemGroup>
   <ItemGroup>

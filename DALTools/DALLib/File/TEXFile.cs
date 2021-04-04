@@ -158,7 +158,7 @@ namespace DALLib.File
             }
 
             // Anime
-            reader.FixPadding(0x8);
+            reader.FixPadding(UseSmallSig ? 0x04u : 0x08u);
             sigSize = reader.CheckDALSignature("Anime");
             if (sigSize < 4)
                 return;
@@ -183,24 +183,26 @@ namespace DALLib.File
 
             // Format
             var format = Format.BGRA;
-            bool flag1 = false;
 
-            writer.Write((int)(format | 0 << 24));
-            if (flag1)
+            if (UseSmallSig)
             {
+                // TODO: Check if this is correct. This works for the PSV version of DAL: RR
+                writer.Write((int)format | (0x81 << 24));
                 writer.AddOffset("DataLength");
                 writer.Write(SheetWidth);
                 writer.Write(SheetHeight);
             }
             else
             {
+                writer.Write((int)format);
                 writer.Write(0x8100000);
                 writer.AddOffset("DataLength");
                 writer.Write((short)SheetWidth);
                 writer.Write((short)SheetHeight);
             }
+
             writer.Write(SheetData);
-            writer.FillInOffset("DataLength", (uint)writer.BaseStream.Position - (Sigless ? 0x10u : 0x28u));
+            writer.FillInOffset("DataLength", (uint)SheetData.Length);
 
             // Sigless files do not have Parts or Anime
             if (Sigless)
@@ -208,8 +210,9 @@ namespace DALLib.File
             
             // Parts
             writer.FillInOffset("HeaderSize");
-            long header = writer.BaseStream.Position;
+            writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
             writer.WriteDALSignature("Parts", UseSmallSig);
+            long header = writer.BaseStream.Position;
             writer.AddOffset("HeaderSize");
             writer.Write(Frames.Count);
 
@@ -223,8 +226,8 @@ namespace DALLib.File
                 writer.Write(frame.RightScale);
                 writer.Write(frame.BottomScale);
             }
-            writer.FillInOffset("HeaderSize", (uint)(writer.BaseStream.Position - header));
-            writer.FixPadding(0x8);
+            writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
+            writer.FillInOffset("HeaderSize", (uint)(writer.BaseStream.Position - header + (UseSmallSig ? 0x08 : 0x00)));
 
             // Anime
             header = writer.BaseStream.Position;

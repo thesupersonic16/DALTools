@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using DALLib;
 
 namespace ScriptDialogueEditor
 {
@@ -20,10 +21,13 @@ namespace ScriptDialogueEditor
     public partial class App : Application
     {
         public static string StartDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        public static string VersionString = "1.0.2";
+        public static string VersionString = "1.0.3";
         public static string ProgramName = "DATE A LIVE: Rio Reincarnation Script Dialogue Editor";
 
         public static string ScriptPath = "";
+        public static Game WorkingGame = Game.DateALiveRioReincarnation;
+        public static StringProcessor StringProcess = new StringProcessor();
+
 
         // Debug
         public static string[] Args;
@@ -47,6 +51,11 @@ namespace ScriptDialogueEditor
 #endif
             if (args.Length > 0)
                 ScriptPath = args[0];
+            if (args.Length > 1)
+            {
+                if (args[1] == "pbb")
+                    WorkingGame = Game.PsychedelicaOfTheBlackButterfly;
+            }
             var application = new App();
             application.InitializeComponent();
             application.ShutdownMode = ShutdownMode.OnMainWindowClose;

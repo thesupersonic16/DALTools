@@ -35,6 +35,10 @@ namespace DALLib.ImportExport
                 Key = key;
                 Translation = translation;
             }
+            public TranslationLine(string @operator, string comment, string key) : this(@operator, comment, key, "")
+            {
+            }
+
         }
     }
 }

@@ -29,8 +29,8 @@ namespace ScriptDialogueEditor.UI
             InitializeComponent();
             _code = code;
             // Converts LF to escaped CRLF
-            NewMessage = code.Text.Replace("\\n", "\r\n");
-            OldMessage = code.Text;
+            NewMessage = code.TextPreview.Replace("\\n", "\r\n");
+            OldMessage = code.Text.Replace("\\n", "\r\n");
             DataContext = this;
         }
 
@@ -45,7 +45,7 @@ namespace ScriptDialogueEditor.UI
         private void ButtonSave_Click(object sender, RoutedEventArgs e)
         {
             // Converts CRLF to escaped LF
-            _code.Text = NewMessage.Replace("\r\n", "\\n");
+            _code.TextPreview = NewMessage.Replace("\r\n", "\\n");
             DialogResult = true;
             Close();
         }

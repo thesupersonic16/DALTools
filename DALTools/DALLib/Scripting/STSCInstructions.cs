@@ -158,6 +158,11 @@ namespace DALLib.Scripting
                     case AT_String:
                         if (strings == null)
                             break;
+                        if (value == null)
+                        {
+                            writer.Write(0);
+                            break;
+                        }
                         writer.AddOffset($"Strings_{strings.Count}");
                         strings.Add((string)value);
                         break;

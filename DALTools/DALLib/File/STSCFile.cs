@@ -123,11 +123,18 @@ namespace DALLib.File
                 instruction.Write(writer, ref ManualCount, strings);
             }
             // Write String Table
+            Dictionary<string, uint> writtenStrings = new Dictionary<string, uint>();
             for (int i = 0; i < strings.Count; ++i)
             {
                 if (!writer.HasOffset($"Strings_{i}"))
                     continue;
+                if (writtenStrings.ContainsKey(strings[i]))
+                {
+                    writer.FillInOffset($"Strings_{i}", writtenStrings[strings[i]]);
+                    continue;
+                }
                 writer.FillInOffset($"Strings_{i}");
+                writtenStrings.Add(strings[i], (uint)writer.BaseStream.Position);
                 writer.WriteNullTerminatedString(strings[i]);
             }
             writer.FixPadding(0x10);
@@ -144,9 +151,11 @@ namespace DALLib.File
         public int FindIndex(int address)
         {
             int tempAddress = 0x3C;
+            if (Version == 4)
+                tempAddress = 0x0E;
             for (int i = 0; i < Instructions.Count; ++i)
             {
-                if (tempAddress == address)
+                if (tempAddress >= address)
                     return i;
                 tempAddress += Instructions[i].GetInstructionSize();
             }

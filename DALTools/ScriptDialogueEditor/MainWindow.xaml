@@ -33,6 +33,7 @@
                                     <MenuItem Header="Batch Import Translation"                 Tag=""      Click="BatchImportTranslationMenuItem_Click"/>
                                     <MenuItem Header="Batch Import Translation (Without Key)"   Tag="nokey" Click="BatchImportTranslationMenuItem_Click"/>
                                     <MenuItem Header="Batch Export Translation"                 Tag=""      Click="BatchExportTranslationMenuItem_Click"/>
+                                    <MenuItem Header="Import XLSX Translation (Without Key)"    Tag="nokey" Click="ImportTranslationWorkbookMenuItem_Click"/>
                                 </ContextMenu>
                                 <Style TargetType="{x:Type ListBoxItem}">
                                     <Setter Property="ContextMenu" Value="{StaticResource ScriptListBoxContextMenu}"/>
@@ -48,7 +49,7 @@
                                 <ListView.View>
                                     <GridView AllowsColumnReorder="True">
                                         <GridViewColumn Header="Type" Width="100"  DisplayMemberBinding="{Binding Type}"/>
-                                        <GridViewColumn Header="Text" Width="650" DisplayMemberBinding="{Binding Text}"/>
+                                        <GridViewColumn Header="Text" Width="650" DisplayMemberBinding="{Binding TextPreview}"/>
                                     </GridView>
                                 </ListView.View>
                                 <ListView.Resources>
