@@ -63,17 +63,21 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CharaFile.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="DALRRLivePreview.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameLanguage.cs" />
     <Compile Include="ImportExport\TranslationXLSXFile.cs" />
     <Compile Include="ProcessMemory.cs" />
+    <Compile Include="ScriptVersion.cs" />
     <Compile Include="Steam.cs" />
+    <Compile Include="STSC2FileDialogue.cs" />
     <Compile Include="STSCFileDialogue.cs" />
     <Compile Include="UI\AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Converters.cs" />
     <Compile Include="UI\ExceptionWindow.xaml.cs">
       <DependentUpon>ExceptionWindow.xaml</DependentUpon>
     </Compile>

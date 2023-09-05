@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace ScriptDialogueEditor
 {
-    public enum Game
+    public enum ScriptVersion
     {
-        DateALiveRioReincarnation,
-        PsychedelicaOfTheBlackButterfly,
-        DateALiveRenDystopia
+        STSC1,
+        STSC2
     }
 }

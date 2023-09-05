@@ -36,7 +36,13 @@ namespace ScriptDialogueEditor
 
         public PCKFile ScriptArchive { get; set; }
         public STSCFileDialogue ScriptFile { get; set; }
+        public STSC2FileDialogue ScriptFilev2 { get; set; }
         public STSCFileDatabase ScriptDB { get; set; }
+
+        // STSC2
+        public Dictionary<short, string> CharacterNames { get; set; } = new Dictionary<short, string>() { { 0xFF, "None" } };
+
+        public bool IsScriptv2 => App.ScriptVersion == ScriptVersion.STSC2;
 
         public List<PCKFile.FileEntry> ScriptArchiveFiles => ScriptArchive.FileEntries;
         public Config Config => _config;
@@ -55,8 +61,16 @@ namespace ScriptDialogueEditor
             if (ScriptEdited && save)
                 SaveScript();
             // Load script file
-            ScriptFile = new STSCFileDialogue(ScriptDB, App.WorkingGame);
-            ScriptFile.Load(ScriptArchive.GetFileStream(scriptName));
+            if (IsScriptv2)
+            {
+                ScriptFilev2 = new STSC2FileDialogue(CharacterNames);
+                ScriptFilev2.Load(ScriptArchive.GetFileStream(scriptName));
+            }
+            else
+            {
+                ScriptFile = new STSCFileDialogue(ScriptDB, App.WorkingGame);
+                ScriptFile.Load(ScriptArchive.GetFileStream(scriptName));
+            }
             // Write the script path to the config
             _config.LastOpenedScript = scriptName;
             // Mark script as not edited
@@ -67,16 +81,33 @@ namespace ScriptDialogueEditor
 
         public void SaveScript()
         {
-            if (ScriptFile != null)
+            if (IsScriptv2)
             {
-                using (var stream = new MemoryStream())
+                if (ScriptFilev2 != null)
                 {
-                    // Builds the script file and saves it to the stream
-                    ScriptFile.Save(stream);
-                    // Replaces the file that was in the archive with the newly built script
-                    ScriptArchive.ReplaceFile(_config.LastOpenedScript, stream.ToArray());
+                    using (var stream = new MemoryStream())
+                    {
+                        // Builds the script file and saves it to the stream
+                        ScriptFilev2.Save(stream);
+                        // Replaces the file that was in the archive with the newly built script
+                        ScriptArchive.ReplaceFile(_config.LastOpenedScript, stream.ToArray());
+                    }
+                    ScriptEdited = false;
                 }
-                ScriptEdited = false;
+            }
+            else
+            {
+                if (ScriptFile != null)
+                {
+                    using (var stream = new MemoryStream())
+                    {
+                        // Builds the script file and saves it to the stream
+                        ScriptFile.Save(stream);
+                        // Replaces the file that was in the archive with the newly built script
+                        ScriptArchive.ReplaceFile(_config.LastOpenedScript, stream.ToArray());
+                    }
+                    ScriptEdited = false;
+                }
             }
         }
 
@@ -86,7 +117,7 @@ namespace ScriptDialogueEditor
         public void UpdateTitle()
         {
             string title = App.ProgramName;
-            if (ScriptFile != null)
+            if (ScriptFile != null || ScriptFilev2 != null)
                 title += $" - {_config.LastOpenedScript}";
             if (ScriptEdited)
                 title += "*";
@@ -133,7 +164,7 @@ namespace ScriptDialogueEditor
             // If path is not set at startup, try find the file from the game
             if (string.IsNullOrEmpty(App.ScriptPath))
                 App.ScriptPath = GetPathFromSteam();
-
+            
             // Load the database file if the script was found for DAL RR
             if (!string.IsNullOrEmpty(App.ScriptPath) && App.WorkingGame == Game.DateALiveRioReincarnation)
             {
@@ -151,6 +182,27 @@ namespace ScriptDialogueEditor
                         "Voice IDs will be used instead of character names without the database.bin file");
                 }
             }
+
+            // Load character data if scripts are from DAL RD
+            if (!string.IsNullOrEmpty(App.ScriptPath) && App.WorkingGame == Game.DateALiveRenDystopia)
+            {
+                // Load character data
+                string path = Path.Combine(Path.GetDirectoryName(App.ScriptPath), "data_chara.bin");
+                if (File.Exists(path))
+                {
+                    var charaFile = new CharaFile();
+                    charaFile.Load(path);
+                    foreach (var chara in charaFile.CharaEntries)
+                        CharacterNames.Add((short)chara.No, chara.Name);
+                }
+                else
+                {
+                    MessageBox.Show("data_chara.bin is missing!\n" +
+                        "Voice IDs will be used instead of character names");
+                }
+            }
+
+
             // Load Script Archive
             ScriptArchive = new PCKFile();
             if (!string.IsNullOrEmpty(App.ScriptPath))
@@ -165,11 +217,16 @@ namespace ScriptDialogueEditor
                     App.StringProcess.Load(File.ReadAllText(replacementTablePath, Encoding.UTF8));
 
                 // Load script from config or use default
-                string fileName = string.IsNullOrEmpty(_config.LastOpenedScript) && ScriptArchive.FileEntries.Any(t =>
+                string fileName = !string.IsNullOrEmpty(_config.LastOpenedScript) && ScriptArchive.FileEntries.Any(t =>
                     t.FileName.ToLowerInvariant() == _config.LastOpenedScript.ToLowerInvariant())
                     ? _config.LastOpenedScript : ScriptArchive.FileEntries.First().FileName;
                 LoadScript(fileName);
             }
+
+            // Fix bindings
+            BindingOperations.SetBinding(ScriptListView, ListView.ItemsSourceProperty,
+                new Binding(IsScriptv2 ? "ScriptFilev2.DialogueCodes" : "ScriptFile.DialogueCodes") { Source = this });
+
             DataContext = null;
             DataContext = this;
             var dispatcherTimer = new DispatcherTimer();
@@ -211,7 +268,7 @@ namespace ScriptDialogueEditor
                         ScriptListView.ScrollIntoView(ScriptListView.Items[0]);
                     return;
                 }
-                // Scipt that user is trying to load is not the right script
+                // Script that user is trying to load is not the right script
                 var currentScript = ScriptArchiveFiles.FindIndex(t => t.FileName.Contains(scriptName));
                 if (currentScript != -1)
                 {
@@ -232,13 +289,20 @@ namespace ScriptDialogueEditor
             var list = sender as ListBox;
             if (list.SelectedIndex == -1)
                 return; // Return if no item is selected
-            var code = ScriptFile.DialogueCodes[list.SelectedIndex];
+            
+            STSCFileDialogue.DialogueCode code;
+            if (IsScriptv2)
+                code = ScriptFilev2.DialogueCodes[list.SelectedIndex];
+            else
+                code = ScriptFile.DialogueCodes[list.SelectedIndex];
+            
             switch (code.Type)
             {
                 case "Title":
                     break;
                 case "Voice":
                     break;
+                case "Mes":
                 case "Msg":
                     if (new PropertyEditorMsg(code).ShowDialog() == true)
                     {
@@ -265,12 +329,8 @@ namespace ScriptDialogueEditor
                     }
                     break;
                 case "Name":
-                    if (new PropertyEditorMsg(code).ShowDialog() == true)
-                    {
-                        // Mark script as edited
-                        ScriptEdited = true;
-                    }
                     break;
+                case "FileJump":
                 case "Script":
                     if (Preview != null)
                         Preview.SetInstructionPointerMessage(ScriptFile.FindAddress(code.Index));
@@ -283,7 +343,6 @@ namespace ScriptDialogueEditor
                         ScriptEdited = true; // Mark script as edited
                     break;
                 case "Choice":
-
                     // Check if the choice links to a FileJump
                     int instIndex = ScriptFile.FindIndex(int.Parse(code.ID));
                     string scriptFile = "Not a FileJump Choice";
@@ -330,27 +389,46 @@ namespace ScriptDialogueEditor
         {
             var ofd = new OpenFileDialog
             {
-                Filter = "DATE A LIVE Archives (*.pck)|*.pck"
+                Filter = "Sting Pack (*.pck)|*.pck"
             };
             if (ofd.ShowDialog() == true)
             {
-                // Load the database file if the script was found
                 if (!string.IsNullOrEmpty(ofd.FileName))
-                {
-                    // Path to the database.bin file
-                    string scriptDB = Path.Combine(Path.GetDirectoryName(ofd.FileName), "database.bin");
-                    // Check if the database exists
-                    if (File.Exists(scriptDB))
+                { 
+                    if (App.WorkingGame == Game.DateALiveRenDystopia)
                     {
-                        ScriptDB = new STSCFileDatabase();
-                        ScriptDB.Load(scriptDB);
+                        // Load character data
+                        string path = Path.Combine(Path.GetDirectoryName(ofd.FileName), "data_chara.bin");
+                        if (File.Exists(path))
+                        {
+                            var charaFile = new CharaFile();
+                            charaFile.Load(path);
+                            foreach (var chara in charaFile.CharaEntries)
+                                CharacterNames.Add((short)chara.No, chara.Name);
+                        }
+                        else
+                        {
+                            MessageBox.Show("data_chara.bin is missing!\n" +
+                                "Voice IDs will be used instead of character names");
+                        }
                     }
                     else
                     {
-                        MessageBox.Show("Could not find database.bin!\n" +
-                            "Voice IDs will be used instead of character names without the database.bin file");
+                        // Load the database file if the script was found
+                        string scriptDB = Path.Combine(Path.GetDirectoryName(ofd.FileName), "database.bin");
+                        // Check if the database exists
+                        if (File.Exists(scriptDB))
+                        {
+                            ScriptDB = new STSCFileDatabase();
+                            ScriptDB.Load(scriptDB);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Could not find database.bin!\n" +
+                                "Voice IDs will be used instead of character names without the database.bin file");
+                        }
                     }
-                }
+                }                
                 // Load Script Archive
                 ScriptArchive = new PCKFile();
                 ScriptArchive.Load(App.ScriptPath = ofd.FileName, true);
@@ -420,12 +498,23 @@ namespace ScriptDialogueEditor
                     using (var stream = File.Open(ofd.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     using (StreamReader reader = new StreamReader(stream))
                         data = reader.ReadToEnd();
-                    TranslationSTSCHandler.ImportTranslation(index, ScriptFile, data, !tag.Contains("nokey"), App.StringProcess);
+                    if (IsScriptv2)
+                        TranslationSTSCHandler.ImportTranslation(index, ScriptFilev2, data, !tag.Contains("nokey"), App.StringProcess);
+                    else
+                        TranslationSTSCHandler.ImportTranslation(index, ScriptFile, data, !tag.Contains("nokey"), App.StringProcess);
                     // Save the script back into the archive
                     using (var stream = new MemoryStream())
                     {
-                        ScriptFile.ConvertToDialogueCode();
-                        ScriptFile.Save(stream);
+                        if (IsScriptv2)
+                        {
+                            ScriptFilev2.ConvertToDialogueCode();
+                            ScriptFilev2.Save(stream);
+                        }
+                        else
+                        {
+                            ScriptFile.ConvertToDialogueCode();
+                            ScriptFile.Save(stream);
+                        }
                         ScriptArchive.ReplaceFile(file.FileName, stream.ToArray());
                     }
                     // Reload the current script
@@ -452,10 +541,21 @@ namespace ScriptDialogueEditor
             {
                 // Gets the index of the filetype
                 int index = TranslationSTSCHandler.FileTypes.ToList().FindIndex(t => sfd.FileName.Contains(t.TypeExtension));
-                var script = new STSCFile();
-                using (var stream = ScriptArchive.GetFileStream(file.FileName))
-                    script.Load(stream);
-                File.WriteAllText(sfd.FileName, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB, App.StringProcess), new UTF8Encoding(true));
+
+                if (IsScriptv2)
+                {
+                    var script = new STSC2File();
+                    using (var stream = ScriptArchive.GetFileStream(file.FileName))
+                        script.Load(stream);
+                    File.WriteAllText(sfd.FileName, TranslationSTSCHandler.ExportTranslation(index, ScriptFilev2, CharacterNames, App.StringProcess), new UTF8Encoding(true));
+                }
+                else
+                {
+                    var script = new STSCFile();
+                    using (var stream = ScriptArchive.GetFileStream(file.FileName))
+                        script.Load(stream);
+                    File.WriteAllText(sfd.FileName, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB, App.StringProcess), new UTF8Encoding(true));
+                }
             }
         }
 
@@ -477,8 +577,13 @@ namespace ScriptDialogueEditor
                 foreach (var entry in ScriptArchive.FileEntries)
                 {
                     var script = new STSCFile();
-                    using (var stream = ScriptArchive.GetFileStream(entry.FileName))
-                        script.Load(stream);
+                    var scriptv2 = new STSC2File();
+                    if (IsScriptv2)
+                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                            scriptv2.Load(stream);
+                    else
+                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                            script.Load(stream);
                     // Path to the script file
                     string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName), TranslationSTSCHandler.FileTypes[index].TypeExtension);
                     // Skip script if file does not exist
@@ -491,12 +596,25 @@ namespace ScriptDialogueEditor
                         using (var stream = File.Open(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         using (StreamReader reader = new StreamReader(stream))
                             data = reader.ReadToEnd();
-                        TranslationSTSCHandler.ImportTranslation(index, script, data, !tag.Contains("nokey"), App.StringProcess);
-                        // Save the script back into the archive
-                        using (var stream = new MemoryStream())
+                        if (IsScriptv2)
                         {
-                            script.Save(stream);
-                            ScriptArchive.ReplaceFile(entry.FileName, stream.ToArray());
+                            TranslationSTSCHandler.ImportTranslation(index, scriptv2, data, !tag.Contains("nokey"), App.StringProcess);
+                            // Save the script back into the archive
+                            using (var stream = new MemoryStream())
+                            {
+                                scriptv2.Save(stream);
+                                ScriptArchive.ReplaceFile(entry.FileName, stream.ToArray());
+                            }
+                        }
+                        else
+                        {
+                            TranslationSTSCHandler.ImportTranslation(index, script, data, !tag.Contains("nokey"), App.StringProcess);
+                            // Save the script back into the archive
+                            using (var stream = new MemoryStream())
+                            {
+                                script.Save(stream);
+                                ScriptArchive.ReplaceFile(entry.FileName, stream.ToArray());
+                            }
                         }
                     }
                     catch
@@ -527,14 +645,28 @@ namespace ScriptDialogueEditor
                 var index = sfd.FilterIndex - 1;
                 foreach (var entry in ScriptArchive.FileEntries)
                 {
-                    var script = new STSCFile();
-                    using (var stream = ScriptArchive.GetFileStream(entry.FileName))
-                        script.Load(stream);
-                    string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName),
-                        TranslationSTSCHandler.FileTypes[index].TypeExtension);
-                    // Create the directory
-                    Directory.CreateDirectory(Path.GetDirectoryName(filepath));
-                    File.WriteAllText(filepath, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB, App.StringProcess), new UTF8Encoding(true));
+                    if (IsScriptv2)
+                    {
+                        var script = new STSC2File();
+                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                            script.Load(stream);
+                        string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName),
+                            TranslationSTSCHandler.FileTypes[index].TypeExtension);
+                        // Create the directory
+                        Directory.CreateDirectory(Path.GetDirectoryName(filepath));
+                        File.WriteAllText(filepath, TranslationSTSCHandler.ExportTranslation(index, script, CharacterNames, App.StringProcess), new UTF8Encoding(true));
+                    }
+                    else
+                    {
+                        var script = new STSCFile();
+                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                            script.Load(stream);
+                        string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName),
+                            TranslationSTSCHandler.FileTypes[index].TypeExtension);
+                        // Create the directory
+                        Directory.CreateDirectory(Path.GetDirectoryName(filepath));
+                        File.WriteAllText(filepath, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB, App.StringProcess), new UTF8Encoding(true));
+                    }
                 }
             }
         }
@@ -555,19 +687,38 @@ namespace ScriptDialogueEditor
                 foreach (var entry in ScriptArchive.FileEntries)
                 {
                     var script = new STSCFile();
-                    using (var stream = ScriptArchive.GetFileStream(entry.FileName))
-                        script.Load(stream);
+                    var scriptv2 = new STSC2File();
+                    if (IsScriptv2)
+                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                            scriptv2.Load(stream);
+                    else
+                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                            script.Load(stream);
 
                     try
                     {
                         var worksheet = workbook.Worksheets.FirstOrDefault(t => entry.FileName.Contains(t.SheetName));
                         var lines = TranslationXLSXFile.ImportWorksheet(worksheet);
-                        TranslationSTSCHandler.ImportTranslation(lines, script, !tag.Contains("nokey"), App.StringProcess);
-                        // Save the script back into the archive
-                        using (var stream = new MemoryStream())
+
+                        if (App.WorkingGame == Game.DateALiveRenDystopia)
                         {
-                            script.Save(stream);
-                            ScriptArchive.ReplaceFile(entry.FileName, stream.ToArray());
+                            TranslationSTSCHandler.ImportTranslation(lines, scriptv2, !tag.Contains("nokey"), App.StringProcess);
+                            // Save the script back into the archive
+                            using (var stream = new MemoryStream())
+                            {
+                                scriptv2.Save(stream);
+                                ScriptArchive.ReplaceFile(entry.FileName, stream.ToArray());
+                            }
+                        }
+                        else
+                        {
+                            TranslationSTSCHandler.ImportTranslation(lines, script, !tag.Contains("nokey"), App.StringProcess);
+                            // Save the script back into the archive
+                            using (var stream = new MemoryStream())
+                            {
+                                script.Save(stream);
+                                ScriptArchive.ReplaceFile(entry.FileName, stream.ToArray());
+                            }
                         }
                     }
                     catch

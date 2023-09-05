@@ -61,6 +61,7 @@
     <Compile Include="Exceptions\STSCDisassembleException.cs" />
     <Compile Include="File\FontFile.cs" />
     <Compile Include="File\MAFile.cs" />
+    <Compile Include="File\STSC2File.cs" />
     <Compile Include="File\STSCFileDatabase.cs" />
     <Compile Include="File\STSCFileDatabase.Reader.cs" />
     <Compile Include="File\STSCFileDatabase.Writer.cs" />
@@ -83,6 +84,10 @@
     <Compile Include="Misc\StringProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Imaging\TEXConverter.cs" />
+    <Compile Include="Scripting\STSC2Commands.cs" />
+    <Compile Include="Scripting\STSC2Commands.DALRD.cs" />
+    <Compile Include="Scripting\STSC2Node.cs" />
+    <Compile Include="Scripting\STSC2Sequence.cs" />
     <Compile Include="Scripting\STSCInstructions.cs" />
     <Compile Include="Scripting\STSCInstructions.DALRR.cs" />
     <Compile Include="Scripting\STSCInstructions.PBB.cs" />

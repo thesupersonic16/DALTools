@@ -128,6 +128,11 @@ namespace DALLib.IO
             return result;
         }
 
+        public string ReadTrimmedString(int length = 4)
+        {
+            return ReadSignature(length).Trim('\0');
+        }
+
         public string ReadStringElsewhere(int position = 0, bool absolute = true)
         {
             long oldPos = stream.Position;
@@ -864,6 +869,37 @@ namespace DALLib.IO
         public override unsafe void Write(double value)
         {
             Write(*((ulong*)&value));
+        }
+
+        public void WriteByType(object value)
+        {
+            var type = value.GetType();
+            if (type == typeof(bool))
+                Write((bool)value);
+            else if (type == typeof(byte))
+                Write((byte)value);
+            else if (type == typeof(sbyte))
+                Write((sbyte)value);
+            else if (type == typeof(char))
+                Write((char)value);
+            else if (type == typeof(short))
+                Write((short)value);
+            else if (type == typeof(ushort))
+                Write((ushort)value);
+            else if (type == typeof(int))
+                Write((int)value);
+            else if (type == typeof(uint))
+                Write((uint)value);
+            else if (type == typeof(float))
+                Write((float)value);
+            else if (type == typeof(long))
+                Write((long)value);
+            else if (type == typeof(ulong))
+                Write((ulong)value);
+            else if (type == typeof(double))
+                Write((double)value);
+            else
+                throw new NotImplementedException("Attempt to write unknown type: " + type);
         }
 
     }

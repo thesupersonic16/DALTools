@@ -10,6 +10,7 @@ namespace ScriptDialogueEditor
     {
         English,
         Japanese,
-        Chinese
+        Chinese,
+        None
     }
 }

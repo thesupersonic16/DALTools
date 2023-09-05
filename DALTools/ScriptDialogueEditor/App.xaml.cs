@@ -21,13 +21,13 @@ namespace ScriptDialogueEditor
     public partial class App : Application
     {
         public static string StartDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        public static string VersionString = "1.0.3";
-        public static string ProgramName = "DATE A LIVE: Rio Reincarnation Script Dialogue Editor";
+        public static string VersionString = "1.1.0";
+        public static string ProgramName = "DALTools Script Dialogue Editor";
 
         public static string ScriptPath = "";
         public static Game WorkingGame = Game.DateALiveRioReincarnation;
+        public static ScriptVersion ScriptVersion = ScriptVersion.STSC1;
         public static StringProcessor StringProcess = new StringProcessor();
-
 
         // Debug
         public static string[] Args;
@@ -55,6 +55,11 @@ namespace ScriptDialogueEditor
             {
                 if (args[1] == "pbb")
                     WorkingGame = Game.PsychedelicaOfTheBlackButterfly;
+                else if (args[1] == "dalrd")
+                {
+                    WorkingGame = Game.DateALiveRenDystopia;
+                    ScriptVersion = ScriptVersion.STSC2;
+                }
             }
             var application = new App();
             application.InitializeComponent();
