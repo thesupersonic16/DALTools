@@ -63,8 +63,19 @@ namespace ScriptDialogueEditor
             // Load script file
             if (IsScriptv2)
             {
-                ScriptFilev2 = new STSC2FileDialogue(CharacterNames);
-                ScriptFilev2.Load(ScriptArchive.GetFileStream(scriptName));
+                // Backup incase of error
+                var oldScript = ScriptFilev2;
+                try
+                {
+                    ScriptFilev2 = new STSC2FileDialogue(CharacterNames);
+                    ScriptFilev2.Load(ScriptArchive.GetFileStream(scriptName));
+                }
+                catch
+                {
+                    ScriptFilev2 = oldScript;
+                    MessageBox.Show($"Failed to load script {scriptName}", "Script Load Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
             }
             else
             {

@@ -145,5 +145,56 @@ namespace DALLib.Scripting
 
         }
 
+        public class CommandJumpSwitch : Command
+        {
+            public CommandJumpSwitch() : base("JumpSwitch", null)
+            {
+
+            }
+
+            public override Command Read(ExtendedBinaryReader reader, byte[] cmdLineInfo)
+            {
+                // Workaround
+                reader.JumpAhead(0x04);
+                int count = reader.ReadUInt16() & 0x7FF;
+                reader.JumpBehind(6);
+
+                var args = new List<Type>() { typeof(STSC2Node), typeof(ushort) };
+
+                for (int i = 0; i < count; i++)
+                    args.AddRange(new Type[] { typeof(long), typeof(int) });
+
+                ArgumentTypes = args.ToArray();
+
+                return base.Read(reader, cmdLineInfo);
+            }
+        }
+
+        public class CommandSubStart : Command
+        {
+            public CommandSubStart() : base("SubStart", null)
+            {
+
+            }
+
+            public override Command Read(ExtendedBinaryReader reader, byte[] cmdLineInfo)
+            {
+                // Workaround
+                reader.JumpAhead(5);
+                byte count = reader.ReadByte();
+                reader.JumpBehind(6);
+
+                var args = new List<Type>() { typeof(byte), typeof(int), typeof(byte), typeof(ulong), typeof(byte) };
+
+                for (int i = 0; i < count; i++)
+                    args.AddRange(new Type[] { typeof(byte), typeof(STSC2Node) });
+
+                args.Add(typeof(uint));
+
+                ArgumentTypes = args.ToArray();
+
+                return base.Read(reader, cmdLineInfo);
+            }
+        }
     }
 }
