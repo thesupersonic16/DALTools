@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GUI Tools", "GUI Tools", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptDialogueEditor", "ScriptDialogueEditor\ScriptDialogueEditor.csproj", "{0504C9D8-9B02-4F49-B603-C66F59E92A63}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableEditor", "TableEditor\TableEditor.csproj", "{52626F4C-0A8F-4C15-AEDE-46283C090459}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{0504C9D8-9B02-4F49-B603-C66F59E92A63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0504C9D8-9B02-4F49-B603-C66F59E92A63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0504C9D8-9B02-4F49-B603-C66F59E92A63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52626F4C-0A8F-4C15-AEDE-46283C090459}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52626F4C-0A8F-4C15-AEDE-46283C090459}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52626F4C-0A8F-4C15-AEDE-46283C090459}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52626F4C-0A8F-4C15-AEDE-46283C090459}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,6 +81,7 @@ Global
 		{231F66B1-3FDF-4CBE-921C-668BA5C5199A} = {60CC9B7D-286F-4822-9B14-FF21EABE015A}
 		{BB978EB7-5B08-4DA2-AB0A-267486657018} = {60CC9B7D-286F-4822-9B14-FF21EABE015A}
 		{0504C9D8-9B02-4F49-B603-C66F59E92A63} = {60CC9B7D-286F-4822-9B14-FF21EABE015A}
+		{52626F4C-0A8F-4C15-AEDE-46283C090459} = {60CC9B7D-286F-4822-9B14-FF21EABE015A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F8E17A24-AA71-4443-AA0A-484F3504BE71}

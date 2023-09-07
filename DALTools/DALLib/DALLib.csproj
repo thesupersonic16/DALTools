@@ -65,6 +65,7 @@
     <Compile Include="File\STSCFileDatabase.cs" />
     <Compile Include="File\STSCFileDatabase.Reader.cs" />
     <Compile Include="File\STSCFileDatabase.Writer.cs" />
+    <Compile Include="File\TableFile.cs" />
     <Compile Include="ImportExport\TranslationPOFile.cs" />
     <Compile Include="ImportExport\TranslationBase.cs" />
     <Compile Include="ImportExport\TranslationCSVFile.cs" />
