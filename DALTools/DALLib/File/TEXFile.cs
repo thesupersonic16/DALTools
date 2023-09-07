@@ -80,6 +80,12 @@ namespace DALLib.File
         public bool Compress = false;
 
         /// <summary>
+        /// Should the image data be encoded as a PNG file
+        /// DAL: RR does not support PNG textures, however DAL: RD does and may require it
+        /// </summary>
+        public bool UsePNG = false;
+
+        /// <summary>
         /// Loads and parses file from stream into memory
         /// </summary>
         /// <param name="reader">Reader of the file</param>
@@ -124,6 +130,9 @@ namespace DALLib.File
             // Decompress LZ77 Image
             if (useLZ77)
                 SheetData = SheetData.DecompressLZ77();
+
+            if (loader == LoaderType.PNG)
+                UsePNG = true;
 
             // Decompress/Process Image based on format
             TEXConverter.Decode(this, format, loader, reader);
@@ -183,6 +192,7 @@ namespace DALLib.File
 
             // Format
             var format = Format.BGRA;
+            var loader = UsePNG ? LoaderType.PNG : LoaderType.Default;
 
             if (UseSmallSig)
             {
@@ -195,14 +205,15 @@ namespace DALLib.File
             else
             {
                 writer.Write((int)format);
-                writer.Write(0x8100000);
+                writer.Write(0x8100000 | (uint)loader);
                 writer.AddOffset("DataLength");
                 writer.Write((short)SheetWidth);
                 writer.Write((short)SheetHeight);
             }
 
-            writer.Write(SheetData);
-            writer.FillInOffset("DataLength", (uint)SheetData.Length);
+            byte[] data = TEXConverter.Encode(this, format, loader);
+            writer.Write(data);
+            writer.FillInOffset("DataLength", (uint)data.Length);
 
             // Sigless files do not have Parts or Anime
             if (Sigless)

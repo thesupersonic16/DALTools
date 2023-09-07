@@ -100,5 +100,28 @@ namespace DALLib.Imaging
                 throw new InvalidTextureFormatException((int)format);
             }
         }
+
+        public static byte[] Encode(this TEXFile file, Format format, LoaderType loader)
+        {
+            if ((format & Format.PNG) != 0 || (loader & LoaderType.PNG) != 0)
+            {
+                var resultStream = new MemoryStream();
+
+                var image = new Bitmap(file.SheetWidth, file.SheetHeight, PixelFormat.Format32bppArgb);
+                var bitmap = image.LockBits(new Rectangle(0, 0, file.SheetWidth, file.SheetHeight), ImageLockMode.ReadWrite, image.PixelFormat);
+                Marshal.Copy(ImageTools.FlipColorsCopy(file.SheetData), 0, bitmap.Scan0, file.SheetWidth * file.SheetHeight * 4);
+                image.UnlockBits(bitmap);
+                image.Save(resultStream, ImageFormat.Png);
+                image.Dispose();
+                var result = resultStream.ToArray();
+                resultStream.Dispose();
+                return result;
+            }
+            else
+            {
+                // Return raw data
+                return file.SheetData;
+            }
+        }
     }
 }
