@@ -1,8 +1,10 @@
 # DALTools
-A collection of tools aimed to help modify files from any DATE A LIVE Visual Novel mainly Rio Reincarnation.
+A collection of tools aimed to assist with modify files from many Date A Live Visual Novel mainly Rio Reincarnation.
 
 ## Download / Building
 If you are here to just use the tools, You can grab the [lastest release from GitHub][releases_url] or compile them yourself.
+
+**For the time being, you will need to build the tools for Date A Live: Ren Dystopia support**
 
 **Releases**: You will need .NET Framework 4.6 or newer installed for them to run.
   
@@ -13,7 +15,7 @@ If you have found any issues with any of the tools in the repository or would li
 When submitting an issue or a request, It is important to provide as much details as possible as it will help us to resolve your issue.
 
 ## PCKTool
-PCKTool is a CLI tool which is designed to unpack and repack .pck archive seen in the DATE A LIVE Visual Novels. 
+PCKTool is a CLI tool which is designed to unpack and repack .pck archive seen in many of the Date A Live Visual Novels and some other games. 
 For PC/PS4 .pck(s), you can unpack the archives by just dragging the archive file into PCKTool.exe. Repacking is the same process except you drag the archive folder into the executable. 
  
 For Big Endian .pck(s) like the ones seen on the PS3, You will need to add the -e switch in the command line like ``PCKTool.exe -e Script.pck``
@@ -51,7 +53,7 @@ You can get a list of options and examples by running TEXTool.exe without any ar
 ```
 
 ## STSCTool
-STSCTool is a tool used to disassemble and reassemble scripts (.bin), Currently scripts from DATE A LIVE: Rio Reincarnation should work, other games will not work due to them having different instruction sets. 
+STSCTool is a tool used to disassemble and reassemble scripts (.bin), Currently scripts from Date A Live: Rio Reincarnation should work, other games will not work due to them having different instruction sets. 
  
 To disassemble/reassemble scripts, just drag and drop the script(s) you want into STSCTool.exe which should generate a .txt or .bin file.
  
@@ -63,26 +65,29 @@ These code files contain most of the instructions for the game to process, This 
  
 This repo has a small list some known functions in [FUNCTIONS.md][functions_url]
 
-## FontEditor - DATE A LIVE: Rio Reincarnation Font Editor
+## FontEditor - Date A Live: Rio Reincarnation Font Editor
 Incomplete, Can be used for editing font codes, but adding new character definitions do not work due to the game refusing to use the code for unknown reasons.
  
-## ScriptDatabaseEditor - DATE A LIVE: Rio Reincarnation Script Database Editor
+## ScriptDatabaseEditor - Date A Live: Rio Reincarnation Script Database Editor
 A GUI tool made to allow editing the database.bin file located in the Script directory. The database file contains information mainly extras, menu and some common definitions like character and voice names. 
  
-Note: This tool can also preview some resources if DATE A LIVE: Rio Reincarnation is found installed.
+Note: This tool can also preview some resources if Date A Live: Rio Reincarnation is found installed.
  
 Using this tool is easy, drag your database.bin file onto the exe file or run it alone for it to load your current script archive from your game installation (By default English will be loaded). 
 
 ![Screenshot of ScriptDatabaseEditor viewing ][scriptdatabaseeditor_screenshot_00]
 
-## ScriptDialogueEditor - DATE A LIVE: Rio Reincarnation Script Dialogue Editor
-A GUI tool made to help simplify the process of editing the text within the scripts by basically integrating many of the tools needed into one GUI application.  
+## ScriptDialogueEditor - DALTools Script Dialogue Editor
+A GUI tool made to help simplify the process of editing the text within the scripts by basically integrating many of the tools needed into one GUI application. 
+
+ScriptDialogueEditor currently supports Date A Live: Rio Reincarnation and Date A Live: Ren Dystopia
  
 ScriptDialogueEditor also features:
  - Loads/Saves scripts in memory so you won't need to keep rebuilding the .bin file and the .pck file manually
  - Most of the confusing/unnecessary code has been filtered out, only showing the information needed by most people.
  - Text Exporting and Importing (currently only .tsv, .csv and .po are supported currently)
  - Experimental Live Preview, Allows for message testing (Just edit the text while the feature is active)
+   - This feature is only available for Date A Live: Rio Reincarnation
  
 ![Screenshot of ScriptDialogueEditor][scriptdialogueeditor_screenshot_00]
  
