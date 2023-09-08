@@ -52,7 +52,20 @@ namespace TableEditor
             Table.Rows.Clear();
             foreach (var row in TableData)
                 Table.Rows.Add(row.ToArray());
-            Table.Save(path);
+
+            using (var stream = new MemoryStream())
+            {
+                try
+                {
+                    Table.Save(stream);
+                    File.WriteAllBytes(path, stream.ToArray());
+                }
+                catch (FormatException)
+                {
+                    MessageBox.Show("Not all fields are populated with\nthe correct type of data",
+                        "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
