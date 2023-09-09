@@ -37,16 +37,15 @@ jobs:
       run: msbuild /m /p:Configuration=${{matrix.configuration}} ${{env.SOLUTION_FILE_PATH}}
 
     - name: Upload artifacts
-      working-directory: ${{env.GITHUB_WORKSPACE}}\DALTools
       uses: actions/upload-artifact@v3.1.3
       with:
         name: DALTools-${{matrix.configuration}}
         path:  |
-          .\DALLib\bin\${{matrix.configuration}}\DALLib.dll
-          .\PCKTool\bin\${{matrix.configuration}}\PCKTool.exe
-          .\STSCTool\bin\${{matrix.configuration}}\STSCTool.exe
-          .\TEXTool\bin\${{matrix.configuration}}\TEXTool.exe
-          .\FontEditor\bin\${{matrix.configuration}}\FontEditor.exe
-          .\ScriptDatabaseEditor\bin\${{matrix.configuration}}\ScriptDatabaseEditor.exe
-          .\ScriptDialogueEditor\bin\${{matrix.configuration}}\ScriptDialogueEditor.exe
-          .\TableEditor\bin\${{matrix.configuration}}\TableEditor.exe
+          ${{env.GITHUB_WORKSPACE}}\DALTools\DALLib\bin\${{matrix.configuration}}\DALLib.dll
+          ${{env.GITHUB_WORKSPACE}}\DALTools\PCKTool\bin\${{matrix.configuration}}\PCKTool.exe
+          ${{env.GITHUB_WORKSPACE}}\DALTools\STSCTool\bin\${{matrix.configuration}}\STSCTool.exe
+          ${{env.GITHUB_WORKSPACE}}\DALTools\TEXTool\bin\${{matrix.configuration}}\TEXTool.exe
+          ${{env.GITHUB_WORKSPACE}}\DALTools\FontEditor\bin\${{matrix.configuration}}\FontEditor.exe
+          ${{env.GITHUB_WORKSPACE}}\DALTools\ScriptDatabaseEditor\bin\${{matrix.configuration}}\ScriptDatabaseEditor.exe
+          ${{env.GITHUB_WORKSPACE}}\DALTools\ScriptDialogueEditor\bin\${{matrix.configuration}}\ScriptDialogueEditor.exe
+          ${{env.GITHUB_WORKSPACE}}\DALTools\TableEditor\bin\${{matrix.configuration}}\TableEditor.exe
