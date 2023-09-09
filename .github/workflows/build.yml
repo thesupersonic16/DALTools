@@ -41,11 +41,11 @@ jobs:
       with:
         name: DALTools-${{matrix.configuration}}
         path:  |
-          DALTools\DALLib\bin\${{matrix.configuration}}\DALLib.dll
-          DALTools\PCKTool\bin\${{matrix.configuration}}\PCKTool.exe
-          DALTools\STSCTool\bin\${{matrix.configuration}}\STSCTool.exe
-          DALTools\TEXTool\bin\${{matrix.configuration}}\TEXTool.exe
-          DALTools\FontEditor\bin\${{matrix.configuration}}\FontEditor.exe
-          DALTools\ScriptDatabaseEditor\bin\${{matrix.configuration}}\ScriptDatabaseEditor.exe
-          DALTools\ScriptDialogueEditor\bin\${{matrix.configuration}}\ScriptDialogueEditor.exe
-          DALTools\TableEditor\bin\${{matrix.configuration}}\TableEditor.exe
+          DALTools\DALLib\bin\${{matrix.configuration}}\*DALLib.dll
+          DALTools\PCKTool\bin\${{matrix.configuration}}\*PCKTool.exe
+          DALTools\STSCTool\bin\${{matrix.configuration}}\*STSCTool.exe
+          DALTools\TEXTool\bin\${{matrix.configuration}}\*TEXTool.exe
+          DALTools\FontEditor\bin\${{matrix.configuration}}\*FontEditor.exe
+          DALTools\ScriptDatabaseEditor\bin\${{matrix.configuration}}\*ScriptDatabaseEditor.exe
+          DALTools\ScriptDialogueEditor\bin\${{matrix.configuration}}\*ScriptDialogueEditor.exe
+          DALTools\TableEditor\bin\${{matrix.configuration}}\*TableEditor.exe
