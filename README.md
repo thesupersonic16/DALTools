@@ -1,10 +1,10 @@
 # DALTools
-A collection of tools aimed to assist with modify files from many Date A Live Visual Novel mainly Rio Reincarnation.
+A collection of tools aimed to assist with modify files from many Date A Live Visual Novel mainly Rio Reincarnation and Ren Dystopia.
 
 ## Download / Building
-If you are here to just use the tools, You can grab the [lastest release from GitHub][releases_url] or compile them yourself.
+If you are here to just use the tools, You can download the pre-built binaries from [releases][releases_url] or you can get the lastest built commit from [GitHub Actions][actions_url], or compile them yourself.
 
-**For the time being, you will need to build the tools for Date A Live: Ren Dystopia support**
+**Please be aware this project utilise Fody, which can often cause false positives with some Anti-Virus, feel free to submit the samples or build the code yourself**
 
 **Releases**: You will need .NET Framework 4.6 or newer installed for them to run.
   
@@ -15,7 +15,7 @@ If you have found any issues with any of the tools in the repository or would li
 When submitting an issue or a request, It is important to provide as much details as possible as it will help us to resolve your issue.
 
 ## PCKTool
-PCKTool is a CLI tool which is designed to unpack and repack .pck archive seen in many of the Date A Live Visual Novels and some other games. 
+PCKTool is a CLI tool which is designed to unpack and repack .pck archives seen in many of the Date A Live visual novels and some other games. 
 For PC/PS4 .pck(s), you can unpack the archives by just dragging the archive file into PCKTool.exe. Repacking is the same process except you drag the archive folder into the executable. 
  
 For Big Endian .pck(s) like the ones seen on the PS3, You will need to add the -e switch in the command line like ``PCKTool.exe -e Script.pck``
@@ -24,7 +24,7 @@ Special thanks to Sajid for helping me with figuring out the missing fields.
 
 
 ## TEXTool
-TEXTool is a tool used to extract and rebuild Texture files.  
+TEXTool is a tool used to extract and rebuild texture files.  
 TEXTool does support extracting and rebuilding of .tex files using drag and drop and through CLI.  
 using Drag and Drop, you can extract a .tex by dragging the .tex into the exe and rebuild it by dragging its .xml, .png or frames folder into the exe.  
 You can get a list of options and examples by running TEXTool.exe without any arguments
@@ -53,7 +53,7 @@ You can get a list of options and examples by running TEXTool.exe without any ar
 ```
 
 ## STSCTool
-STSCTool is a tool used to disassemble and reassemble scripts (.bin), Currently scripts from Date A Live: Rio Reincarnation should work, other games will not work due to them having different instruction sets. 
+STSCTool is a tool used to disassemble and reassemble scripts (.bin), this tool will only accept scripts from Rio Reincarnation, other games will not work due to them having different instruction sets or uses a newer script format. 
  
 To disassemble/reassemble scripts, just drag and drop the script(s) you want into STSCTool.exe which should generate a .txt or .bin file.
  
@@ -71,7 +71,7 @@ Incomplete, Can be used for editing font codes, but adding new character definit
 ## ScriptDatabaseEditor - Date A Live: Rio Reincarnation Script Database Editor
 A GUI tool made to allow editing the database.bin file located in the Script directory. The database file contains information mainly extras, menu and some common definitions like character and voice names. 
  
-Note: This tool can also preview some resources if Date A Live: Rio Reincarnation is found installed.
+Note: This tool can also preview some resources if Rio Reincarnation is found installed.
  
 Using this tool is easy, drag your database.bin file onto the exe file or run it alone for it to load your current script archive from your game installation (By default English will be loaded). 
 
@@ -80,21 +80,29 @@ Using this tool is easy, drag your database.bin file onto the exe file or run it
 ## ScriptDialogueEditor - DALTools Script Dialogue Editor
 A GUI tool made to help simplify the process of editing the text within the scripts by basically integrating many of the tools needed into one GUI application. 
 
-ScriptDialogueEditor currently supports Date A Live: Rio Reincarnation and Date A Live: Ren Dystopia
+ScriptDialogueEditor currently only supports Rio Reincarnation and Ren Dystopia
  
 ScriptDialogueEditor also features:
- - Loads/Saves scripts in memory so you won't need to keep rebuilding the .bin file and the .pck file manually
- - Most of the confusing/unnecessary code has been filtered out, only showing the information needed by most people.
- - Text Exporting and Importing (currently only .tsv, .csv and .po are supported currently)
- - Experimental Live Preview, Allows for message testing (Just edit the text while the feature is active)
-   - This feature is only available for Date A Live: Rio Reincarnation
+ - Loads/Saves scripts in memory so you won't need to keep rebuilding the .bin file and .pck file manually
+ - Most of the confusing/unnecessary code has been filtered out, only showing the information needed by most use cases.
+ - Text exporting and importing support (currently only .tsv, .csv, .po and .xlsx(import only) are supported)
+ - Experimental Live Preview, allowing for live message editing (Just edit the text while the feature is active)
+   - This feature is only available for Rio Reincarnation
  
 ![Screenshot of ScriptDialogueEditor][scriptdialogueeditor_screenshot_00]
- 
+
+## TableEditor - DALTools DALTools Table Editor
+A simple GUI tool to allow editing table files found within Ren Dystopia's game files.  
+
+![Screenshot of TableEditor][tableeditor_screenshot_00]
+
+
  
 [scriptdatabaseeditor_screenshot_00]: ./Images/ScriptDatabaseEditor_Screenshot_00.png
 [scriptdialogueeditor_screenshot_00]: ./Images/ScriptDialogueEditor_Screenshot_00.png
 [scriptdialogueeditor_info_url]: #scriptdialogueeditor---date-a-live-rio-reincarnation-script-dialogue-editor
+[tableeditor_screenshot_00]: ./Images/TableEditor_Screenshot_00.png
 [functions_url]: ./FUNCTIONS.md
 [releases_url]: ../../releases
 [newIssue_url]: ../../issues/new
+[actions_url]: https://nightly.link/thesupersonic16/DALTools/workflows/build/master/DALTools-Release.zip
