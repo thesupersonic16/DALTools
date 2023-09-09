@@ -41,11 +41,11 @@ jobs:
       with:
         name: DALTools-${{matrix.configuration}}
         path:  |
-          ${{env.GITHUB_WORKSPACE}}\DALTools\DALLib\bin\${{matrix.configuration}}\DALLib.dll
-          ${{env.GITHUB_WORKSPACE}}\DALTools\PCKTool\bin\${{matrix.configuration}}\PCKTool.exe
-          ${{env.GITHUB_WORKSPACE}}\DALTools\STSCTool\bin\${{matrix.configuration}}\STSCTool.exe
-          ${{env.GITHUB_WORKSPACE}}\DALTools\TEXTool\bin\${{matrix.configuration}}\TEXTool.exe
-          ${{env.GITHUB_WORKSPACE}}\DALTools\FontEditor\bin\${{matrix.configuration}}\FontEditor.exe
-          ${{env.GITHUB_WORKSPACE}}\DALTools\ScriptDatabaseEditor\bin\${{matrix.configuration}}\ScriptDatabaseEditor.exe
-          ${{env.GITHUB_WORKSPACE}}\DALTools\ScriptDialogueEditor\bin\${{matrix.configuration}}\ScriptDialogueEditor.exe
-          ${{env.GITHUB_WORKSPACE}}\DALTools\TableEditor\bin\${{matrix.configuration}}\TableEditor.exe
+          DALTools\DALLib\bin\${{matrix.configuration}}\DALLib.dll
+          DALTools\PCKTool\bin\${{matrix.configuration}}\PCKTool.exe
+          DALTools\STSCTool\bin\${{matrix.configuration}}\STSCTool.exe
+          DALTools\TEXTool\bin\${{matrix.configuration}}\TEXTool.exe
+          DALTools\FontEditor\bin\${{matrix.configuration}}\FontEditor.exe
+          DALTools\ScriptDatabaseEditor\bin\${{matrix.configuration}}\ScriptDatabaseEditor.exe
+          DALTools\ScriptDialogueEditor\bin\${{matrix.configuration}}\ScriptDialogueEditor.exe
+          DALTools\TableEditor\bin\${{matrix.configuration}}\TableEditor.exe
