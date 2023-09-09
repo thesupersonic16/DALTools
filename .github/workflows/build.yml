@@ -39,6 +39,7 @@ jobs:
 
     - name: Prepare Artifacts
       working-directory: ${{env.GITHUB_WORKSPACE}}
+      shell: cmd
       run: .\DALTools\Scripts\PrepareArtifacts.bat ${{matrix.configuration}}
 
     - name: Upload Artifacts
