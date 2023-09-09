@@ -39,8 +39,16 @@ jobs:
 
     - name: Prepare Artifacts
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      shell: cmd
-      run: .\DALTools\Scripts\PrepareArtifacts.bat ${{matrix.configuration}}
+      run: |
+        mkdir .\Artifacts
+        copy .\DALTools\DALTools\DALLib\bin\${{matrix.configuration}}\DALLib.dll .\Artifacts
+        copy .\DALTools\DALTools\PCKTool\bin\${{matrix.configuration}}\PCKTool.exe .\Artifacts
+        copy .\DALTools\DALTools\STSCTool\bin\${{matrix.configuration}}\STSCTool.exe .\Artifacts
+        copy .\DALTools\DALTools\TEXTool\bin\${{matrix.configuration}}\TEXTool.exe .\Artifacts
+        copy .\DALTools\DALTools\FontEditor\bin\${{matrix.configuration}}\FontEditor.exe .\Artifacts
+        copy .\DALTools\DALTools\ScriptDatabaseEditor\bin\${{matrix.configuration}}\ScriptDatabaseEditor.exe .\Artifacts
+        copy .\DALTools\DALTools\ScriptDialogueEditor\bin\${{matrix.configuration}}\ScriptDialogueEditor.exe .\Artifacts
+        copy .\DALTools\DALTools\TableEditor\bin\${{matrix.configuration}}\TableEditor.exe .\Artifacts
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3.1.3
