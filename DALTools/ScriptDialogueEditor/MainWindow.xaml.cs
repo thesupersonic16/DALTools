@@ -201,9 +201,10 @@ namespace ScriptDialogueEditor
                 string path = Path.Combine(Path.GetDirectoryName(App.ScriptPath), "data_chara.bin");
                 if (File.Exists(path))
                 {
-                    var charaFile = new CharaFile();
-                    charaFile.Load(path);
-                    foreach (var chara in charaFile.CharaEntries)
+                    var table = new TableFile();
+                    table.Load(path);
+                    var entries = table.ToObject<CharaEntry>();
+                    foreach (var chara in entries)
                         CharacterNames.Add((short)chara.No, chara.Name);
                 }
                 else
@@ -412,9 +413,10 @@ namespace ScriptDialogueEditor
                         string path = Path.Combine(Path.GetDirectoryName(ofd.FileName), "data_chara.bin");
                         if (File.Exists(path))
                         {
-                            var charaFile = new CharaFile();
-                            charaFile.Load(path);
-                            foreach (var chara in charaFile.CharaEntries)
+                            var table = new TableFile();
+                            table.Load(path);
+                            var entries = table.ToObject<CharaEntry>();
+                            foreach (var chara in entries)
                                 CharacterNames.Add((short)chara.No, chara.Name);
                         }
                         else

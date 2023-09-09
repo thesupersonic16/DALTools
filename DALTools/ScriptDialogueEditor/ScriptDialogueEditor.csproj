@@ -63,7 +63,7 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CharaFile.cs" />
+    <Compile Include="CharaEntry.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="DALRRLivePreview.cs" />
     <Compile Include="Game.cs" />

@@ -1,9 +1,10 @@
 ﻿using DALLib.IO;
+using DALLib.Misc;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -104,6 +105,51 @@ namespace DALLib.File
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Convert table to an array of T
+        /// Table must be loaded prior to conversion
+        /// </summary>
+        /// <typeparam name="T">Representative type to fill</typeparam>
+        /// <returns>Array of rows as T</returns>
+        public T[] ToObject<T>()
+        {
+            var objs = new T[Rows.Count];
+            for (int i = 0; i < Rows.Count; i++)
+            {
+                var obj = Activator.CreateInstance<T>();
+
+                foreach (var property in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.CreateInstance))
+                {
+                    int columnIndex = -1;
+
+                    // Search for PropertyNameAttribute
+                    var attr = property.GetCustomAttribute<PropertyNameAttribute>();
+                    if (attr != null)
+                        columnIndex = Columns.FindIndex(x => x.Name == attr.PropertyName);
+                    
+                    // Guess property name
+                    if (columnIndex == -1)
+                    {
+                        // Convert to snack_case
+                        string name = string.Concat(property.Name.Select((x, index) =>
+                        index > 0 && char.IsUpper(x) ? $"_{x}" : x.ToString())).ToLower();
+                        columnIndex = Columns.FindIndex(x => x.Name == name);
+                    }
+
+                    // Ignore if nothing is found
+                    if (columnIndex == -1)
+                        continue;
+
+                    property.SetValue(obj, 
+                        Convert.ChangeType(Rows[i][columnIndex], property.PropertyType));
+                }
+
+                objs[i] = obj;
+            }
+
+            return objs;
         }
 
         public enum TableType
