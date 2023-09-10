@@ -8,6 +8,7 @@ namespace ScriptDialogueEditor
 {
     public enum ScriptVersion
     {
+        Unknown,
         STSC1,
         STSC2
     }

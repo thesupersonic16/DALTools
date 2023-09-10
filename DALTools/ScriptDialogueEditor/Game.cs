@@ -8,6 +8,7 @@ namespace ScriptDialogueEditor
 {
     public enum Game
     {
+        Unknown,
         DateALiveRioReincarnation,
         PsychedelicaOfTheBlackButterfly,
         DateALiveRenDystopia

@@ -22,6 +22,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using NanoXLSX;
 using Path = System.IO.Path;
+using DALLib.IO;
 
 namespace ScriptDialogueEditor
 {
@@ -32,7 +33,7 @@ namespace ScriptDialogueEditor
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private readonly Config _config = new Config();
+        public Config Config { get; set; } = new Config();
 
         public PCKFile ScriptArchive { get; set; }
         public STSCFileDialogue ScriptFile { get; set; }
@@ -41,26 +42,91 @@ namespace ScriptDialogueEditor
 
         // STSC2
         public Dictionary<short, string> CharacterNames { get; set; } = new Dictionary<short, string>() { { 0xFF, "None" } };
-
-        public bool IsScriptv2 => App.ScriptVersion == ScriptVersion.STSC2;
+        public ScriptVersion CurrentScriptVersion { get; set; }
+        public Game CurrentGame { get; set; }
+        public bool IsScriptv2 => CurrentScriptVersion == ScriptVersion.STSC2;
 
         public List<PCKFile.FileEntry> ScriptArchiveFiles => ScriptArchive.FileEntries;
-        public Config Config => _config;
 
         public DALRRLivePreview Preview = null;
 
         public bool ScriptEdited = false;
+        protected bool RefreshDatabase = true;
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        public ScriptVersion DetectScriptVersion(Stream stream)
+        {
+            var reader = new ExtendedBinaryReader(stream);
+            string sig = reader.PeekSignature(6);
+            if (sig == "STSC2.") // Assume STSC2
+                return ScriptVersion.STSC2;
+            return ScriptVersion.STSC1;
+        }
+
+        public void LoadScriptDatabase()
+        {
+            if (!string.IsNullOrEmpty(App.ScriptPath))
+            {
+                // Load the DAL RR database file if the script is loaded
+                if (CurrentGame == Game.DateALiveRioReincarnation)
+                {
+                    string scriptDB = Path.Combine(Path.GetDirectoryName(App.ScriptPath), "database.bin");
+                    if (File.Exists(scriptDB))
+                    {
+                        ScriptDB = new STSCFileDatabase();
+                        ScriptDB.Load(scriptDB);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Could not find database.bin!\n" +
+                            "Voice IDs will be used instead of character names without the database.bin file");
+                    }
+                }
+
+                // Load character data if scripts are from DAL RD
+                if (CurrentGame == Game.DateALiveRenDystopia)
+                {
+                    string path = Path.Combine(Path.GetDirectoryName(App.ScriptPath), "data_chara.bin");
+                    if (File.Exists(path))
+                    {
+                        CharacterNames.Clear();
+                        var table = new TableFile();
+                        table.Load(path);
+                        var entries = table.ToObject<CharaEntry>();
+                        foreach (var chara in entries)
+                            CharacterNames.Add((short)chara.No, chara.Name);
+                    }
+                    else
+                    {
+                        MessageBox.Show("data_chara.bin is missing!\n" +
+                            "Voice IDs will be used instead of character names");
+                    }
+                }
+            }
+            RefreshDatabase = false;
+        }
+
         public void LoadScript(string scriptName, bool save = true)
         {
             if (ScriptEdited && save)
                 SaveScript();
-            // Load script file
+
+            // Auto detect file version
+            var scriptStream = ScriptArchive.GetFileStream(scriptName);
+            if (App.ScriptVersion == ScriptVersion.Unknown)
+                CurrentScriptVersion = DetectScriptVersion(scriptStream);
+
+            // Select game if not already
+            if (App.WorkingGame == Game.Unknown)
+                CurrentGame = IsScriptv2 ?
+                    Game.DateALiveRenDystopia : Game.DateALiveRioReincarnation;
+            else
+                CurrentGame = App.WorkingGame;
+
             if (IsScriptv2)
             {
                 // Backup incase of error
@@ -68,7 +134,7 @@ namespace ScriptDialogueEditor
                 try
                 {
                     ScriptFilev2 = new STSC2FileDialogue(CharacterNames);
-                    ScriptFilev2.Load(ScriptArchive.GetFileStream(scriptName));
+                    ScriptFilev2.Load(scriptStream);
                 }
                 catch
                 {
@@ -79,15 +145,20 @@ namespace ScriptDialogueEditor
             }
             else
             {
-                ScriptFile = new STSCFileDialogue(ScriptDB, App.WorkingGame);
-                ScriptFile.Load(ScriptArchive.GetFileStream(scriptName));
+                ScriptFile = new STSCFileDialogue(ScriptDB, CurrentGame);
+                ScriptFile.Load(scriptStream);
             }
-            // Write the script path to the config
-            _config.LastOpenedScript = scriptName;
-            // Mark script as not edited
+            Config.LastOpenedScript = scriptName;
             ScriptEdited = false;
-            // Update the title to reflect the new loaded file
+
+            if (RefreshDatabase)
+                LoadScriptDatabase();
+
             UpdateTitle();
+
+            // Fix bindings
+            BindingOperations.SetBinding(ScriptListView, ListView.ItemsSourceProperty,
+                new Binding(IsScriptv2 ? "ScriptFilev2.DialogueCodes" : "ScriptFile.DialogueCodes") { Source = this });
         }
 
         public void SaveScript()
@@ -101,7 +172,7 @@ namespace ScriptDialogueEditor
                         // Builds the script file and saves it to the stream
                         ScriptFilev2.Save(stream);
                         // Replaces the file that was in the archive with the newly built script
-                        ScriptArchive.ReplaceFile(_config.LastOpenedScript, stream.ToArray());
+                        ScriptArchive.ReplaceFile(Config.LastOpenedScript, stream.ToArray());
                     }
                     ScriptEdited = false;
                 }
@@ -115,7 +186,7 @@ namespace ScriptDialogueEditor
                         // Builds the script file and saves it to the stream
                         ScriptFile.Save(stream);
                         // Replaces the file that was in the archive with the newly built script
-                        ScriptArchive.ReplaceFile(_config.LastOpenedScript, stream.ToArray());
+                        ScriptArchive.ReplaceFile(Config.LastOpenedScript, stream.ToArray());
                     }
                     ScriptEdited = false;
                 }
@@ -129,7 +200,7 @@ namespace ScriptDialogueEditor
         {
             string title = App.ProgramName;
             if (ScriptFile != null || ScriptFilev2 != null)
-                title += $" - {_config.LastOpenedScript}";
+                title += $" - {Config.LastOpenedScript}";
             if (ScriptEdited)
                 title += "*";
             Title = title.Replace("_", "__");
@@ -146,7 +217,7 @@ namespace ScriptDialogueEditor
                 // Searches for DATE A LIVE: Rio Reincarnation
                 games = Steam.SearchForGames("DATE A LIVE: Rio Reincarnation");
                 if (games.Count != 0)
-                    return Path.Combine(games[0].RootDirectory, $"Data/{GetLangDirectoryName(_config.DefaultGameLanguage)}/Script/Script.pck");
+                    return Path.Combine(games[0].RootDirectory, $"Data/{GetLangDirectoryName(Config.DefaultGameLanguage)}/Script/Script.pck");
             }
             catch { }
             return "";
@@ -163,57 +234,18 @@ namespace ScriptDialogueEditor
                 case GameLanguage.Chinese:
                     return "CHN";
                 default:
-                    return "Data";
+                    return "ENG";
             }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Load Config from Registry
-            _config.LoadConfig();
+            Config.LoadConfig();
 
             // If path is not set at startup, try find the file from the game
-            if (string.IsNullOrEmpty(App.ScriptPath))
+            if (string.IsNullOrEmpty(App.ScriptPath) && CurrentGame == Game.Unknown)
                 App.ScriptPath = GetPathFromSteam();
-            
-            // Load the database file if the script was found for DAL RR
-            if (!string.IsNullOrEmpty(App.ScriptPath) && App.WorkingGame == Game.DateALiveRioReincarnation)
-            {
-                // Path to the database.bin file
-                string scriptDB = Path.Combine(Path.GetDirectoryName(App.ScriptPath), "database.bin");
-                // Check if the database exists
-                if (File.Exists(scriptDB))
-                {
-                    ScriptDB = new STSCFileDatabase();
-                    ScriptDB.Load(scriptDB);
-                }
-                else
-                {
-                    MessageBox.Show("Could not find database.bin!\n" +
-                        "Voice IDs will be used instead of character names without the database.bin file");
-                }
-            }
-
-            // Load character data if scripts are from DAL RD
-            if (!string.IsNullOrEmpty(App.ScriptPath) && App.WorkingGame == Game.DateALiveRenDystopia)
-            {
-                // Load character data
-                string path = Path.Combine(Path.GetDirectoryName(App.ScriptPath), "data_chara.bin");
-                if (File.Exists(path))
-                {
-                    var table = new TableFile();
-                    table.Load(path);
-                    var entries = table.ToObject<CharaEntry>();
-                    foreach (var chara in entries)
-                        CharacterNames.Add((short)chara.No, chara.Name);
-                }
-                else
-                {
-                    MessageBox.Show("data_chara.bin is missing!\n" +
-                        "Voice IDs will be used instead of character names");
-                }
-            }
-
 
             // Load Script Archive
             ScriptArchive = new PCKFile();
@@ -229,15 +261,11 @@ namespace ScriptDialogueEditor
                     App.StringProcess.Load(File.ReadAllText(replacementTablePath, Encoding.UTF8));
 
                 // Load script from config or use default
-                string fileName = !string.IsNullOrEmpty(_config.LastOpenedScript) && ScriptArchive.FileEntries.Any(t =>
-                    t.FileName.ToLowerInvariant() == _config.LastOpenedScript.ToLowerInvariant())
-                    ? _config.LastOpenedScript : ScriptArchive.FileEntries.First().FileName;
+                string fileName = !string.IsNullOrEmpty(Config.LastOpenedScript) && ScriptArchive.FileEntries.Any(t =>
+                    t.FileName.ToLowerInvariant() == Config.LastOpenedScript.ToLowerInvariant())
+                    ? Config.LastOpenedScript : ScriptArchive.FileEntries.First().FileName;
                 LoadScript(fileName);
             }
-
-            // Fix bindings
-            BindingOperations.SetBinding(ScriptListView, ListView.ItemsSourceProperty,
-                new Binding(IsScriptv2 ? "ScriptFilev2.DialogueCodes" : "ScriptFile.DialogueCodes") { Source = this });
 
             DataContext = null;
             DataContext = this;
@@ -249,7 +277,7 @@ namespace ScriptDialogueEditor
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            _config.SaveConfig();
+            Config.SaveConfig();
         }
 
         private void PreviewTimer_Tick(object sender, EventArgs e)
@@ -403,53 +431,21 @@ namespace ScriptDialogueEditor
             {
                 Filter = "Sting Pack (*.pck)|*.pck"
             };
-            if (ofd.ShowDialog() == true)
+            if (ofd.ShowDialog() == true && !string.IsNullOrEmpty(ofd.FileName))
             {
-                if (!string.IsNullOrEmpty(ofd.FileName))
-                { 
-                    if (App.WorkingGame == Game.DateALiveRenDystopia)
-                    {
-                        // Load character data
-                        string path = Path.Combine(Path.GetDirectoryName(ofd.FileName), "data_chara.bin");
-                        if (File.Exists(path))
-                        {
-                            var table = new TableFile();
-                            table.Load(path);
-                            var entries = table.ToObject<CharaEntry>();
-                            foreach (var chara in entries)
-                                CharacterNames.Add((short)chara.No, chara.Name);
-                        }
-                        else
-                        {
-                            MessageBox.Show("data_chara.bin is missing!\n" +
-                                "Voice IDs will be used instead of character names");
-                        }
-                    }
-                    else
-                    {
-                        // Load the database file if the script was found
-                        string scriptDB = Path.Combine(Path.GetDirectoryName(ofd.FileName), "database.bin");
-                        // Check if the database exists
-                        if (File.Exists(scriptDB))
-                        {
-                            ScriptDB = new STSCFileDatabase();
-                            ScriptDB.Load(scriptDB);
-                        }
-                        else
-                        {
-                            MessageBox.Show("Could not find database.bin!\n" +
-                                "Voice IDs will be used instead of character names without the database.bin file");
-                        }
-                    }
-                }                
+                RefreshDatabase = true;
+
                 // Load Script Archive
                 ScriptArchive = new PCKFile();
                 ScriptArchive.Load(App.ScriptPath = ofd.FileName, true);
-                // Load all the files into memory instead of streaming them
                 ScriptArchive.Preload();
+
                 // Load script from config or use default
-                LoadScript(string.IsNullOrEmpty(_config.LastOpenedScript) ?
-                    ScriptArchive.FileEntries.First().FileName : _config.LastOpenedScript);
+                string fileName = !string.IsNullOrEmpty(Config.LastOpenedScript) && ScriptArchive.FileEntries.Any(t =>
+                    t.FileName.ToLowerInvariant() == Config.LastOpenedScript.ToLowerInvariant())
+                    ? Config.LastOpenedScript : ScriptArchive.FileEntries.First().FileName;
+                LoadScript(fileName);
+
                 // Reset all the bindings
                 DataContext = null;
                 DataContext = this;
@@ -713,7 +709,7 @@ namespace ScriptDialogueEditor
                         var worksheet = workbook.Worksheets.FirstOrDefault(t => entry.FileName.Contains(t.SheetName));
                         var lines = TranslationXLSXFile.ImportWorksheet(worksheet);
 
-                        if (App.WorkingGame == Game.DateALiveRenDystopia)
+                        if (CurrentGame == Game.DateALiveRenDystopia)
                         {
                             TranslationSTSCHandler.ImportTranslation(lines, scriptv2, !tag.Contains("nokey"), App.StringProcess);
                             // Save the script back into the archive

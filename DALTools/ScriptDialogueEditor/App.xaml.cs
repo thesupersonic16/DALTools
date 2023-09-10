@@ -25,8 +25,8 @@ namespace ScriptDialogueEditor
         public static string ProgramName = "DALTools Script Dialogue Editor";
 
         public static string ScriptPath = "";
-        public static Game WorkingGame = Game.DateALiveRioReincarnation;
-        public static ScriptVersion ScriptVersion = ScriptVersion.STSC1;
+        public static Game WorkingGame = Game.Unknown;
+        public static ScriptVersion ScriptVersion = ScriptVersion.Unknown;
         public static StringProcessor StringProcess = new StringProcessor();
 
         // Debug
@@ -53,12 +53,22 @@ namespace ScriptDialogueEditor
                 ScriptPath = args[0];
             if (args.Length > 1)
             {
-                if (args[1] == "pbb")
-                    WorkingGame = Game.PsychedelicaOfTheBlackButterfly;
-                else if (args[1] == "dalrd")
+                switch (args[1])
                 {
-                    WorkingGame = Game.DateALiveRenDystopia;
-                    ScriptVersion = ScriptVersion.STSC2;
+                    case "dalrr":
+                        WorkingGame = Game.DateALiveRioReincarnation;
+                        ScriptVersion = ScriptVersion.STSC1;
+                        break;
+                    case "pbb":
+                        WorkingGame = Game.PsychedelicaOfTheBlackButterfly;
+                        ScriptVersion = ScriptVersion.STSC1;
+                        break;
+                    case "dalrd":
+                        WorkingGame = Game.DateALiveRenDystopia;
+                        ScriptVersion = ScriptVersion.STSC2;
+                        break;
+                    default:
+                        break;
                 }
             }
             var application = new App();
