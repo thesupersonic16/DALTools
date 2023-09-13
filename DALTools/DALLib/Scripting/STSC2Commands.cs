@@ -38,6 +38,8 @@ namespace DALLib.Scripting
                     {
                         if (arg == typeof(STSC2Node))
                             line.arguments.Add(new STSC2Node().Read(reader));
+                        else if (arg == typeof(Command))
+                            line.arguments.Add(reader.ReadUInt32());
                         else line.arguments.Add(reader.ReadByType(arg));
                     }
                 }
@@ -62,20 +64,26 @@ namespace DALLib.Scripting
                             writer.AddOffset($"node{nodes.Count}");
                             nodes.Add(node);
                         }
-                        else
+                        else if (arg is Command)
                         {
-                            if (arg is string str)
-                            {
-                                writer.AddOffset($"str{stringTable.Count}");
-                                stringTable.Add(str);
-                            }
-                            else
-                                writer.WriteByType(arg);
+                            // This method has many issues, would be good to change it out
+                            writer.AddOffset($"{GetHashCode()}{arg.GetHashCode()}");
                         }
+                        else if (arg is string str)
+                        {
+                            writer.AddOffset($"str{stringTable.Count}");
+                            stringTable.Add(str);
+                        }
+                        else
+                            writer.WriteByType(arg);
                     }
                 }
             }
 
+            public void SetCmdLineInfo(byte[] bytes)
+            {
+                m_CmdLineInfo = bytes;
+            }
 
             public override string ToString()
             {
@@ -103,7 +111,7 @@ namespace DALLib.Scripting
                 for (int i = 0; i < paramCount; i++)
                     args.AddRange(new Type[] { typeof(byte), typeof(STSC2Node) });
 
-                args.Add(typeof(int));
+                args.Add(typeof(Command));
                 ArgumentTypes = args.ToArray();
 
                 return base.Read(reader, cmdLineInfo);
@@ -189,7 +197,7 @@ namespace DALLib.Scripting
                 for (int i = 0; i < count; i++)
                     args.AddRange(new Type[] { typeof(byte), typeof(STSC2Node) });
 
-                args.Add(typeof(uint));
+                args.Add(typeof(Command));
 
                 ArgumentTypes = args.ToArray();
 

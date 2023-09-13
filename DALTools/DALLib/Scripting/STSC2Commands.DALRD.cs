@@ -17,7 +17,7 @@ namespace DALLib.Scripting
             new Command("Cont", new [] { typeof(int) }), // TODO
             new Command("Printf", new [] { typeof(STSC2Node) }),
             new Command("VWait", new [] { typeof(STSC2Node) }),
-            new Command("Goto", new [] { typeof(int) }),
+            new Command("Goto", new [] { typeof(Command) }),
             new CommandSubStart(),
             new Command("SubEnd", null),
             new Command("SubEndWait", new [] { typeof(byte) }),
@@ -83,7 +83,7 @@ namespace DALLib.Scripting
             new Command("Mes", new [] { typeof(STSC2Node), typeof(STSC2Node), typeof(STSC2Node), typeof(string), typeof(short) }),
             new Command("MesWait", null),
             new Command("Name / NameOff", new [] { typeof(STSC2Node) }),
-            new Command("Choice", new [] { typeof(uint), typeof(string), typeof(short) }),
+            new Command("Choice", new [] { typeof(uint), typeof(string), typeof(short) }), // TODO
             new Command("ChoiceStart", new [] { typeof(bool) }),
             new Command("FontSize", new [] { typeof(STSC2Node) }),
             new Command("MapPlace", new [] { typeof(STSC2Node), typeof(STSC2Node), typeof(int) }), // TODO

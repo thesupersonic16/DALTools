@@ -30,6 +30,17 @@ namespace DALLib.Scripting
 
         public STSC2Node() { }
 
+        public STSC2Node(int value)
+        {
+            Value = value;
+            paramFormatType = ParamFormatType.Auto;
+            paramDataType = ParamDataType.Int;
+            paramStructType = ParamStructType.Number;
+
+            m_NodeType = 0x01;
+            m_NodeCount = 0x01;
+        }
+
         public STSC2Node Read(ExtendedBinaryReader reader, uint baseAddress = 0, short nodeNum = 0)
         {
             byte bits;

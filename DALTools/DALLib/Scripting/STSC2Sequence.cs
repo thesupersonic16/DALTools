@@ -17,9 +17,14 @@ namespace DALLib.Scripting
 
         public void ReadSequence(ExtendedBinaryReader reader, bool incudeCmdLineInfo)
         {
+            // Handle references
+            // This will store each command with its location to assist with references
+            var commands = new Dictionary<uint, STSC2Commands.Command>();
+
             reader.Offset = (uint)reader.BaseStream.Length;
             while (true)
             {
+                uint position = (uint)reader.GetPosition();
                 // TODO: Maybe move half of this into the Read function
                 // TODO: Figure out how this works
                 byte[] CmdLineInfo = null;
@@ -33,21 +38,39 @@ namespace DALLib.Scripting
 
                 var line = STSC2Commands.DALRDCommands[opcode].Read(reader, CmdLineInfo);
                 Lines.Add(line);
+                commands[position] = line;
                 if (reader.BaseStream.Position >= reader.Offset)
                     break;
             }
+
+            // Handle referencing
+            foreach (var line in Lines)
+                for (int i = 0; i < line.arguments.Count; i++)
+                    if (line.ArgumentTypes[i] == typeof(STSC2Commands.Command))
+                            line.arguments[i] = commands[(uint)line.arguments[i]];
         }
 
         public void WriteSequence(ExtendedBinaryWriter writer, bool incudeCmdLineInfo)
         {
-            List<string> stringTable = new List<string>();
-            Dictionary<string, uint> writtenStrings = new Dictionary<string, uint>();
-            Dictionary<STSC2Node, uint> nodeStrOffsets = new Dictionary<STSC2Node, uint>();
-            List<STSC2Node> nodes = new List<STSC2Node>();
-            
+            var lines = new Dictionary<STSC2Commands.Command, uint>();
+            var stringTable = new List<string>();
+            var writtenStrings = new Dictionary<string, uint>();
+            var nodeStrOffsets = new Dictionary<STSC2Node, uint>();
+            var nodes = new List<STSC2Node>();
+
             // Lines
             foreach (var line in Lines)
+            {
+                lines[line] = (uint)writer.BaseStream.Position;
                 line.Write(writer, stringTable, nodes, STSC2Commands.DALRDCommands);
+            }
+
+            // Handle references
+            foreach (var line in Lines)
+                for (int i = 0; i < line.arguments.Count; i++)
+                    if (line.arguments[i] is STSC2Commands.Command refLine)
+                        writer.FillInOffset($"{line.GetHashCode()}{refLine.GetHashCode()}", lines[line]);
+
 
             // TODO: Handle trees
             // Node strings
