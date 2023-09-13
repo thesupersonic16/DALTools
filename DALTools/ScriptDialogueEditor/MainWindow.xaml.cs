@@ -23,6 +23,7 @@ using System.Windows.Threading;
 using NanoXLSX;
 using Path = System.IO.Path;
 using DALLib.IO;
+using DALLib.Scripting;
 
 namespace ScriptDialogueEditor
 {
@@ -238,6 +239,28 @@ namespace ScriptDialogueEditor
             }
         }
 
+        public short GetUnusedMesID()
+        {
+            short id = 0;
+            var codes = IsScriptv2 ? ScriptFilev2.DialogueCodes : ScriptFile.DialogueCodes;
+            foreach (var code in codes)
+            {
+                if (IsScriptv2 && code.Type == "Mes")
+                {
+                    short mesID = (short)ScriptFilev2.Sequence.Lines[code.Index].arguments[4];
+                    if (mesID > id)
+                        id = mesID;
+                }
+                if (!IsScriptv2 && code.Type == "Meg")
+                {
+                    short mesID = ScriptFile.Instructions[code.Index].GetArgument<short>(3);
+                    if (mesID > id)
+                        id = mesID;
+                }
+            }
+            return id;
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Load Config from Registry
@@ -411,10 +434,101 @@ namespace ScriptDialogueEditor
             UpdateTitle();
         }
 
+        private void CodeListView_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            if (!(sender is ListViewItem listItem))
+            {
+                e.Handled = true;
+                return; // Return if no item is selected
+            }
+            var code = listItem.Content as STSCFileDialogue.DialogueCode;
+
+            var addMesMenuItem = App.FindChild<MenuItem>(listItem.ContextMenu, "AddMesMenuItem");
+
+            if (IsScriptv2)
+            {
+                // NOTE: Maybe change this?
+                addMesMenuItem.IsEnabled = code.Type == "Mes";
+            }
+            else
+            {
+                // Scriptv1 not yet supported
+                addMesMenuItem.IsEnabled = false;
+            }
+        }
+
         private void ListView_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
                 CodeListView_MouseDoubleClick(sender, null);
+        }
+
+        private void AddMesMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var code = ScriptListView.SelectedValue as STSCFileDialogue.DialogueCode;
+            if (code == null)
+            {
+                e.Handled = true;
+                return; // Return if no item is selected
+            }
+
+            if (CurrentGame == Game.DateALiveRenDystopia)
+            {
+                int index = code.Index;
+
+                // Place below Name
+                //  or place below MesWait
+                if (code.Type == "Name")
+                    index++;
+                else if (ScriptFilev2.Sequence.Lines[index + 0].Name == "Mes" &&
+                         ScriptFilev2.Sequence.Lines[index + 1].Name == "MesWait")
+                    index += 2;
+
+                // Lines
+                var lineMes = new STSC2Commands.Command("Mes", STSC2Commands.DALRDCommands[0x40].ArgumentTypes);
+                lineMes.SetCmdLineInfo(new byte[6]);
+                lineMes.arguments.Add(new STSC2Node(240)); // X
+                lineMes.arguments.Add(new STSC2Node(860)); // Y
+                lineMes.arguments.Add(new STSC2Node(0)); // idk
+                lineMes.arguments.Add(""); // Text
+                lineMes.arguments.Add(GetUnusedMesID()); // ID
+                var lineMesWait = new STSC2Commands.Command("MesWait", null);
+                lineMesWait.SetCmdLineInfo(new byte[6]);
+
+                ScriptFilev2.Sequence.Lines.InsertRange(index, new[] { lineMes, lineMesWait });
+                ScriptFilev2.ConvertToDialogueCode();
+            }
+        }
+
+        private void DeleteMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var code = ScriptListView.SelectedValue as STSCFileDialogue.DialogueCode;
+            if (code == null)
+            {
+                e.Handled = true;
+                return; // Return if no item is selected
+            }
+
+            if (CurrentGame == Game.DateALiveRenDystopia)
+            {
+                int index = code.Index;
+
+                switch (ScriptFilev2.Sequence.Lines[index + 0].Name)
+                {
+                    case "Name / NameOff":
+                        ScriptFilev2.Sequence.Lines.RemoveAt(index);
+                        break;
+                    case "Mes":
+                        if (ScriptFilev2.Sequence.Lines[index + 1].Name == "MesWait")
+                            ScriptFilev2.Sequence.Lines.RemoveAt(index + 1);
+                        ScriptFilev2.Sequence.Lines.RemoveAt(index);
+                        break;
+                    default:
+                        break;
+                }
+
+                ScriptFilev2.ConvertToDialogueCode();
+            }
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)

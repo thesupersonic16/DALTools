@@ -77,6 +77,22 @@ namespace ScriptDialogueEditor
             application.Run(application.MainWindow);
         }
 
+        public static T FindChild<T>(ContextMenu parent, string childName)
+    where T : FrameworkElement
+        {
+            // Confirm parent and childName are valid. 
+            if (parent == null) return null;
+
+
+            foreach (FrameworkElement item in parent.Items)
+            {
+                if (item.Name == childName)
+                    return (T)item;
+            }
+
+            return null;
+        }
+
         private void Minimize_Click(object sender, RoutedEventArgs e)
         {
             var window = Window.GetWindow((DependencyObject)sender);

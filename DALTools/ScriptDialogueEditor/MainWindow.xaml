@@ -55,7 +55,13 @@
                                     </GridView>
                                 </ListView.View>
                                 <ListView.Resources>
+                                    <ContextMenu x:Key="CodeListViewContextMenu">
+                                        <MenuItem x:Name="AddMesMenuItem" Header="Add ADV Mes Line Below" Click="AddMesMenuItem_Click"/>
+                                        <MenuItem Header="Delete Line" Click="DeleteMenuItem_Click"/>
+                                    </ContextMenu>
                                     <Style TargetType="{x:Type ListViewItem}">
+                                        <EventSetter Event="ContextMenuOpening" Handler="CodeListView_ContextMenuOpening"/>
+                                        <Setter Property="ContextMenu" Value="{StaticResource CodeListViewContextMenu}"/>
                                         <Setter Property="Background" Value="{Binding Brush}" />
                                         <Setter Property="BorderThickness" Value="1" />
                                         <Setter Property="Padding" Value="2,0" />

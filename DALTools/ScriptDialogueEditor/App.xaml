@@ -22,7 +22,7 @@
 
         <DropShadowEffect x:Key="HoverEffect" BlurRadius="5" Color="#FF8ED0F9" Opacity="0" Direction="0" ShadowDepth="0"/>
 
-        
+
         <Style TargetType="{x:Type ContextMenu}">
             <Setter Property="HasDropShadow" Value="True"/>
             <Setter Property="Foreground" Value="White"/>
@@ -43,7 +43,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
+        
         <Style TargetType="{x:Type MenuItem}">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Template">
@@ -56,6 +56,13 @@
                 </Setter.Value>
             </Setter>
             <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#323232"/>
+                    <Setter Property="Foreground" Value="#FFC9C9C9"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="True">
+                    <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                </Trigger>
                 <Trigger Property="IsHighlighted" Value="True">
                     <Setter Property="Background" Value="#575757"/>
                 </Trigger>
