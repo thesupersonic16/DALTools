@@ -17,7 +17,7 @@ namespace ScriptDatabaseEditor
         public event PropertyChangedEventHandler PropertyChanged;
 
         public GameLanguage GameLanguage { get; set; }
-        public bool EnableResourceLoading { get; set; }
+        public bool LoadResources { get; set; }
 
         public string LangPath => Path.Combine(GamePath, "Data", GetLangDirectoryName(GameLanguage));
         public string LangPathRel => Path.Combine("Data", GetLangDirectoryName(GameLanguage));
@@ -26,7 +26,7 @@ namespace ScriptDatabaseEditor
         {
             GamePath = path;
             GameLanguage = lang;
-            EnableResourceLoading = !string.IsNullOrEmpty(path);
+            LoadResources = Directory.Exists(LangPath);
         }
 
         public static string GetLangDirectoryName(GameLanguage lang)

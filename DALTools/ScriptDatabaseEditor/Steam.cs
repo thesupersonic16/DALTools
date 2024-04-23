@@ -50,9 +50,20 @@ namespace ScriptDatabaseEditor
             paths.Add(Path.Combine(SteamLocation, "steamapps\\common"));
 
             // Adds all the custom libraries
-            foreach (var library in SteamVDF.GetContainer(vdf, "LibraryFolders"))
-                if (int.TryParse(library.Key, out int index))
-                    paths.Add(Path.Combine(library.Value as string, "steamapps\\common"));
+            var container = SteamVDF.GetContainer(vdf, "LibraryFolders");
+            if (container != null)
+            {
+                foreach (var library in container)
+                {
+                    if (int.TryParse(library.Key, out int index))
+                    {
+                        if (library.Value is Dictionary<string, object> libraryInfo)
+                            paths.Add(Path.Combine(libraryInfo["path"] as string ?? string.Empty, "steamapps\\common"));
+                        else
+                            paths.Add(Path.Combine(library.Value as string ?? string.Empty, "steamapps\\common"));
+                    }
+                }
+            }
 
             foreach (string path in paths)
             {
@@ -93,7 +104,7 @@ namespace ScriptDatabaseEditor
         {
             foreach (var value in containers)
             {
-                if (value.Key == name)
+                if (string.Compare(value.Key, name, StringComparison.InvariantCultureIgnoreCase) == 0)
                 {
                     return value.Value as Dictionary<string, object>;
                 }
@@ -113,87 +124,78 @@ namespace ScriptDatabaseEditor
         public static Dictionary<string, object> Load(Stream fileStream)
         {
             var defs = new Dictionary<string, object>();
-            using (var reader = new StreamReader(fileStream, true))
+            var reader = new StreamReader(fileStream, true);
+
+            string line, str = "", nm = "";
+            bool doReadString = false;
+            char c;
+
+            return ReadContainers() ?? new Dictionary<string, object>();
+
+            // Sub-Methods
+            Dictionary<string, object> ReadContainers()
             {
-                string line, str = "", nm = "";
-                bool doReadString = false;
-                char c;
+                List<Dictionary<string, object>> containers = new List<Dictionary<string, object>>();
+                containers.Add(new Dictionary<string, object>());
+                string name = "";
+                nm = str = "";
 
-                ReadContainers(defs);
-                return defs;
-
-                // Sub-Methods
-                void ReadContainers(Dictionary<string, object> parent)
+                while (!reader.EndOfStream)
                 {
-                    Dictionary<string, object> container = null;
-                    string name = "";
-                    nm = str = "";
+                    line = reader.ReadLine();
+                    doReadString = false;
 
-                    while (!reader.EndOfStream)
+                    for (int i = 0; i < line.Length; ++i)
                     {
-                        line = reader.ReadLine();
-                        doReadString = false;
-
-                        for (int i = 0; i < line.Length; ++i)
+                        c = line[i];
+                        if (c == '"')
                         {
-                            c = line[i];
-                            if (c == '"')
-                            {
-                                doReadString = !doReadString;
+                            doReadString = !doReadString;
 
-                                if (doReadString)
+                            if (doReadString)
+                            {
+                                continue;
+                            }
+                            else
+                            {
+                                if (string.IsNullOrEmpty(nm))
                                 {
-                                    continue;
+                                    nm = str;
+                                    str = "";
                                 }
                                 else
                                 {
-                                    if (string.IsNullOrEmpty(nm))
-                                    {
-                                        nm = str;
-                                        str = "";
-                                    }
-                                    else
-                                    {
-                                        if (container != null)
-                                            container.Add(nm, str);
-                                        else
-                                            parent.Add(nm, str);
-
-                                        nm = str = "";
-                                    }
+                                    if (containers.Count != 0)
+                                        containers.Last().Add(nm, str);
+                                    nm = str = "";
                                 }
                             }
-                            else if (c == '{')
+                        }
+                        else if (c == '{')
+                        {
+                            var container = new Dictionary<string, object>();
+                            containers.Last().Add(nm, container);
+                            containers.Add(container);
+                            name = nm;
+                            nm = "";
+                        }
+                        else if (c == '}')
+                        {
+                            if (containers.Count != 0)
                             {
-                                if (container == null)
-                                {
-                                    container = new Dictionary<string, object>();
-                                    name = nm;
-                                }
-                                else
-                                {
-                                    var subContainer = new Dictionary<string, object>();
-                                    ReadContainers(subContainer);
-                                    container.Add(nm, subContainer);
-                                }
-
-                                nm = "";
+                                var container = containers.Last();
+                                containers.Remove(container);
                             }
-                            else if (c == '}')
-                            {
-                                if (container != null)
-                                {
-                                    parent.Add(name, container);
-                                    container = null;
-                                }
-                            }
-                            else if (doReadString)
-                            {
-                                str += c;
-                            }
+                            else
+                                throw new Exception("Invalid VDF format!");
+                        }
+                        else if (doReadString)
+                        {
+                            str += c;
                         }
                     }
                 }
+                return containers.FirstOrDefault();
             }
         }
     }
@@ -205,7 +207,7 @@ namespace ScriptDatabaseEditor
         public string ExeName { get; set; }
         public string RootDirectory { get; set; }
         public string ExeDirectory { get { return Path.Combine(RootDirectory, ExeName); } }
-        
+
         public SteamGame(string gameName, string exe, string gameID)
         {
             GameName = gameName;

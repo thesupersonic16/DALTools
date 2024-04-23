@@ -31,7 +31,7 @@ namespace ScriptDatabaseEditor
 
         private void ButtonClose_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow.Config.SaveConfig();
+            MainWindow.CurrentConfig.SaveConfig();
             Close();
         }
 

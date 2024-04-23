@@ -38,12 +38,8 @@ namespace ScriptDatabaseEditor
 
         private TEXFile _optionTexture              = new TEXFile();
 
-        private Game _game;
-
-        private Config _config = new Config();
-
-        public Config Config => _config;
-        public Game Game => _game;
+        public Game CurrentGame = null;
+        public Config CurrentConfig = new Config();
 
         // Voice Names
         public ImageSource VN_BG { get; set; }
@@ -71,17 +67,17 @@ namespace ScriptDatabaseEditor
         public void LoadGameFiles()
         {
             // Check if files should not be loaded
-            if (!_game.EnableResourceLoading)
+            if (!CurrentGame.LoadResources)
                 return;
             try
             {
                 // Load Archives and Textures
-                _nameTextureArchive.Load(Path.Combine(_game.LangPath, "Event\\Name.pck"), true);
-                _movieTextureArchive.Load(Path.Combine(_game.LangPath, "Extra\\mov\\movieThumb.pck"), true);
-                _CGThumbnailTextureArchive.Load(Path.Combine(_game.GamePath, "Data\\Data\\Extra\\gal\\GalThumb.pck"), true);
-                _novelTextureArchive.Load(Path.Combine(_game.LangPath, "Extra\\nov\\NovData.pck"), true);
-                _novelthumbnailTextureArchive.Load(Path.Combine(_game.LangPath, "Extra\\nov\\NovThumb.pck"), true);
-                (_optionTexture = new TEXFile()).Load(Path.Combine(_game.LangPath, "Init\\option.tex"), true);
+                _nameTextureArchive.Load(Path.Combine(CurrentGame.LangPath, "Event\\Name.pck"), true);
+                _movieTextureArchive.Load(Path.Combine(CurrentGame.LangPath, "Extra\\mov\\movieThumb.pck"), true);
+                _CGThumbnailTextureArchive.Load(Path.Combine(CurrentGame.GamePath, "Data\\Data\\Extra\\gal\\GalThumb.pck"), true);
+                _novelTextureArchive.Load(Path.Combine(CurrentGame.LangPath, "Extra\\nov\\NovData.pck"), true);
+                _novelthumbnailTextureArchive.Load(Path.Combine(CurrentGame.LangPath, "Extra\\nov\\NovThumb.pck"), true);
+                (_optionTexture = new TEXFile()).Load(Path.Combine(CurrentGame.LangPath, "Init\\option.tex"), true);
 
                 // Create and Set ImageSource
                 VN_BG = ImageTools.ConvertToSource(_optionTexture.CreateBitmapFromFrame(27));
@@ -90,7 +86,7 @@ namespace ScriptDatabaseEditor
             catch (Exception e)
             {
                 // Disable Resources after failing the first time
-                _game.EnableResourceLoading = false;
+                CurrentGame.LoadResources = false;
                 // Show error
                 new ExceptionWindow(e).ShowDialog();
             }
@@ -116,7 +112,7 @@ namespace ScriptDatabaseEditor
         /// <param name="lang">The Language to switch to</param>
         public void SwitchLanguage(GameLanguage lang)
         {
-            _game.GameLanguage = lang;
+            CurrentGame.GameLanguage = lang;
             // Debug
             App.Debug_GameLanguage = lang;
             LoadGameFiles();
@@ -125,7 +121,7 @@ namespace ScriptDatabaseEditor
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Load Config from Registry
-            _config.LoadConfig();
+            CurrentConfig.LoadConfig();
             List<SteamGame> games = new List<SteamGame>();
             try
             {
@@ -136,23 +132,23 @@ namespace ScriptDatabaseEditor
                 games = Steam.SearchForGames("DATE A LIVE: Rio Reincarnation");
             }catch { }
 
-            if (games.Count != 0)
-                _game = new Game(games[0].RootDirectory, GameLanguage.English);
-            else
-                _game = new Game("", GameLanguage.English);
+            //if (games.Count != 0)
+            //    CurrentGame = new Game(games[0].RootDirectory, GameLanguage.English);
+            //else
+                CurrentGame = new Game("", GameLanguage.English);
 
             // Debug
-            App.Debug_GamePath = _game?.GamePath;
-            App.Debug_GameLanguage = _config.DefaultGameLanguage;
+            App.Debug_GamePath = CurrentGame?.GamePath;
+            App.Debug_GameLanguage = CurrentConfig.DefaultGameLanguage;
 
 
             // Set Default Language
-            _game.GameLanguage = _config.DefaultGameLanguage;
-            App.RunAnimations = _config.EnableAnimations;
+            CurrentGame.GameLanguage = CurrentConfig.DefaultGameLanguage;
+            App.RunAnimations = CurrentConfig.EnableAnimations;
 
             // If not file was loaded, Load default
             if (string.IsNullOrEmpty(App.DataBasePath))
-                App.DataBasePath = Path.Combine(_game.LangPath, @"Script\database.bin");
+                App.DataBasePath = Path.Combine(CurrentGame.LangPath, @"Script\database.bin");
 
             if (File.Exists(App.DataBasePath))
                 ChangeDatabase(App.DataBasePath);
@@ -172,7 +168,7 @@ namespace ScriptDatabaseEditor
             var list = sender as ListView;
             if (list.SelectedIndex == -1)
                 return; // Return if no item is selected
-            new PropertyEditorMovie(_stscDatabase.Movies[list.SelectedIndex], _game, _movieTextureArchive).ShowDialog();
+            new PropertyEditorMovie(_stscDatabase.Movies[list.SelectedIndex], CurrentGame, _movieTextureArchive).ShowDialog();
         }
 
         private void ST_ListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -198,7 +194,7 @@ namespace ScriptDatabaseEditor
                 return; // Return if no item is selected
 
             // Check if files should not be loaded
-            if (!_game.EnableResourceLoading)
+            if (!CurrentGame.LoadResources)
                 return;
 
             int id = (list.SelectedItem as STSCFileDatabase.VoiceEntry).ID;
@@ -218,12 +214,12 @@ namespace ScriptDatabaseEditor
                 return; // Return if no item is selected
 
             // Check if files should not be loaded
-            if (!_game.EnableResourceLoading)
+            if (!CurrentGame.LoadResources)
                 return;
 
             int id = (list.SelectedItem as STSCFileDatabase.CGEntry).CGID;
             var game = (list.SelectedItem as STSCFileDatabase.CGEntry).GameID;
-            string filepath = Path.Combine(_game.GamePath, $"Data\\Data\\Ma\\{Consts.GAMEDIRNAME[(int)game]}\\MA{id:D6}.pck");
+            string filepath = Path.Combine(CurrentGame.GamePath, $"Data\\Data\\Ma\\{Consts.GAMEDIRNAME[(int)game]}\\MA{id:D6}.pck");
 
             if (_CGThumbnailTextureArchive.GetFileData($"{Consts.GAMEDIRNAME[(int)game]}/MA{id:D6}.tex") is byte[] data)
             {
@@ -239,7 +235,7 @@ namespace ScriptDatabaseEditor
         private void CG_ExportThumbButton_Click(object sender, RoutedEventArgs e)
         {
             // Show error if DAL: RR is not installed as its needed to export
-            if (!_game.EnableResourceLoading)
+            if (!CurrentGame.LoadResources)
             {
                 MessageBox.Show("This feature requires DATE A LIVE: Rio Reincarnation to be installed!", "DAL: RR not found!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -275,7 +271,7 @@ namespace ScriptDatabaseEditor
                 return; // Return if no item is selected
 
             // Check if files should not be loaded
-            if (!_game.EnableResourceLoading)
+            if (!CurrentGame.LoadResources)
                 return;
 
             string path = (list.SelectedItem as STSCFileDatabase.ArtBookPageEntry).PagePathData;
@@ -362,7 +358,7 @@ namespace ScriptDatabaseEditor
         private void CG_ExportImage_Click(object sender, RoutedEventArgs e)
         {
             // Show error if DAL: RR is not installed as its needed to export
-            if (!_game.EnableResourceLoading)
+            if (!CurrentGame.LoadResources)
             {
                 MessageBox.Show("Resource loading is currently disabled. Make sure DAL: RR is installed correctly", "Resource Loading Error!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -380,7 +376,7 @@ namespace ScriptDatabaseEditor
             {
                 try
                 {
-                    string filepath = Path.Combine(_game.GamePath, $"Data\\Data\\Ma\\{Consts.GAMEDIRNAME[(int)game]}\\MA{id:D6}.pck");
+                    string filepath = Path.Combine(CurrentGame.GamePath, $"Data\\Data\\Ma\\{Consts.GAMEDIRNAME[(int)game]}\\MA{id:D6}.pck");
 
                     var pck = new PCKFile();
                     var ma = new MAFile();
