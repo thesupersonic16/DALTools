@@ -132,9 +132,9 @@ namespace ScriptDatabaseEditor
                 games = Steam.SearchForGames("DATE A LIVE: Rio Reincarnation");
             }catch { }
 
-            //if (games.Count != 0)
-            //    CurrentGame = new Game(games[0].RootDirectory, GameLanguage.English);
-            //else
+            if (games.Count != 0)
+                CurrentGame = new Game(games[0].RootDirectory, GameLanguage.English);
+            else
                 CurrentGame = new Game("", GameLanguage.English);
 
             // Debug
