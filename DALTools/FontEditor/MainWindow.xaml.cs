@@ -59,7 +59,7 @@ namespace FontEditor
             var character = FontCodeFile.Characters[id];
             double x = (character.XScale + character.Kerning / UI_FontImage.Source.Width) * UI_FontImage.ActualWidth;
             double y = character.YScale * UI_FontImage.ActualHeight;
-            double w = FontCodeFile.WidthScale + character.Width * (UI_FontImage.ActualWidth / UI_FontImage.Source.Width);
+            double w = (FontCodeFile.WidthScale + character.Width) * (UI_FontImage.ActualWidth / UI_FontImage.Source.Width);
             double h = FontCodeFile.CharacterHeight * (UI_FontImage.ActualHeight / UI_FontImage.Source.Height);
             Borders[id].Margin = new Thickness(x, y, 0, 0);
             Borders[id].Width = w;
@@ -185,20 +185,48 @@ namespace FontEditor
             UI_SaveButton.IsEnabled = true;
         }
 
+        public void LoadFontFNT(string path)
+        {
+            FilePath = path;
+
+            FNTFile file = new FNTFile();
+            file.Load(path);
+
+            FontCodeFile = file.FontCode;
+            FontImageTexFile = file.FontTexture;
+
+            UI_FontImage.Source = ImageTools.ConvertToSource(FontImageTexFile.CreateBitmap());
+
+            LastIndex = -1;
+            HoverIndex = -1;
+
+            // Reload
+            ReloadUI();
+
+            UI_SaveButton.IsEnabled = true;
+        }
+
         public void LoadFile(string path)
         {
             if (path == null)
                 return;
             
             // Check if its a PCK
-            if (path.ToLowerInvariant().Contains(".pck"))
+            if (path.ToLowerInvariant().EndsWith(".pck"))
             {
                 LoadFontPCK(path);
                 return;
             }
 
+            // Check if its a FNT
+            if (path.ToLowerInvariant().EndsWith(".fnt"))
+            {
+                LoadFontFNT(path);
+                return;
+            }
+
             // Check if file is valid and make sure FilePath is the .code
-            if (path.ToLowerInvariant().Contains("_data.tex") || path.ToLowerInvariant().Contains(".code"))
+            if (path.ToLowerInvariant().EndsWith("_data.tex") || path.ToLowerInvariant().EndsWith(".code"))
             {
                 FilePath = path.Replace("_data.tex", ".code");
             }
@@ -368,7 +396,7 @@ namespace FontEditor
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var ofd = new OpenFileDialog();
-            ofd.Filter = "All Supported Files|*.code;*.pck|Font Code|*.code|PCK Archive|*.pck";
+            ofd.Filter = "All Supported Files|*.code;*.pck;*.fnt|Font Code|*.code|PCK Archive|*.pck|Font Bundle|*.fnt";
             if (ofd.ShowDialog() == true)
             {
                 LoadFile(ofd.FileName);

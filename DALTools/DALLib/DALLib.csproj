@@ -59,6 +59,7 @@
     <Compile Include="Exceptions\InvalidFileFormatException.cs" />
     <Compile Include="Exceptions\InvalidTextureFormatException.cs" />
     <Compile Include="Exceptions\STSCDisassembleException.cs" />
+    <Compile Include="File\FNTFile.cs" />
     <Compile Include="File\FontFile.cs" />
     <Compile Include="File\MAFile.cs" />
     <Compile Include="File\STSC2File.cs" />

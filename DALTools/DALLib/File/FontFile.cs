@@ -38,9 +38,11 @@ namespace DALLib.File
             // The amount of characters defined
             int characterCount  = reader.ReadInt32();
             // Unknown
-            WidthScale          = reader.ReadSingle();
-            HeightScale         = reader.ReadSingle();
-
+            if (WidthScale == 0 || HeightScale == 0)
+            {
+                WidthScale  = reader.ReadSingle();
+                HeightScale = reader.ReadSingle();
+            }
             for (int i = 0; i < characterCount; ++i)
             {
                 var fontEntry = new FontEntry
