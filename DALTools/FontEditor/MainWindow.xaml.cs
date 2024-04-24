@@ -502,10 +502,11 @@ namespace FontEditor
                 {
                     var textureFilePath = PCKFontArchive.SearchForFile(".tex");
                     var newTexture = new TEXFile();
-
-                    // Set Sigless
                     newTexture.Sigless = true;
-                    
+
+                    if (FontTableFile != null)
+                        newTexture.Sigless = false;
+
                     // Load Image to Texture
                     newTexture.LoadSheetImage(ofd.FileName);
 
@@ -530,7 +531,7 @@ namespace FontEditor
                         using (var stream = new MemoryStream())
                         {
                             newTexture.Save(stream);
-                           PCKFontArchive.ReplaceFile(textureFilePath, stream.ToArray());
+                            PCKFontArchive.ReplaceFile(textureFilePath, stream.ToArray());
                         }
                     }
                     // Set Texture
