@@ -72,8 +72,11 @@ namespace DALLib.File
             // The amount of characters defined
             writer.Write(Characters.Count);
             // Unknown
-            writer.Write(WidthScale);
-            writer.Write(HeightScale);
+            if (!(WidthScale == -1 || HeightScale == -1))
+            {
+                writer.Write(WidthScale);
+                writer.Write(HeightScale);
+            }
             foreach (var entry in Characters)
             {
                 // Writes the character in UTF-8 in reverse byte order, Not sure why its like this
