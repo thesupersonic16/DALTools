@@ -34,6 +34,7 @@ namespace DALLib.File
 
             // Load texture
             reader.JumpTo(textureOffset);
+            reader.FixPadding(0x08);
             FontTexture.Load(reader, true);
 
             // Set scale size
@@ -53,6 +54,7 @@ namespace DALLib.File
             FontCode.Save(writer);
 
             // Texture
+            writer.FixPadding(0x08);
             writer.FillInOffset("texture");
             FontTexture.Save(writer);
         }
