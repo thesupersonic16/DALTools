@@ -31,6 +31,7 @@ namespace FontEditor
         public TEXFile FontImageTexFile = new TEXFile();
         public PCKFile PCKFontArchive = new PCKFile();
         public FontFile FontCodeFile = new FontFile();
+        public FNTFile FontTableFile = null;
         public List<Border> Borders = new List<Border>();
 
         public string FilePath = null;
@@ -131,7 +132,11 @@ namespace FontEditor
 
         public void SaveFont()
         {
-            if (!string.IsNullOrEmpty(FilePath) && FilePath.EndsWith(".pck"))
+            if (!string.IsNullOrEmpty(FilePath) && FontTableFile != null)
+            {
+                FontTableFile.Save(FilePath);
+            }
+            else if (!string.IsNullOrEmpty(FilePath) && FilePath.EndsWith(".pck"))
             {
                 // PCK Save
                 using (var stream = new MemoryStream())
@@ -172,6 +177,7 @@ namespace FontEditor
                 FontImageTexFile.Load(PCKFontArchive.GetFileStream(textureFilePath));
                 // Set Texture
                 UI_FontImage.Source = ImageTools.ConvertToSource(FontImageTexFile.CreateBitmap());
+                UI_ExportButton.IsEnabled = true;
             }
             else
                 MessageBox.Show("Failed to load Texture!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -189,11 +195,11 @@ namespace FontEditor
         {
             FilePath = path;
 
-            FNTFile file = new FNTFile();
-            file.Load(path);
+            FontTableFile = new FNTFile();
+            FontTableFile.Load(path);
 
-            FontCodeFile = file.FontCode;
-            FontImageTexFile = file.FontTexture;
+            FontCodeFile = FontTableFile.FontCode;
+            FontImageTexFile = FontTableFile.FontTexture;
 
             UI_FontImage.Source = ImageTools.ConvertToSource(FontImageTexFile.CreateBitmap());
 
@@ -204,13 +210,16 @@ namespace FontEditor
             ReloadUI();
 
             UI_SaveButton.IsEnabled = true;
+            UI_ExportButton.IsEnabled = true;
         }
 
         public void LoadFile(string path)
         {
             if (path == null)
                 return;
-            
+
+            FontTableFile = null;
+
             // Check if its a PCK
             if (path.ToLowerInvariant().EndsWith(".pck"))
             {
@@ -447,6 +456,7 @@ namespace FontEditor
                 // Load Font TEX
                 FontImageTexFile.Load(ofd.FileName);
                 UI_FontImage.Source = ImageTools.ConvertToSource(FontImageTexFile.CreateBitmap());
+                UI_ExportButton.IsEnabled = true;
             }
         }
 
@@ -456,7 +466,7 @@ namespace FontEditor
             ofd.Filter = "All Supported Files|*.tex;*.png|Texture|*.tex|Supported Image Files|*.png";
             if (ofd.ShowDialog() == true)
             {
-                if (ofd.FileName.ToLower(CultureInfo.GetCultureInfo("en-US")).EndsWith(".tex"))
+                if (ofd.FileName.ToLowerInvariant().EndsWith(".tex"))
                 {
                     var textureFilePath = PCKFontArchive.SearchForFile(".tex");
                     var newTexture = new TEXFile();
@@ -479,8 +489,11 @@ namespace FontEditor
                             return;
                     }
 
-                    // Import Texture into PCK
-                    PCKFontArchive.ReplaceFile(textureFilePath, File.ReadAllBytes(ofd.FileName));
+                    // Copy texture to archive
+                    if (FontTableFile != null)
+                        FontTableFile.FontTexture = newTexture;
+                    else
+                        PCKFontArchive.ReplaceFile(textureFilePath, File.ReadAllBytes(ofd.FileName));
 
                     // Set Texture
                     UI_FontImage.Source = ImageTools.ConvertToSource((FontImageTexFile = newTexture).CreateBitmap());
@@ -508,16 +521,35 @@ namespace FontEditor
                             return;
                     }
 
-                    // Save Texture to PCK
-                    using (var stream = new MemoryStream())
-                    {
-                        newTexture.Save(stream);
-                        PCKFontArchive.ReplaceFile(textureFilePath, stream.ToArray());
-                    }
 
+                    if (FontTableFile != null)
+                        FontTableFile.FontTexture = newTexture;
+                    else
+                    {
+                        // Save Texture to PCK
+                        using (var stream = new MemoryStream())
+                        {
+                            newTexture.Save(stream);
+                           PCKFontArchive.ReplaceFile(textureFilePath, stream.ToArray());
+                        }
+                    }
                     // Set Texture
                     UI_FontImage.Source = ImageTools.ConvertToSource((FontImageTexFile = newTexture).CreateBitmap());
                 }
+            }
+        }
+
+        private void UI_ExportTextureButton_Click(object sender, RoutedEventArgs e)
+        {
+            var sfd = new SaveFileDialog();
+            sfd.Filter = "Portable Network Graphics (*.png)|*.png|Texture|*.tex";
+            sfd.FileName = Path.ChangeExtension(Path.GetFileName(FilePath), "png");
+            if (sfd.ShowDialog() == true)
+            {
+                if (sfd.FilterIndex == 1)
+                    FontImageTexFile.SaveSheetImage(sfd.FileName);
+                else
+                    FontImageTexFile.Save(sfd.FileName);
             }
         }
 
