@@ -88,7 +88,7 @@ namespace DALLib.ImportExport
                 // Next column
                 if (!escape && _buffer[_bufferIndex] == ',')
                 {
-                    splits.Add(buffer.Replace("\r", "").Replace("\n", "\\n"));
+                    splits.Add(buffer.Replace("\r", "").Replace("\\n", "\n"));
                     buffer = "";
                     continue;
                 }
@@ -100,7 +100,7 @@ namespace DALLib.ImportExport
                 {
                     _bufferIndex = _bufferIndex + 1;
                     // Escape the LF and add the last column
-                    splits.Add(buffer.Replace("\r", "").Replace("\n", "\\n"));
+                    splits.Add(buffer.Replace("\r", "").Replace("\\n", "\n"));
                     break;
                 }
                 // Add char
@@ -113,9 +113,9 @@ namespace DALLib.ImportExport
         {
             for (int i = 0; i < fields.Length; ++i)
             {
-                // Add double-quotes if field contains an escaped line feed
-                if (fields[i].Length > 0 && fields[i][0] != '"' && fields[i].Contains("\\n"))
-                    fields[i] = $"\"{fields[i].Replace("\\n", LINEBREAK)}\"";
+                if (fields[i].Length > 0 && fields[i][0] != '"' && 
+                    (fields[i].Contains("\n") || fields[i].Contains(",")))
+                    fields[i] = $"\"{fields[i].Replace("\n", "\\n")}\"";
             }
             return string.Join(",", fields) + LINEBREAK;
         }

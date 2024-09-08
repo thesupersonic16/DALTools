@@ -31,10 +31,10 @@ namespace DALLib.ImportExport
                     continue;
 
                 if (line.StartsWith("msgid"))
-                    id = line.Substring(7, line.Length - 8).Replace("\\\"", "\"");
+                    id = line.Substring(7, line.Length - 8).Replace("\\\"", "\"").Replace("\\n", "\n");
                 if (line.StartsWith("msgstr"))
                 {
-                    str = line.Substring(8, line.Length - 9).Replace("\\\"", "\"");
+                    str = line.Substring(8, line.Length - 9).Replace("\\\"", "\"").Replace("\\n", "\n");
                     lines.Add(new TranslationLine("", "", id, str));
                 }
             }
@@ -48,7 +48,7 @@ namespace DALLib.ImportExport
 
             // Fields
             foreach (var translation in lines)
-                AddEntry(translation.Comment, translation.Key);
+                AddEntry(translation.Comment, translation.Key.Replace("\n", "\\n"));
 
             return FinaliseExport();
         }

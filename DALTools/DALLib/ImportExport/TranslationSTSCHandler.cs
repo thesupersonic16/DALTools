@@ -87,8 +87,8 @@ namespace DALLib.ImportExport
                         break;
                     case "Mes":
                         // Add Entry to file
-                        string name = names.ContainsKey(nameID) ? names[nameID] : $"0x{nameID:X2}";
-                        lines.Add(new TranslationLine("Message", $"Unknown [{name}]", line.arguments[3] as string));
+                        string name = names.ContainsKey(nameID) ? names[nameID] : $"Unknown 0x{nameID:X2}";
+                        lines.Add(new TranslationLine("Message", name, line.arguments[3] as string));
                         break;
                     case "Choice":
                     case "SetChoice":
