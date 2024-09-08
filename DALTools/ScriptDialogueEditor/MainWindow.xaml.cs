@@ -663,22 +663,29 @@ namespace ScriptDialogueEditor
             };
             if (sfd.ShowDialog() == true)
             {
-                // Gets the index of the filetype
-                int index = TranslationSTSCHandler.FileTypes.ToList().FindIndex(t => sfd.FileName.Contains(t.TypeExtension));
+                try
+                {
+                    // Gets the index of the filetype
+                    int index = TranslationSTSCHandler.FileTypes.ToList().FindIndex(t => sfd.FileName.Contains(t.TypeExtension));
 
-                if (IsScriptv2)
-                {
-                    var script = new STSC2File();
-                    using (var stream = ScriptArchive.GetFileStream(file.FileName))
-                        script.Load(stream);
-                    File.WriteAllText(sfd.FileName, TranslationSTSCHandler.ExportTranslation(index, ScriptFilev2, CharacterNames, App.StringProcess), new UTF8Encoding(true));
+                    if (IsScriptv2)
+                    {
+                        var script = new STSC2File();
+                        using (var stream = ScriptArchive.GetFileStream(file.FileName))
+                            script.Load(stream);
+                        File.WriteAllText(sfd.FileName, TranslationSTSCHandler.ExportTranslation(index, ScriptFilev2, CharacterNames, App.StringProcess), new UTF8Encoding(true));
+                    }
+                    else
+                    {
+                        var script = new STSCFile();
+                        using (var stream = ScriptArchive.GetFileStream(file.FileName))
+                            script.Load(stream);
+                        File.WriteAllText(sfd.FileName, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB, App.StringProcess), new UTF8Encoding(true));
+                    }
                 }
-                else
+                catch
                 {
-                    var script = new STSCFile();
-                    using (var stream = ScriptArchive.GetFileStream(file.FileName))
-                        script.Load(stream);
-                    File.WriteAllText(sfd.FileName, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB, App.StringProcess), new UTF8Encoding(true));
+                    MessageBox.Show($"Failed to export.", "Export Error!", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -702,12 +709,20 @@ namespace ScriptDialogueEditor
                 {
                     var script = new STSCFile();
                     var scriptv2 = new STSC2File();
-                    if (IsScriptv2)
-                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
-                            scriptv2.Load(stream);
-                    else
-                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
-                            script.Load(stream);
+                    try
+                    { 
+                        if (IsScriptv2)
+                            using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                                scriptv2.Load(stream);
+                        else
+                            using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                                script.Load(stream);
+                    }
+                    catch
+                    {
+                        MessageBox.Show($"Failed to import {entry.FileName}. Skipping.", "Import Error!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        continue;
+                    }
                     // Path to the script file
                     string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName), TranslationSTSCHandler.FileTypes[index].TypeExtension);
                     // Skip script if file does not exist
@@ -769,27 +784,34 @@ namespace ScriptDialogueEditor
                 var index = sfd.FilterIndex - 1;
                 foreach (var entry in ScriptArchive.FileEntries)
                 {
-                    if (IsScriptv2)
+                    try
                     {
-                        var script = new STSC2File();
-                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
-                            script.Load(stream);
-                        string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName),
-                            TranslationSTSCHandler.FileTypes[index].TypeExtension);
-                        // Create the directory
-                        Directory.CreateDirectory(Path.GetDirectoryName(filepath));
-                        File.WriteAllText(filepath, TranslationSTSCHandler.ExportTranslation(index, script, CharacterNames, App.StringProcess), new UTF8Encoding(true));
+                        if (IsScriptv2)
+                        {
+                            var script = new STSC2File();
+                            using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                                script.Load(stream);
+                            string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName),
+                                TranslationSTSCHandler.FileTypes[index].TypeExtension);
+                            // Create the directory
+                            Directory.CreateDirectory(Path.GetDirectoryName(filepath));
+                            File.WriteAllText(filepath, TranslationSTSCHandler.ExportTranslation(index, script, CharacterNames, App.StringProcess), new UTF8Encoding(true));
+                        }
+                        else
+                        {
+                            var script = new STSCFile();
+                            using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                                script.Load(stream);
+                            string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName),
+                                TranslationSTSCHandler.FileTypes[index].TypeExtension);
+                            // Create the directory
+                            Directory.CreateDirectory(Path.GetDirectoryName(filepath));
+                            File.WriteAllText(filepath, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB, App.StringProcess), new UTF8Encoding(true));
+                        }
                     }
-                    else
+                    catch
                     {
-                        var script = new STSCFile();
-                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
-                            script.Load(stream);
-                        string filepath = Path.ChangeExtension(Path.Combine(dir, entry.FileName),
-                            TranslationSTSCHandler.FileTypes[index].TypeExtension);
-                        // Create the directory
-                        Directory.CreateDirectory(Path.GetDirectoryName(filepath));
-                        File.WriteAllText(filepath, TranslationSTSCHandler.ExportTranslation(index, script, ScriptDB, App.StringProcess), new UTF8Encoding(true));
+                        MessageBox.Show($"Failed to export {entry.FileName}. Skipping.", "Export Error!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     }
                 }
             }
@@ -812,13 +834,20 @@ namespace ScriptDialogueEditor
                 {
                     var script = new STSCFile();
                     var scriptv2 = new STSC2File();
-                    if (IsScriptv2)
-                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
-                            scriptv2.Load(stream);
-                    else
-                        using (var stream = ScriptArchive.GetFileStream(entry.FileName))
-                            script.Load(stream);
-
+                    try
+                    {
+                        if (IsScriptv2)
+                            using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                                scriptv2.Load(stream);
+                        else
+                            using (var stream = ScriptArchive.GetFileStream(entry.FileName))
+                                script.Load(stream);
+                        }
+                    catch
+                    {
+                        MessageBox.Show($"Failed to load {entry.FileName}. Skipping.", "Import Error!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        continue;
+                    }
                     try
                     {
                         var worksheet = workbook.Worksheets.FirstOrDefault(t => entry.FileName.Contains(t.SheetName));
