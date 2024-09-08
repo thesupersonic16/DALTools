@@ -69,7 +69,7 @@ namespace DALLib.Scripting
             foreach (var line in Lines)
                 for (int i = 0; i < line.arguments.Count; i++)
                     if (line.arguments[i] is STSC2Commands.Command refLine)
-                        writer.FillInOffset($"{line.GetHashCode()}{refLine.GetHashCode()}", lines[line]);
+                        writer.FillInOffset($"{line.GetHashCode()}{refLine.GetHashCode()}", lines[refLine]);
 
 
             // TODO: Handle trees

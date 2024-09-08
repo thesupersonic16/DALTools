@@ -37,7 +37,7 @@ namespace ScriptDialogueEditor
                     case "Voice":
                         break;
                     case "Mes":
-                        line.arguments[3] = code.Text;
+                        line.arguments[3] = code.Text.Replace("\\n", "\n");
                         break;
                     case "Script":
                         break;

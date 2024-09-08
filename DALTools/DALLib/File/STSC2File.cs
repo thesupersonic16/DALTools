@@ -162,9 +162,17 @@ namespace DALLib.File
 				if (CheckFlag(STSC2Flags.Security))
 					_data = SecurityDecode(_data, _data.Length, 0);
 
-				// Decompress stream
-				using (var deflate = new DeflateStream(new MemoryStream(_data, 2, _data.Length - 2), CompressionMode.Decompress, false))
-                    scriptStream = new VirtualStream(deflate.CacheStream(), keepOpen);
+                // Decompress stream
+                using (var deflate = new DeflateStream(new MemoryStream(_data, 2, _data.Length - 2), CompressionMode.Decompress, false))
+                {
+                    var memoryStream = deflate.CacheStream();
+                    
+                    // Test
+                    //System.IO.File.WriteAllBytes("out.bin", memoryStream.ToArray());
+                    //memoryStream.Position = 0;
+                    
+                    scriptStream = new VirtualStream(memoryStream, keepOpen);
+                }
             }
             else
             {

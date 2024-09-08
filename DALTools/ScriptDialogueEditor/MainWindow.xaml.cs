@@ -95,6 +95,7 @@ namespace ScriptDialogueEditor
                     if (File.Exists(path))
                     {
                         CharacterNames.Clear();
+                        CharacterNames.Add(0xFF, "None");
                         var table = new TableFile();
                         table.Load(path);
                         var entries = table.ToObject<CharaEntry>();
