@@ -555,6 +555,11 @@ namespace ScriptDialogueEditor
                 ScriptArchive.Load(App.ScriptPath = ofd.FileName, true);
                 ScriptArchive.Preload();
 
+                // Load replacement table
+                string replacementTablePath = Path.Combine(Path.GetDirectoryName(App.ScriptPath), "replace.ini");
+                if (File.Exists(replacementTablePath))
+                    App.StringProcess.Load(File.ReadAllText(replacementTablePath, Encoding.UTF8));
+
                 // Load script from config or use default
                 string fileName = !string.IsNullOrEmpty(Config.LastOpenedScript) && ScriptArchive.FileEntries.Any(t =>
                     t.FileName.ToLowerInvariant() == Config.LastOpenedScript.ToLowerInvariant())
