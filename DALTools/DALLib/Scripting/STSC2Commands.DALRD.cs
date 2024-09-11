@@ -48,7 +48,7 @@ namespace DALLib.Scripting
             // 0x20
             new Command("Movie", new [] { typeof(STSC2Node), typeof(STSC2Node), typeof(STSC2Node), typeof(byte) }),
             new Command("Bgm+ Play/Stop", new [] { typeof(STSC2Node), typeof(STSC2Node) }),
-            new Command("BgmVolume", new [] { typeof(int), typeof(STSC2Node) }),
+            new Command("BgmVolume", new [] { typeof(STSC2Node), typeof(STSC2Node) }),
             new Command("SePlay", new [] { typeof(STSC2Node), typeof(bool) }),
             new Command("SeStop", new [] { typeof(STSC2Node) }),
             new Command("SeWait", new [] { typeof(STSC2Node), typeof(STSC2Node) }),
@@ -97,7 +97,7 @@ namespace DALLib.Scripting
             new Command("BgClose", new [] { typeof(STSC2Node) }),
             new Command("MaAnime", new [] { typeof(STSC2Node) }),
             // 0x50
-            new Command("BgMove", new [] { typeof(STSC2Node), typeof(STSC2Node), typeof(STSC2Node), typeof(bool), typeof(byte) }),
+            new Command("BgMove", new [] { typeof(STSC2Node), typeof(STSC2Node), typeof(STSC2Node), typeof(byte), typeof(byte) }),
             new Command("BgScale", new [] { typeof(STSC2Node), typeof(STSC2Node), typeof(byte), typeof(byte) }),
             new Command("BustOpen", new [] { typeof(STSC2Node), typeof(STSC2Node), typeof(STSC2Node), typeof(STSC2Node) }),
             new Command("BustClose", new [] { typeof(STSC2Node), typeof(STSC2Node) }),
