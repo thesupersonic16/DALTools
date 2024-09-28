@@ -48,7 +48,10 @@ jobs:
         copy .\DALTools\FontEditor\bin\${{matrix.configuration}}\FontEditor.exe .\Artifacts
         copy .\DALTools\ScriptDatabaseEditor\bin\${{matrix.configuration}}\ScriptDatabaseEditor.exe .\Artifacts
         copy .\DALTools\ScriptDialogueEditor\bin\${{matrix.configuration}}\ScriptDialogueEditor.exe .\Artifacts
+        copy .\DALTools\ScriptDialogueEditor\bin\${{matrix.configuration}}\NanoXLSX.dll .\Artifacts
         copy .\DALTools\TableEditor\bin\${{matrix.configuration}}\TableEditor.exe .\Artifacts
+        copy .\DALTools\TableEditor\bin\${{matrix.configuration}}\PropertyTools.dll .\Artifacts
+        copy .\DALTools\TableEditor\bin\${{matrix.configuration}}\PropertyTools.Wpf.dll .\Artifacts
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3.1.3
