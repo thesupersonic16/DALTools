@@ -21,6 +21,8 @@
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" Background="#323235">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="About" VerticalAlignment="Top" Margin="0,8,10,0" Height="23" Width="65"  Click="AboutButton_Click"  />
+                <Button Content="Export" VerticalAlignment="Top" Margin="0,8,10,0" Height="23" Width="65"  Click="ExportButton_Click"  />
+                <Button Content="Import" VerticalAlignment="Top" Margin="0,8,10,0" Height="23" Width="65"  Click="ImportButton_Click"  />
                 <Button Content="Load" VerticalAlignment="Top" Margin="0,8,10,0"  Height="23" Width="65"  Click="LoadButton_Click"  />
                 <Button Content="Save" VerticalAlignment="Top" Margin="0,8,10,0"  Height="23" Width="65"  Click="SaveButton_Click"  />
             </StackPanel>

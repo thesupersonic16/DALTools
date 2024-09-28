@@ -25,6 +25,14 @@ namespace DALLib.ImportExport
 
         public override string TypeExtension => ".tsv";
 
+        public TranslationTSVFile() { }
+
+        public TranslationTSVFile(string text) : this()
+        {
+            _buffer = text;
+            _bufferIndex = 0;
+        }
+
         public override TranslationLine[] ImportTranslation(string data)
         {
             var lines = new List<TranslationLine>();

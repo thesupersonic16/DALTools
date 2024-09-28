@@ -1,4 +1,5 @@
 ﻿using DALLib.File;
+using DALLib.ImportExport;
 using Microsoft.Win32;
 using System;
 using System.Collections;
@@ -28,11 +29,8 @@ namespace TableEditor
         protected List<ObservableCollection<string>> TableData { get; set; }
         protected string FilePath;
 
-        public void LoadTable(string path)
+        public void UpdateUI()
         {
-            Table = new TableFile();
-            Table.Load(path);
-
             TableData = new List<ObservableCollection<string>>();
             for (int i = 0; i < Table.Rows.Count; i++)
             {
@@ -43,8 +41,16 @@ namespace TableEditor
             // TODO: Fix header not shrinking
             Editor.ColumnHeadersSource = Table.Columns.Select((x, i) => x.Name).ToList();
             Editor.ItemsSource = TableData;
+            Title = $"{App.ProgramName} - {Path.GetFileName(FilePath)}";
+        }
+
+        public void LoadTable(string path)
+        {
+            Table = new TableFile();
+            Table.Load(path);
+
             FilePath = path;
-            Title = $"{App.ProgramName} - {Path.GetFileName(path)}";
+            UpdateUI();
         }
 
         public void SaveTable(string path)
@@ -64,6 +70,54 @@ namespace TableEditor
                 {
                     MessageBox.Show("Not all fields are populated with\nthe correct type of data",
                         "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        public void ExportTable(string path, string ext)
+        {
+            string text = "";
+            if (ext.ToLowerInvariant() == ".csv")
+            {
+                var file = new TranslationCSVFile();
+                text += file.AddRow(Table.Columns.Select(x => x.Name).ToArray());
+                Table.Rows.ForEach(x => text += file.AddRow(x));
+            } else if (ext.ToLowerInvariant() == ".tsv")
+            {
+                var file = new TranslationTSVFile();
+                text += file.AddRow(Table.Columns.Select(x => x.Name).ToArray());
+                Table.Rows.ForEach(x => text += file.AddRow(x));
+            }
+
+            File.WriteAllText(path, text, Encoding.UTF8);
+        }
+
+        public void ImportTable(string path, string ext)
+        {
+            string text = File.ReadAllText(path, Encoding.UTF8);
+            Table.Rows.Clear();
+            if (ext.ToLowerInvariant() == ".csv")
+            {
+                var file = new TranslationCSVFile(text);
+                file.ReadCSVRow(); // Skip header
+                while (true)
+                {
+                    string[] split = file.ReadCSVRow();
+                    if (split == null)
+                        break; // EOF
+                    Table.Rows.Add(split);
+                }
+            }
+            else if (ext.ToLowerInvariant() == ".tsv")
+            {
+                var file = new TranslationTSVFile();
+                file.ReadTSVRow(); // Skip header
+                while (true)
+                {
+                    string[] split = file.ReadTSVRow();
+                    if (split == null)
+                        break; // EOF
+                    Table.Rows.Add(split);
                 }
             }
         }
@@ -116,6 +170,43 @@ namespace TableEditor
         private void AboutButton_Click(object sender, RoutedEventArgs e)
         {
             new AboutWindow().ShowDialog();
+        }
+
+        private void ExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Table == null)
+            {
+                MessageBox.Show("No table is loaded.", "Export Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            var sfd = new SaveFileDialog
+            {
+                Filter = "Comma-Separated Values (*.csv)|*.csv|Tab-Separated Values (*.tsv)|*.tsv",
+                FileName = Path.ChangeExtension(FilePath, "csv")
+            };
+            if (sfd.ShowDialog() == true)
+            {
+                ExportTable(sfd.FileName, Path.GetExtension(sfd.FileName));
+            }
+        }
+
+        private void ImportButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Table == null)
+            {
+                MessageBox.Show("No table is loaded.", "Import Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            var sfd = new OpenFileDialog
+            {
+                Filter = "Comma-Separated Values (*.csv)|*.csv|Tab-Separated Values (*.tsv)|*.tsv",
+                FileName = Path.ChangeExtension(FilePath, "csv")
+            };
+            if (sfd.ShowDialog() == true)
+                ImportTable(sfd.FileName, Path.GetExtension(sfd.FileName));
+            UpdateUI();
         }
     }
 }
