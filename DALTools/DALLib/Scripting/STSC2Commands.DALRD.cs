@@ -31,7 +31,7 @@ namespace DALLib.Scripting
             // 0x10
             new Command("FlgSw", new [] { typeof(long), typeof(bool) }),
             new Command("FlgSet", new [] { typeof(long), typeof(STSC2Node) }),
-            new Command("ValSet", new [] { typeof(long), typeof(int), typeof(byte) }),
+            new Command("ValSet", new [] { typeof(long), typeof(STSC2Node), typeof(byte) }),
             new Command("StrSet", null),
             new Command("JumpIf", new[] { typeof(uint), typeof(STSC2Node) }),
             new CommandJumpSwitch(),
