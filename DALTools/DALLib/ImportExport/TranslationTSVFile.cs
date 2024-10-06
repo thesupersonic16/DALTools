@@ -114,6 +114,9 @@ namespace DALLib.ImportExport
                 // Add char
                 buffer += _buffer[_bufferIndex];
             }
+            // Save last split
+            if (buffer.Length > 0)
+                splits.Add(buffer.Replace("\r", "").Replace("\\n", "\n"));
             return splits.ToArray();
         }
 
