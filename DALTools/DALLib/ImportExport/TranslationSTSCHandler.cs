@@ -91,8 +91,7 @@ namespace DALLib.ImportExport
                         lines.Add(new TranslationLine("Message", name, line.arguments[3] as string));
                         break;
                     case "Choice":
-                    case "SetChoice":
-                        //lines.Add(new TranslationLine("Choice", "", line.GetArgument<string>(1)));
+                        lines.Add(new TranslationLine("Choice", "", line.arguments[1] as string));
                         break;
                     case "MapPlace":
                         //lines.Add(new TranslationLine("MapMarker", "", line.GetArgument<string>(1)));
@@ -296,16 +295,15 @@ namespace DALLib.ImportExport
                     }
                     break;
                 case "Choice":
-                case "SetChoice":
-                    //// Check if the entry is a Choice translation
-                    //if (!string.IsNullOrEmpty(line.Operator) && line.Operator != "Choice")
-                    //    break;
-                    //// Check if the key matches the current text
-                    //if (inst.GetArgument<string>(1) == line.Key || ignoreKey)
-                    //{
-                    //    inst.Arguments[1] = line.Translation;
-                    //    return true;
-                    //}
+                    // Check if the entry is a Choice line
+                    if (!string.IsNullOrEmpty(line.Operator) && line.Operator != "Choice")
+                        break;
+                    // Check if the key matches the current text
+                    if (inst.arguments[1] as string == line.Key || ignoreKey)
+                    {
+                        inst.arguments[1] = line.Translation;
+                        return true;
+                    }
                     break;
                 case "MapPlace":
                     //// Check if the entry is a MapPlace translation
