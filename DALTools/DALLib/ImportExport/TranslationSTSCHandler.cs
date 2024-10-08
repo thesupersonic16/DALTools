@@ -94,7 +94,7 @@ namespace DALLib.ImportExport
                         lines.Add(new TranslationLine("Choice", "", line.arguments[1] as string));
                         break;
                     case "MapPlace":
-                        //lines.Add(new TranslationLine("MapMarker", "", line.GetArgument<string>(1)));
+                        lines.Add(new TranslationLine("MapPlace", "", (line.arguments[1] as STSC2Node).Value as string));
                         break;
                     default:
                         continue;
@@ -306,15 +306,15 @@ namespace DALLib.ImportExport
                     }
                     break;
                 case "MapPlace":
-                    //// Check if the entry is a MapPlace translation
-                    //if (!string.IsNullOrEmpty(line.Operator) && line.Operator != "MapMarker")
-                    //    break;
-                    //// Check if the key matches the current text
-                    //if (inst.GetArgument<string>(1) == line.Key || ignoreKey)
-                    //{
-                    //    inst.Arguments[1] = line.Translation;
-                    //    return true;
-                    //}
+                    // Check if the entry is a MapPlace translation
+                    if (!string.IsNullOrEmpty(line.Operator) && line.Operator != "MapPlace")
+                        break;
+                    // Check if the key matches the current text
+                    if ((inst.arguments[1] as STSC2Node).Value as string == line.Key || ignoreKey)
+                    {
+                        (inst.arguments[1] as STSC2Node).Value = line.Translation;
+                        return true;
+                    }
                     break;
                 default:
                     break;

@@ -401,6 +401,7 @@ namespace ScriptDialogueEditor
                     else
                         ScriptListBox.SelectedIndex = ScriptArchiveFiles.FindIndex(t => t.FileName.Contains(code.ID));
                     break;
+                case "MapPlace":
                 case "Map":
                     // Open Editor
                     if (new PropertyEditorMapPlace(code).ShowDialog() == true)
