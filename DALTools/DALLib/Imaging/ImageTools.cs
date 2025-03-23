@@ -76,7 +76,7 @@ namespace DALLib.Imaging
             width = image.Width;
             height = image.Height;
             data = new byte[width * height * 4];
-            var bitmap = image.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, image.PixelFormat);
+            var bitmap = image.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb); // Isn't this ARGB?
             Marshal.Copy(bitmap.Scan0, data, 0, width * height * 4);
             image.UnlockBits(bitmap);
             FlipColors(data);
