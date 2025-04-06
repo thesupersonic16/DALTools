@@ -58,7 +58,7 @@ namespace STSCTool
                         int jumpAddress = instruction.GetArgument<int>(index);
                         string labelName = $"LABEL_{jumpAddress:X4}";
                         // Change Label name if its been used as a function
-                        if (instruction.Name == STSCInstructions.DALRRInstructions[0x1A].Name)
+                        if (instruction.Name == STSCInstructions.PBBInstructions[0x1A].Name)
                             labelName = $"SUB_{jumpAddress:X4}";
 
                         if (!labels.ContainsKey(labelName))
@@ -72,8 +72,8 @@ namespace STSCTool
                     return ConvertArgumentToString(instruction, index);
                 }).ToArray();
                 // Macros
-                if (instruction.Name == STSCInstructions.DALRRInstructions[0x52].Name)
-                    argString[0] = STSCMacros.DALRRCharacterNames[int.Parse(argString[0])] ?? argString[0];
+                //if (instruction.Name == STSCInstructions.DALRRInstructions[0x52].Name)
+                //    argString[0] = STSCMacros.DALRRCharacterNames[int.Parse(argString[0])] ?? argString[0];
                 lines.Add(strings.Count);
                 strings.Add($"{new string(' ', currentIndent * 4)}{instruction.Name}({string.Join(", ", argString)})");
             }
@@ -86,7 +86,7 @@ namespace STSCTool
             var scopeEnds = new List<int>();
             var lines = new List<int>();
             int currentIndent = 0;
-            int address = 0x3C;
+            int address = 0x0E;
             strings.Add($"#scriptID 0x{file.ScriptID:X8}");
             strings.Add($"#scriptName {file.ScriptName}");
             for (int i = 0; i < file.Instructions.Count; ++i)
@@ -110,7 +110,7 @@ namespace STSCTool
             var labels = new Dictionary<string, int>();
             var scopes = new List<int>();
             int scopeID = 0;
-            int address = 0x3C;
+            int address = 0x0E;
             for (int i = 0; i < text.Length; ++i)
             {
                 string line = text[i];
@@ -137,7 +137,7 @@ namespace STSCTool
                     continue;
                 }
                 var code = ParseCodeLine(line);
-                var baseInstruction = STSCInstructions.DALRRInstructions.FirstOrDefault(t => t?.Name == code[0]);
+                var baseInstruction = STSCInstructions.PBBInstructions.FirstOrDefault(t => t?.Name == code[0]);
                 if (baseInstruction == null)
                 {
                     Console.WriteLine("Error: Could not find any instructions for \"{0}\"! Please check line {1} in the source file.", code[0], i);
@@ -293,6 +293,7 @@ namespace STSCTool
         {
             bool insideString = false;
             bool escaped = false;
+            bool emptyString = false;
             string buffer = "";
             string bufferString = "";
             List<string> strings = new List<string>();
@@ -321,8 +322,9 @@ namespace STSCTool
                 }
                 if (!insideString && codeLine[i] == ')')
                 {
-                    if (buffer.Length > 0)
+                    if (buffer.Length > 0 || emptyString)
                         strings.Add(ProcessLiterals(buffer));
+                    emptyString = false;
                     buffer = "";
                     ++i;
                     continue;
@@ -330,8 +332,9 @@ namespace STSCTool
 
                 if (!insideString && codeLine[i] == ',')
                 {
-                    if (buffer.Length > 0)
+                    if (buffer.Length > 0 || emptyString)
                         strings.Add(ProcessLiterals(buffer));
+                    emptyString = false;
                     buffer = "";
                     continue;
                 }
@@ -342,6 +345,9 @@ namespace STSCTool
                     {
                         insideString = false;
                         buffer += bufferString;
+                        if (buffer.Length == 0)
+                            emptyString = true;
+                        bufferString = "";
                     }
                     else
                         insideString = true;
@@ -361,8 +367,10 @@ namespace STSCTool
         public static string ProcessLiterals(string s)
         {
             int number = 0;
-            if ((number = Array.IndexOf(STSCMacros.DALRRCharacterNames, s)) != -1)
-                return number.ToString();
+            //if ((number = Array.IndexOf(STSCMacros.DALRRCharacterNames, s)) != -1)
+            //    return number.ToString();
+            if (s == "null")
+                return null;
             if (s.StartsWith("0x") && int.TryParse(s.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out number))
                 return number.ToString();
             if (s.EndsWith("f") && float.TryParse(s.Substring(0, s.Length - 1), out float floatResult))

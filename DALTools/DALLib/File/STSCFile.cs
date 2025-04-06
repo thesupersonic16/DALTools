@@ -36,7 +36,7 @@ namespace DALLib.File
         /// <summary>
         /// The version of the script file (0x07 - Remake)
         /// </summary>
-        public uint Version = 0x07;
+        public uint Version = 0x04;
 
         public override void Load(ExtendedBinaryReader reader, bool keepOpen = false)
         {
@@ -79,14 +79,14 @@ namespace DALLib.File
                 }
 
                 // Check if its a known instruction
-                if (STSCInstructions.DALRRInstructions[opcode] == null)
+                if (STSCInstructions.PBBInstructions[opcode] == null)
                 {
                     throw new STSCDisassembleException(this,
                         $"Got opcode 0x{opcode:X2} at 0x{reader.BaseStream.Position - 1:X8} in \"{ScriptName}\"" +
                         " This opcode is unknown!");
                 }
 
-                var instruction = STSCInstructions.DALRRInstructions[opcode].Read(reader);
+                var instruction = STSCInstructions.PBBInstructions[opcode].Read(reader);
                 Instructions.Add(instruction);
                 if (reader.BaseStream.Position >= reader.Offset)
                     break;
@@ -119,7 +119,7 @@ namespace DALLib.File
             writer.FillInOffset("EntryPosition");
             foreach (var instruction in Instructions)
             {
-                writer.Write((byte)STSCInstructions.DALRRInstructions.FindIndex(t => t?.Name == instruction.Name));
+                writer.Write((byte)STSCInstructions.PBBInstructions .FindIndex(t => t?.Name == instruction.Name));
                 instruction.Write(writer, ref ManualCount, strings);
             }
             // Write String Table
