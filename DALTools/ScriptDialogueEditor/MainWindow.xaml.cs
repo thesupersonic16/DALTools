@@ -7,18 +7,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using NanoXLSX;
 using Path = System.IO.Path;
@@ -372,7 +365,7 @@ namespace ScriptDialogueEditor
                     {
                         // Mark script as edited
                         ScriptEdited = true;
-                        if (Preview != null && Preview.CheckGameReadyState())
+                        if (!IsScriptv2 && Preview != null && Preview.CheckGameReadyState())
                         {
                             // Builds the script then injects it into the games memory
                             Preview.BuildAndInject(ScriptFile);
@@ -396,7 +389,7 @@ namespace ScriptDialogueEditor
                     break;
                 case "FileJump":
                 case "Script":
-                    if (Preview != null)
+                    if (!IsScriptv2 && Preview != null)
                         Preview.SetInstructionPointerMessage(ScriptFile.FindAddress(code.Index));
                     else
                         ScriptListBox.SelectedIndex = ScriptArchiveFiles.FindIndex(t => t.FileName.Contains(code.ID));
@@ -408,21 +401,28 @@ namespace ScriptDialogueEditor
                         ScriptEdited = true; // Mark script as edited
                     break;
                 case "Choice":
-                    // Check if the choice links to a FileJump
-                    int instIndex = ScriptFile.FindIndex(int.Parse(code.ID));
-                    string scriptFile = "Not a FileJump Choice";
-                    for (int i = instIndex; i < instIndex + 30; ++i)
-                        if (ScriptFile.Instructions[i].Name == "FileJump")
+                    string scriptFile = "Choice does not directly lead to a FileJump";
+                    if (!IsScriptv2)
+                    {
+                        int instIndex = ScriptFile.FindIndex(int.Parse(code.ID));
+                        for (int i = instIndex; i < instIndex + 30; ++i)
                         {
-                            // Write the path to the script in which the choice will load
-                            scriptFile = ScriptFile.Instructions[i].GetArgument<string>(0);
-                            // Append .bin to the name to reduce confusion
-                            scriptFile += ".bin";
-                            // Append the amount of steps to the FileJump
-                            if (i != instIndex)
-                                scriptFile += $" ({i - instIndex} Step(s))";
-                            break;
+                            if (ScriptFile.Instructions[i].Name == "FileJump")
+                            {
+                                // Write the path to the script in which the choice will load
+                                scriptFile = ScriptFile.Instructions[i].GetArgument<string>(0);
+                                scriptFile += ".bin";
+                                // Append the amount of steps to the FileJump
+                                if (i != instIndex)
+                                    scriptFile += $" ({i - instIndex} Step(s))";
+                                break;
+                            }
                         }
+                    }
+                    else
+                    {
+                        scriptFile = "";
+                    }
 
                     // Open Editor
                     if (new PropertyEditorChoice(code, scriptFile).ShowDialog() == true)
