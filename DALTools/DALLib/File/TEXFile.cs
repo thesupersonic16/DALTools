@@ -237,8 +237,8 @@ namespace DALLib.File
                 writer.Write(frame.RightScale);
                 writer.Write(frame.BottomScale);
             }
+            writer.FillInOffset("HeaderSize", (uint)(writer.BaseStream.Position - header));
             writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
-            writer.FillInOffset("HeaderSize", (uint)(writer.BaseStream.Position - header + (UseSmallSig ? 0x08 : 0x00)));
 
             // Anime
             header = writer.BaseStream.Position;
