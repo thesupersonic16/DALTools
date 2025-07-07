@@ -14,7 +14,7 @@ env:
 jobs:
   build:
     name: ${{matrix.configuration}}
-    runs-on: windows-2019
+    runs-on: windows-2025
     strategy:
       matrix:
         configuration: [Debug, Release]
@@ -26,7 +26,7 @@ jobs:
         submodules: recursive
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.3.1
+      uses: microsoft/setup-msbuild@v2
 
     - name: Restore NuGet Packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
