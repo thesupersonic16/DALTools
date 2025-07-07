@@ -697,6 +697,11 @@ namespace DALLib.IO
             WriteSignature(sig + new string(' ', (smallSig ? 0x08 : 0x14) - sig.Length));
         }
 
+        public void WriteDALSignature(string sig, int size)
+        {
+            WriteSignature(sig + new string(' ', size - sig.Length));
+        }
+
         public void WriteNull()
         {
             OutStream.WriteByte(0);
@@ -713,12 +718,12 @@ namespace DALLib.IO
             OutStream.WriteByte(0);
         }
         
-        public void FixPadding(uint amount = 4)
+        public void FixPadding(uint amount = 4, uint offset = 0)
         {
             if (amount < 1) return;
 
             uint padAmount = 0;
-            while ((OutStream.Position + padAmount) % amount != 0) ++padAmount;
+            while ((OutStream.Position + offset + padAmount) % amount != 0) ++padAmount;
             WriteNulls(padAmount);
         }
 

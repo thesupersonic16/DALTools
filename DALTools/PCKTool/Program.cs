@@ -20,6 +20,8 @@ namespace PCKTool
 
             bool useSmallSig = false;
             bool useBigEndian = false;
+            int sectionLength = -1;
+            int padding = -1;
             string filePath = "";
 
             for (int i = 0; i < args.Length; ++i)
@@ -34,6 +36,19 @@ namespace PCKTool
                         case 'e': // Use Big Endian
                             useBigEndian = true;
                             break;
+                        case 'l': // Section length
+                            if (i + 1 < args.Length && int.TryParse(args[i + 1], out sectionLength))
+                                i++;
+                            else
+                                ShowHelp("Invalid section length!");
+                            break;
+                        case 'p': // Padding
+                            if (i + 1 < args.Length && int.TryParse(args[i + 1], out padding))
+                                i++;
+                            else
+                                ShowHelp("Invalid section length!");
+                            break;
+
                         default:
                             break;
                     }
@@ -44,7 +59,13 @@ namespace PCKTool
             }
             if (!string.IsNullOrEmpty(filePath))
             {
-                using (var arc = new PCKFile { UseSmallSig = useSmallSig, UseBigEndian = useBigEndian })
+                using (var arc = new PCKFile
+                {
+                    UseSmallSig = useSmallSig,
+                    UseBigEndian = useBigEndian,
+                    SignatureSize = sectionLength,
+                    PaddingSize = padding
+                })
                 {
                     var attr = File.GetAttributes(filePath);
                     if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
@@ -60,7 +81,7 @@ namespace PCKTool
                 }
             }
             else
-                ShowHelp("No Path was Given!");
+                ShowHelp("No path was given!");
 
         }
 
@@ -72,6 +93,7 @@ namespace PCKTool
             Console.WriteLine("  Switches: ");
             Console.WriteLine("    -s           Build all archives using small signatures");
             Console.WriteLine("    -e           Read/Write in Big Endian (PS3) Default is Little Endian (PC/PS4)");
+            Console.WriteLine("    -l [length]  Sets the section size");
             Console.ReadKey(true);
         }
     }

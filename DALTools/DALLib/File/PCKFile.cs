@@ -4,10 +4,7 @@ using DALLib.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DALLib.File
 {
@@ -24,6 +21,10 @@ namespace DALLib.File
         /// DAL: RR uses larger signatures
         /// </summary>
         public bool UseSmallSig = false;
+
+        public int SignatureSize = -1;
+
+        public int PaddingSize = -1;
 
         public bool Compress = false;
 
@@ -42,9 +43,11 @@ namespace DALLib.File
             //   have smaller padding (0x08 for Signatures, 0x04 for Padding)
             //   while DAL: RR has larger padding (0x14 for Signatures, 0x08 for Padding)
             //  This workaround works by checking the padding in the signature to determine the version
-            int sigSize = reader.CheckDALSignature("Filename");
-            if (sigSize < 0x14)
+            SignatureSize = reader.CheckDALSignature("Filename");
+            if (SignatureSize < 0x14)
                 UseSmallSig = true;
+
+            PaddingSize = PaddingSize == -1 ? (UseSmallSig ? 0x04 : 0x08) : PaddingSize;
 
             // The length of the Filename section
             int fileNameSectionSize = reader.ReadInt32();
@@ -83,7 +86,7 @@ namespace DALLib.File
             // Reads all the file names
             for (int i = 0; i < fileCount; ++i)
             {
-                int position = reader.ReadInt32() + (UseSmallSig ? 0xC : 0x18);
+                int position = reader.ReadInt32() + fileNameSectionAddress;
                 FileEntries[i].FileName = reader.ReadStringElsewhere(position);
             }
 
@@ -103,12 +106,17 @@ namespace DALLib.File
             if (Compress)
                 mainStream = writer.StartDeflateEncapsulation();
 
+            SignatureSize = SignatureSize == -1 ? (UseSmallSig ? 0x08 : 0x14) : SignatureSize;
+            PaddingSize = PaddingSize == -1 ? (UseSmallSig ? 0x04 : 0x08) : PaddingSize;
+
             // Filename Section
             // Address of the Filename section
             long sectionPosition = writer.BaseStream.Position;
-            writer.WriteDALSignature("Filename", UseSmallSig);
+            writer.WriteDALSignature("Filename", SignatureSize);
             writer.AddOffset("SectionSize");
-            
+
+            int fileNameSectionAddress = (int)writer.BaseStream.Position;
+
             // Allocates space for all the file name pointers
             foreach (var entry in FileEntries)
                 writer.AddOffset(entry.FileName);
@@ -117,18 +125,18 @@ namespace DALLib.File
             foreach (var entry in FileEntries)
             {
                 // Fill in the address and write the file name (including paths)
-                writer.FillInOffset(entry.FileName, (uint)(writer.BaseStream.Position - (UseSmallSig ? 0xC : 0x18)));
+                writer.FillInOffset(entry.FileName, (uint)(writer.BaseStream.Position - fileNameSectionAddress));
                 writer.WriteNullTerminatedString(entry.FileName);
             }
             // Fills in the size of the Filename section
             writer.FillInOffset("SectionSize");
             // Realigns the writer 
-            writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
+            writer.FixPadding((uint)PaddingSize, (uint)sectionPosition);
 
             // Pack Section
             // Address to the Pack section
             sectionPosition = writer.BaseStream.Position;
-            writer.WriteDALSignature("Pack", UseSmallSig);
+            writer.WriteDALSignature("Pack", SignatureSize);
             writer.AddOffset("SectionSize");
             writer.Write(FileEntries.Count);
 
@@ -142,9 +150,9 @@ namespace DALLib.File
             }
 
             // Fills in the size of the Pack section
-            writer.FillInOffset("SectionSize", (uint)(writer.BaseStream.Position - (UseSmallSig ? 0xC : 0x18)));
+            writer.FillInOffset("SectionSize", (uint)(writer.BaseStream.Position - sectionPosition));
             // Realigns the writer
-            writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
+            writer.FixPadding((uint)PaddingSize, (uint)sectionPosition);
 
             // Data
             for (int i = 0; i < FileEntries.Count; ++i)
@@ -152,7 +160,7 @@ namespace DALLib.File
                 writer.FillInOffset($"DataPtr{i}");
                 writer.Write(FileEntries[i].Data);
                 // Realigns the writer 
-                writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
+                writer.FixPadding((uint)PaddingSize, (uint)sectionPosition);
             }
 
             // Finalise ZLIB Compression
