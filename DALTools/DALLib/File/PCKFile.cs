@@ -28,6 +28,11 @@ namespace DALLib.File
 
         public bool Compress = false;
 
+        public Dictionary<string, string> FileNameSubstitutions = new Dictionary<string, string>()
+        {
+            { "\\", "-backslash-" },
+        };
+
         public List<FileEntry> FileEntries = new List<FileEntry>();
 
         public override void Load(ExtendedBinaryReader reader, bool keepOpen = false)
@@ -265,7 +270,7 @@ namespace DALLib.File
         {
             foreach (var entry in FileEntries)
             {
-                string filePath = Path.Combine(path, entry.FileName);
+                string filePath = Path.Combine(path, PerformStringSubstitutions(entry.FileName, true));
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
                 if (entry.Data == null)
                 {
@@ -295,7 +300,7 @@ namespace DALLib.File
                 {
                     FileEntry entry = new FileEntry
                     {
-                        FileName = filePath,
+                        FileName = PerformStringSubstitutions(filePath, false),
                         Data = System.IO.File.ReadAllBytes(Path.Combine(path, filePath))
                     };
                     entry.DataLength = entry.Data.Length;
@@ -369,6 +374,21 @@ namespace DALLib.File
             t.FileName.ToLowerInvariant().Contains(containsString.ToLowerInvariant()))?.FileName;
         }
 
+        /// <param name="direction">True to convert to safe paths</param>
+        public string PerformStringSubstitutions(string fileName, bool direction)
+        {
+            if (direction)
+            {
+                foreach (var substitution in FileNameSubstitutions)
+                    fileName = fileName.Replace(substitution.Key, substitution.Value);
+            }
+            else
+            {
+                foreach (var substitution in FileNameSubstitutions)
+                    fileName = fileName.Replace(substitution.Value, substitution.Key);
+            }
+            return fileName;
+        }
         public void Dispose()
         {
             if (_internalReader != null)
