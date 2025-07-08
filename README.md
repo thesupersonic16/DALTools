@@ -1,14 +1,14 @@
 # DALTools
-A collection of tools aimed to assist with modify files from many Date A Live Visual Novel mainly Rio Reincarnation and Ren Dystopia.
+A collection of tools aimed to assist with modify files for Date A Live: Rio Reincarnation, Ren Dystopia and some other similar games. 
 
 ## Download / Building
-If you are here to just use the tools, You can download the pre-built binaries from [releases][releases_url] or you can get the lastest built commit from [GitHub Actions][actions_url], or compile them yourself.
+If you are here to just use the tools, You can download the pre-built binaries from [GitHub Actions][actions_url] or compile them yourself. If the latest GitHub Actions build is expired, you may grab and older build from [releases][releases_url]. 
 
 **Please be aware this project utilise Fody, which can often cause false positives with some Anti-Virus, feel free to submit the samples or build the code yourself**
 
-**Releases**: You will need .NET Framework 4.6 or newer installed for them to run.
+**Releases**: You will need .NET Framework 4.8 or newer installed for them to run.
   
-**Building**: You will need Visual Studio 2019 installed with the .NET Framework 4.6 Targeting Pack installed. 
+**Building**: You will need Visual Studio 2022 or newer installed with the .NET Framework 4.8 Targeting Pack installed. 
 
 ## Issues / Requests
 If you have found any issues with any of the tools in the repository or would like to request a feature or etc., Please don't hesitate to [submit an issue][newIssue_url]. 
@@ -19,6 +19,8 @@ PCKTool is a CLI tool which is designed to unpack and repack .pck archives seen 
 For PC/PS4 .pck(s), you can unpack the archives by just dragging the archive file into PCKTool.exe. Repacking is the same process except you drag the archive folder into the executable. 
  
 For Big Endian .pck(s) like the ones seen on the PS3, You will need to add the -e switch in the command line like ``PCKTool.exe -e Script.pck``
+
+Some other games may also use the same PCK format but with a different header size and padding. Make sure to check the help page by running the tool with no arguments.
 
 Special thanks to Sajid for helping me with figuring out the missing fields.
 
