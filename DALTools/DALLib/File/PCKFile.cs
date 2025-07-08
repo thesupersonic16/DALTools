@@ -58,20 +58,23 @@ namespace DALLib.File
             int fileNameSectionSize = reader.ReadInt32();
             // Address to the list of filenames
             int fileNameSectionAddress = (int)reader.BaseStream.Position;
-            
-            // Jump to the Pack section
-            reader.JumpTo(fileNameSectionSize);
-
-            // Makes sure the reader is aligned
-            reader.FixPadding(UseSmallSig ? 0x04u : 0x08u);
 
             // Pack Section
             //  This section contains an array of file information and then all of it's data
+
+            reader.JumpTo(fileNameSectionSize);
+            reader.FixPadding((uint)PaddingSize);
             
             // Check Signature
             string packSig = reader.ReadDALSignature("Pack");
             if (packSig != "Pack" && packSig.Length <= 4)
-                throw new SignatureMismatchException("Pack", packSig);
+            {
+                GuessPadding(reader, "Pack");
+
+                packSig = reader.ReadDALSignature("Pack");
+                if (packSig != "Pack" && packSig.Length <= 4)
+                    throw new SignatureMismatchException("Pack", packSig);
+            }
 
             // The length of the Pack section
             int packSectionSize = reader.ReadInt32();
@@ -389,6 +392,24 @@ namespace DALLib.File
             }
             return fileName;
         }
+
+        public void GuessPadding(ExtendedBinaryReader reader, string signature)
+        {
+            long startPosition = reader.GetPosition();
+            int[] paddingOptions = { 0x08, 0x10, 0x14 };
+            foreach (var padding in paddingOptions)
+            {
+                reader.FixPadding((uint)padding);
+                if (reader.PeekSignature(signature.Length) == signature)
+                {
+                    PaddingSize = padding;
+                    break;
+                }
+                reader.JumpTo(startPosition);
+            }
+            reader.JumpTo(startPosition);
+        }
+
         public void Dispose()
         {
             if (_internalReader != null)
