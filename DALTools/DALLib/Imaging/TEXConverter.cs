@@ -71,9 +71,11 @@ namespace DALLib.Imaging
                     endian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
                 file.SheetData = image.GetOutputPixelData(0);
             }
-            else if ((format & Format.Unknown) != 0)
+            else if ((format & Format.DXT12) != 0)
             {
-                throw new InvalidTextureFormatException((int)format);
+                image = new ImageBinary(file.SheetWidth, file.SheetHeight, PixelDataFormat.FormatDXT1Rgb,
+                    endian, PixelDataFormat.FormatAbgr8888, Endian.LittleEndian, file.SheetData);
+                file.SheetData = image.GetOutputPixelData(0);
             }
             else if ((format & Format.Raster) != 0)
             {

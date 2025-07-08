@@ -31,7 +31,7 @@ namespace DALLib.File
             Luminance8 = 0x0000_0080,
             Luminance4 = 0x0000_0100,
             Raster     = 0x0000_0200,
-            Unknown    = 0x0000_1000,
+            DXT12      = 0x0000_1000, // Seems to just be DXT1
             Large      = 0x0000_2000,
             BGRA       = 0x0000_4000,
             PNG        = 0x0001_0000  // TODO: Find out which file uses this
