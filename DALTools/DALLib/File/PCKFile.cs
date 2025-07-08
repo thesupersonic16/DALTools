@@ -265,13 +265,18 @@ namespace DALLib.File
         {
             foreach (var entry in FileEntries)
             {
-                // Set Location
-                _internalReader.JumpTo(entry.DataPosition);
-                // Create Directories
-                Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(path, entry.FileName)));
-                // Write Data
-                System.IO.File.WriteAllBytes(Path.Combine(path, entry.FileName),
-                    _internalReader.ReadBytes(entry.DataLength));
+                string filePath = Path.Combine(path, entry.FileName);
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                if (entry.Data == null)
+                {
+                    _internalReader.JumpTo(entry.DataPosition);
+                    System.IO.File.WriteAllBytes(filePath, _internalReader.ReadBytes(entry.DataLength));
+                }
+                else
+                {
+                    System.IO.File.WriteAllBytes(filePath, entry.Data);
+                }
+
             }
         }
 
