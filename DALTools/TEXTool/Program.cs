@@ -1,16 +1,10 @@
-﻿using DALLib;
-using DALLib.File;
+﻿using DALLib.File;
 using DALLib.Imaging;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace TEXTool
@@ -163,14 +157,10 @@ namespace TEXTool
                 return true;
             if (File.Exists(path))
             {
-                Console.Write("WARNING: You are about to overwrite a file. Continue? [Y/A] ");
-                if (Console.ReadKey(true).Key == ConsoleKey.Y)
-                    Console.WriteLine("Continue");
-                else
-                {
-                    Console.WriteLine("Abort");
-                    return false;
-                }
+                Console.Write("Destination file exists, overwrite? [Y/a]");
+                var key = Console.ReadKey(true).Key;
+                Console.WriteLine();
+                return key != ConsoleKey.A;
             }
 
             return true;
@@ -185,7 +175,7 @@ namespace TEXTool
 
         public static void BuildTEX(ref TEXFile tex, string name)
         {
-            // Remove Extension if it has one
+            // Remove extension if it has one
             if (Path.HasExtension(name))
                 name = RemoveExtension(name);
             var serializer = new XmlSerializer(typeof(TEXFile));
