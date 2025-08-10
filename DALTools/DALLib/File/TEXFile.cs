@@ -238,9 +238,9 @@ namespace DALLib.File
             }
 
             byte[] data;
-            if (UseLZ77)
-                data = SheetData.CompressLZ77();
-            else
+            //if (UseLZ77)
+            //    data = SheetData.CompressLZ77();
+            //else
                 data = TEXConverter.Encode(this, format, loader);
 
             writer.Write(data);
