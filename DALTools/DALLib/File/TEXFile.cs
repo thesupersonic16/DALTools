@@ -1,25 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Remoting.Messaging;
 using System.Xml.Serialization;
 using DALLib.Compression;
 using DALLib.Imaging;
 using DALLib.IO;
-using Scarlet.Drawing;
-using Scarlet.IO;
 
 namespace DALLib.File
 {
     [Serializable]
     public class TEXFile : FileBase, IDisposable
     {
-
         /// <summary>
         /// List of formats decribing how pixel data is stored
         /// </summary>
@@ -49,12 +41,22 @@ namespace DALLib.File
         [Serializable]
         public class Frame
         {
+            public float Unknown1 { get; set; }
+            public float Unknown2 { get; set; }
             public float FrameWidth { get; set; }
             public float FrameHeight { get; set; }
             public float LeftScale { get; set; }
             public float TopScale { get; set; }
             public float RightScale { get; set; }
             public float BottomScale { get; set; }
+        }
+
+        // Not sure what this is yet
+        [Serializable]
+        public class Diff
+        {
+            public float[] Floats = new float[6];
+            public List<string> Strings { get; set; } = new List<string>();
         }
 
         public int SheetWidth;
@@ -84,6 +86,13 @@ namespace DALLib.File
         /// DAL: RR does not support PNG textures, however DAL: RD does and may require it
         /// </summary>
         public bool UsePNG = false;
+
+        /// <summary>
+        /// Should the image data be compressed using LZ77 compression
+        /// </summary>
+        public bool UseLZ77 = false;
+
+        public Diff DiffData = null;
 
         /// <summary>
         /// Loads and parses file from stream into memory
@@ -122,13 +131,13 @@ namespace DALLib.File
             }
 
             string dataSig = reader.PeekSignature();
-            bool useLZ77 = dataSig == "LZ77";
+            UseLZ77 = dataSig == "LZ77";
 
             // Read Image Data
             SheetData = reader.ReadBytes(dataLength);
-            
+
             // Decompress LZ77 Image
-            if (useLZ77)
+            if (UseLZ77)
                 SheetData = SheetData.DecompressLZ77();
 
             if (loader == LoaderType.PNG)
@@ -148,7 +157,8 @@ namespace DALLib.File
             int partCount = reader.ReadInt32();
             for (int i = 0; i < partCount; ++i)
             {
-                reader.JumpAhead(8); // Unknown
+                float unknown1 = reader.ReadSingle();
+                float unknown2 = reader.ReadSingle();
                 float frameWidth = reader.ReadSingle();
                 float frameHeight = reader.ReadSingle();
                 float frameXScale = reader.ReadSingle();
@@ -157,6 +167,8 @@ namespace DALLib.File
                 float frameHeightScale = reader.ReadSingle();
                 Frames.Add(new Frame
                 {
+                    Unknown1 = unknown1,
+                    Unknown2 = unknown2,
                     FrameWidth = frameWidth,
                     FrameHeight = frameHeight,
                     LeftScale = frameXScale,
@@ -172,7 +184,21 @@ namespace DALLib.File
             if (sigSize < 4)
                 return;
             int animeSectionSize = reader.ReadInt32();
-            
+            reader.FixPadding(0x10);
+
+            // Diff
+            sigSize = reader.CheckDALSignature("Diff");
+            if (sigSize < 4)
+                return;
+            DiffData = new Diff();
+            int diffSectionSize = reader.ReadInt32();
+            for (int i = 0; i < DiffData.Floats.Length; ++i)
+                DiffData.Floats[i] = reader.ReadSingle();
+            int stringCount = reader.ReadInt32();
+            for (int i = 0; i < stringCount; ++i)
+            {
+                DiffData.Strings.Add(reader.ReadNullTerminatedString());
+            }
         }
 
         public override void Save(ExtendedBinaryWriter writer)
@@ -211,7 +237,12 @@ namespace DALLib.File
                 writer.Write((short)SheetHeight);
             }
 
-            byte[] data = TEXConverter.Encode(this, format, loader);
+            byte[] data;
+            if (UseLZ77)
+                data = SheetData.CompressLZ77();
+            else
+                data = TEXConverter.Encode(this, format, loader);
+
             writer.Write(data);
             writer.FillInOffset("DataLength", (uint)data.Length);
 
@@ -220,16 +251,18 @@ namespace DALLib.File
                 return;
             
             // Parts
+            // TODO: Check if header size is correct for other games
             writer.FillInOffset("HeaderSize");
             writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
-            writer.WriteDALSignature("Parts", UseSmallSig);
             long header = writer.BaseStream.Position;
+            writer.WriteDALSignature("Parts", UseSmallSig);
             writer.AddOffset("HeaderSize");
             writer.Write(Frames.Count);
 
             foreach (var frame in Frames)
             {
-                writer.WriteNulls(8);
+                writer.Write(frame.Unknown1);
+                writer.Write(frame.Unknown2);
                 writer.Write(frame.FrameWidth);
                 writer.Write(frame.FrameHeight);
                 writer.Write(frame.LeftScale);
@@ -246,6 +279,21 @@ namespace DALLib.File
             writer.AddOffset("HeaderSize");
             writer.WriteNulls(4);
             writer.FillInOffset("HeaderSize", (uint)(writer.BaseStream.Position - header));
+            writer.FixPadding(UseSmallSig ? 0x04u : 0x08u);
+
+            // Diff
+            if (DiffData != null)
+            {
+                header = writer.BaseStream.Position;
+                writer.WriteDALSignature("Diff", UseSmallSig);
+                writer.AddOffset("HeaderSize");
+                foreach (var f in DiffData.Floats)
+                    writer.Write(f);
+                writer.Write(DiffData.Strings.Count);
+                foreach (var s in DiffData.Strings)
+                    writer.WriteNullTerminatedString(s);
+                writer.FillInOffset("HeaderSize", (uint)(writer.BaseStream.Position - header));
+            }
             writer.FixPadding(0x10);
 
             // Finalise ZLIB Compression
