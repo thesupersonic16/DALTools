@@ -1,20 +1,65 @@
 ﻿using DALLib.IO;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DALLib.Compression
 {
     /// <summary>
-    /// LZ77 Decompressor used for decompressing files that were directly ported from the PlayStation
+    /// LZ77 compression used for files that were directly ported from the PlayStation
     /// <para/>
-    /// Based off ps_lz77 from QuickBMS
+    /// Decompressor is based off ps_lz77 from QuickBMS
     /// </summary>
     public static class LZ77Compression
     {
+        public const int LZ77_MAX_WINDOW_SIZE = 0x50;
+
+        public static byte[] CompressLZ77(this byte[] bytes)
+        {
+            using (var memoryStream = new MemoryStream())
+            using (var dataMemoryStream = new MemoryStream())
+            using (var writer = new ExtendedBinaryWriter(memoryStream))
+            using (var dataWriter = new ExtendedBinaryWriter(dataMemoryStream))
+            {
+                writer.WriteSignature("LZ77");
+                writer.Write(bytes.Length);
+                // This field is unknown and required by the games
+                writer.Write(bytes.Length / 4);
+                writer.AddOffset("Offset");
+
+                int dataPointer = 0;
+                int flagPosition = 0;
+                int currentFlag = 0;
+                while (dataPointer < bytes.Length)
+                {
+                    (int bestOffset, int bestLength) = FindLongestMatch(bytes, dataPointer, 40);
+                    if (bestOffset < 0 || bestLength < 3)
+                    {
+                        // No match
+                        dataWriter.Write(bytes[dataPointer++]);
+                    }
+                    else
+                    {
+                        // Write match
+                        currentFlag |= 1 << (7 - flagPosition);
+                        dataWriter.Write((byte)bestOffset); // Back step
+                        dataWriter.Write((byte)(bestLength - 3)); // Amount
+                        dataPointer += bestLength;
+                    }
+                    flagPosition++;
+                    if (flagPosition == 8)
+                    {
+                        writer.Write((byte)currentFlag);
+                        currentFlag = 0;
+                        flagPosition = 0;
+                    }
+                }
+
+                writer.FillInOffset("Offset");
+                writer.Write(dataMemoryStream.ToArray());
+
+                return memoryStream.ToArray();
+            }
+        }
 
         public static byte[] DecompressLZ77(this byte[] compressed)
         {
@@ -70,6 +115,38 @@ namespace DALLib.Compression
                 }
             }
             return buffer;
+        }
+
+        public static (int, int) FindLongestMatch(byte[] data, int position, int limit)
+        {
+            int bestOffset = -1;
+            int bestLength = -1;
+            int maxOffset = Math.Min(data.Length - position, limit);
+
+            for (int offsetSize = 2; offsetSize < maxOffset; offsetSize++)
+            {
+                int searchStartPosition = Math.Max(position - LZ77_MAX_WINDOW_SIZE, 0);
+                byte[] pattern = new byte[offsetSize];
+                Array.Copy(data, position, pattern, 0, offsetSize);
+
+                for (int searchPosition = searchStartPosition; searchPosition < position; searchPosition++)
+                {
+                    if (data[searchPosition] != pattern[0])
+                        continue;
+
+                    int matchLength = 1;
+                    while (matchLength < offsetSize && searchPosition + matchLength < position &&
+                           data[searchPosition + matchLength] == pattern[matchLength % offsetSize])
+                        matchLength++;
+                    if (matchLength > bestLength)
+                    {
+                        bestOffset = position - searchPosition;
+                        bestLength = matchLength;
+                    }
+                }
+            }
+
+            return (bestOffset, bestLength);
         }
     }
 }
