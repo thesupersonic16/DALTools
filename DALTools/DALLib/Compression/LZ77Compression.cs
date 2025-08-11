@@ -11,7 +11,7 @@ namespace DALLib.Compression
     /// </summary>
     public static class LZ77Compression
     {
-        public const int LZ77_MAX_WINDOW_SIZE = 0x50;
+        public const int LZ77_MAX_WINDOW_SIZE = 0xFF;
 
         public static byte[] CompressLZ77(this byte[] bytes)
         {
@@ -33,7 +33,7 @@ namespace DALLib.Compression
                 {
                     int bestOffset = -1;
                     int bestLength = -1;
-                    FindLongestMatch(bytes, dataPointer, 20, ref bestOffset, ref bestLength);
+                    FindLongestMatch(bytes, dataPointer, 0xFF, ref bestOffset, ref bestLength);
 
                     if (bestOffset < 0 || bestLength < 3)
                     {
