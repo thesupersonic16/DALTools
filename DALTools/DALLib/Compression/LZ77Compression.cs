@@ -23,7 +23,7 @@ namespace DALLib.Compression
                 writer.WriteSignature("LZ77");
                 writer.Write(bytes.Length);
                 // This field is unknown and required by the games
-                writer.Write(bytes.Length / 4);
+                writer.AddOffset("Unknown");
                 writer.AddOffset("Offset");
 
                 int dataPointer = 0;
@@ -31,7 +31,10 @@ namespace DALLib.Compression
                 int currentFlag = 0;
                 while (dataPointer < bytes.Length)
                 {
-                    (int bestOffset, int bestLength) = FindLongestMatch(bytes, dataPointer, 40);
+                    int bestOffset = -1;
+                    int bestLength = -1;
+                    FindLongestMatch(bytes, dataPointer, 20, ref bestOffset, ref bestLength);
+
                     if (bestOffset < 0 || bestLength < 3)
                     {
                         // No match
@@ -56,6 +59,7 @@ namespace DALLib.Compression
 
                 writer.FillInOffset("Offset");
                 writer.Write(dataMemoryStream.ToArray());
+                writer.FillInOffset("Unknown");
 
                 return memoryStream.ToArray();
             }
@@ -117,36 +121,31 @@ namespace DALLib.Compression
             return buffer;
         }
 
-        public static (int, int) FindLongestMatch(byte[] data, int position, int limit)
+        public static void FindLongestMatch(byte[] data, int position, int limit, ref int bestOffset, ref int bestLength)
         {
-            int bestOffset = -1;
-            int bestLength = -1;
-            int maxOffset = Math.Min(data.Length - position, limit);
+            int windowStart = Math.Max(position - LZ77_MAX_WINDOW_SIZE, 0);
+            int maxMatchLength = Math.Min(limit, data.Length - position);
 
-            for (int offsetSize = 2; offsetSize < maxOffset; offsetSize++)
+            for (int searchPos = windowStart; searchPos < position; searchPos++)
             {
-                int searchStartPosition = Math.Max(position - LZ77_MAX_WINDOW_SIZE, 0);
-                byte[] pattern = new byte[offsetSize];
-                Array.Copy(data, position, pattern, 0, offsetSize);
+                if (data[searchPos] != data[position])
+                    continue;
 
-                for (int searchPosition = searchStartPosition; searchPosition < position; searchPosition++)
+                int matchLength = 1;
+
+                while (matchLength < maxMatchLength &&
+                       data[searchPos + matchLength] == data[position + matchLength])
+                    matchLength++;
+
+                if (matchLength > bestLength)
                 {
-                    if (data[searchPosition] != pattern[0])
-                        continue;
+                    bestLength = matchLength;
+                    bestOffset = position - searchPos;
 
-                    int matchLength = 1;
-                    while (matchLength < offsetSize && searchPosition + matchLength < position &&
-                           data[searchPosition + matchLength] == pattern[matchLength % offsetSize])
-                        matchLength++;
-                    if (matchLength > bestLength)
-                    {
-                        bestOffset = position - searchPosition;
-                        bestLength = matchLength;
-                    }
+                    if (bestLength == maxMatchLength)
+                        return;
                 }
             }
-
-            return (bestOffset, bestLength);
         }
     }
 }
