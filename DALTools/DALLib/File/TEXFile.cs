@@ -184,7 +184,8 @@ namespace DALLib.File
             if (sigSize < 4)
                 return;
             int animeSectionSize = reader.ReadInt32();
-            reader.FixPadding(0x10);
+            reader.JumpAhead(4);
+            reader.FixPadding(UseSmallSig ? 0x04u : 0x08u);
 
             // Diff
             sigSize = reader.CheckDALSignature("Diff");
@@ -238,9 +239,9 @@ namespace DALLib.File
             }
 
             byte[] data;
-            //if (UseLZ77)
-            //    data = SheetData.CompressLZ77();
-            //else
+            if (UseLZ77)
+                data = SheetData.CompressLZ77();
+            else
                 data = TEXConverter.Encode(this, format, loader);
 
             writer.Write(data);
